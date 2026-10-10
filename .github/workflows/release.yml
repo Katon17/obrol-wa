@@ -1,0 +1,44 @@
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build & publish release tarball
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26"
+
+      - name: System dependencies (GTK3)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends pkg-config libgtk-3-dev
+
+      - name: Build
+        run: go build -trimpath -ldflags="-s -w" -o obrol .
+
+      - name: Package tarball
+        run: |
+          V="${GITHUB_REF_NAME#v}"
+          mkdir -p stage/obrol
+          cp -r assets screenshots .github LICENSE README.md README.id.md \
+                CHANGELOG.md CONTRIBUTING.md CODE_OF_CONDUCT.md \
+                install.sh build.sh obrol.desktop go.mod go.sum stage/obrol/
+          cp *.go stage/obrol/
+          cp obrol stage/obrol/
+          tar czf "obrol-$V-linux-x86_64.tar.gz" -C stage obrol
+
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: obrol-*.tar.gz
+          generate_release_notes: true
