@@ -105,7 +105,7 @@ bash install.sh --purge       # removes the app + login session + chat history
 ## Building from source (optional)
 
 ```bash
-git clone https://github.com/GANTI-USERNAME/obrol-wa.git
+git clone https://github.com/Katon17/obrol-wa.git
 cd obrol-wa
 sudo apt install build-essential pkg-config libgtk-3-dev golang-go
 ./build.sh        # first build ±3–6 minutes (the GTK bindings are big)
