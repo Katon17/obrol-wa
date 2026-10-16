@@ -2,8 +2,8 @@
 
 **English** · **[Bahasa Indonesia](README.id.md)**
 
-[![build](https://github.com/GANTI-USERNAME/obrol-wa/actions/workflows/build.yml/badge.svg)](https://github.com/GANTI-USERNAME/obrol-wa/actions/workflows/build.yml)
-[![release](https://img.shields.io/github/v/release/GANTI-USERNAME/obrol-wa?display_name=tag)](https://github.com/GANTI-USERNAME/obrol-wa/releases/latest)
+[![build](https://github.com/Katon17/obrol-wa/actions/workflows/build.yml/badge.svg)](https://github.com/Katon17/obrol-wa/actions/workflows/build.yml)
+[![release](https://img.shields.io/github/v/release/Katon17/obrol-wa?display_name=tag)](https://github.com/Katon17/obrol-wa/releases/latest)
 [![license](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![go](https://img.shields.io/badge/Go-1.26-00ADD8.svg?logo=go&logoColor=white)](go.mod)
 
@@ -25,6 +25,12 @@ Made by **Katon Bagaskoro**.
 | Stickers (animated ones too) | Sticker panel: Recent / Favorites / Create | Make stickers from photos or screenshots |
 |---|---|---|
 | ![Stickers](screenshots/v13-stiker.png) | ![Panel](screenshots/v13-panel.png) | ![Create](screenshots/v13-buat.png) |
+
+**New in 1.4 — replies, reactions, forwarding & English:**
+
+| Reply with quoted bubble + emoji reactions | Forward messages to any chat | Bahasa Indonesia / English UI |
+|---|---|---|
+| ![Reply](screenshots/v14-reply.png) | ![Forward](screenshots/v14-forward.png) | ![English](screenshots/v14-english.png) |
 
 ## Why is it so light?
 
@@ -50,6 +56,13 @@ Made by **Katon Bagaskoro**.
   Click to resend; right-click to favorite or hide
 - ✅ **Create your own stickers** from any image or a clipboard screenshot: automatic square crop,
   rounded corners, white outline, encoded as WebP ≤100 KB (WhatsApp's sticker format)
+- ✅ **Reply to messages** (right-click → Reply): the quoted message appears inside your bubble with the
+  sender's color; click the quote to jump to the original
+- ✅ **Emoji reactions**: right-click → React (👍 ❤️ 😂 😮 😢 🙏); reaction chips with participant counts
+  render under the bubble; click a chip to change/remove yours. Reactions made on the phone sync too
+- ✅ **Forward messages** to any chat through a searchable picker; forwarded messages are labelled
+  *Forwarded*. Text, stickers and media (download + re-upload) can all be forwarded
+- ✅ **Bilingual UI**: Menu ☰ → Language → *Bahasa Indonesia* or *English*; the app restarts to apply
 - ✅ **Send photos & files** with a caption; **paste images with Ctrl+V** (PrtSc screenshots,
   Flameshot, or files copied from Thunar/Nemo) with a preview dialog
 - ✅ **Multi-line messages**: `Enter` sends, `Shift+Enter` newline; the input box grows to ±7 lines
@@ -78,7 +91,7 @@ Made by **Katon Bagaskoro**.
 ## Installation (Linux Mint 21/22, x86_64)
 
 A prebuilt binary is shipped, so **you don't need Go**. Download the latest tarball from
-[Releases](https://github.com/GANTI-USERNAME/obrol-wa/releases/latest), then:
+[Releases](https://github.com/Katon17/obrol-wa/releases/latest), then:
 
 ```bash
 tar xzf obrol-1.3.0-linux-x86_64.tar.gz
@@ -133,6 +146,7 @@ store.go   local SQLite database (chats + messages)
 ui.go      the whole GTK3 interface
 features.go multi-line input, image paste, edit/delete, pin message & chat
 icons.go   bundled SVG icons & logo (a recolorable DrawingArea widget)
+i18n.go    UI translations (Bahasa Indonesia / English)
 stickers_core.go sticker storage, download/send, WebP encoding (dlopen libwebp)
 stickers.go sticker panel, animation preview, sticker creation dialog
 webp.go    WebP decoder/encoder (incl. animated WebP) via cgo libwebp

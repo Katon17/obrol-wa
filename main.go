@@ -14,7 +14,7 @@ import (
 	"github.com/gotk3/gotk3/gtk"
 )
 
-const version = "1.3.0"
+const version = "1.4.0"
 
 //go:embed assets/obrol.png
 var iconPNG []byte
@@ -38,6 +38,7 @@ type Config struct {
 	CloseToTray bool   `json:"close_to_tray"`
 	MuteGroups  bool   `json:"mute_groups"`
 	Theme       string `json:"theme"` // auto | light | dark
+	Lang        string `json:"lang"`  // id | en
 	path        string
 }
 
@@ -109,6 +110,13 @@ func main() {
 		os.Exit(1)
 	}
 	a := &App{gapp: gapp, st: st, cfg: loadConfig(dir), opts: o}
+	if a.cfg.Lang == "" {
+		a.cfg.Lang = "id"
+	}
+	lang = a.cfg.Lang
+	if v := os.Getenv("OBROL_LANG"); v == "en" || v == "id" {
+		lang = v
+	}
 	a.iconPath = filepath.Join(dir, "obrol.png")
 	os.WriteFile(a.iconPath, iconPNG, 0o644)
 
@@ -175,6 +183,18 @@ func seedDemo(st *Store) {
 			{Text: "Ketemu di sini jam 4 ya", TS: ts(8*24*time.Hour - time.Minute)},
 		}, 0},
 	}
+	// v1.4: contoh balasan, reaksi, dan pesan terusan
+	ibu := "6281234567890@s.whatsapp.net"
+	budi := "6282222222222@s.whatsapp.net"
+	rina := "6281111111111@s.whatsapp.net"
+	data[0].msgs[2].ReplyID, data[0].msgs[2].ReplySender, data[0].msgs[2].ReplySnip = ibu+"-0", ibu, "Le, sudah makan belum?"
+	data[0].msgs[4].Reactions = `{"demo-me":"❤️"}`
+	data[1].msgs[4].ReplyID, data[1].msgs[4].ReplySender = grp+"-1", budi
+	data[1].msgs[4].ReplySnip = "Siap! Materi presentasi sudah saya upload: https://example.com/slide"
+	data[1].msgs[2].Reactions = `{"` + rina + `":"❤️","demo-me":"👍"}`
+	data[1].msgs[3].Reactions = `{"` + rina + `":"👍"}`
+	data[2].msgs[4].Forwarded = true
+
 	for _, c := range data {
 		if c.chat == grp {
 			st.SetChatName(c.chat, c.name)

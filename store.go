@@ -5,7 +5,9 @@ package main
 
 import (
 	"database/sql"
+	"encoding/json"
 	"strings"
+	"sort"
 	"sync"
 	"time"
 
@@ -44,6 +46,59 @@ type Msg struct {
 	Status     int    // 0=pending 1=terkirim 2=diterima 3=dibaca -1=gagal
 	IsRead     bool
 	Edited     bool
+
+	// v1.4: balas, teruskan, reaksi
+	ReplyID     string // id pesan yang dibalas
+	ReplySender string // JID pengirim pesan yang dibalas
+	ReplySnip   string // cuplikan teks pesan yang dibalas
+	Forwarded   bool
+	Reactions   string // JSON: map JID -> emoji
+}
+
+// ReactionAgg adalah satu emoji reaksi berikut jumlahnya dan apakah saya ikut.
+type ReactionAgg struct {
+	Emoji string
+	Count int
+	Mine  bool
+}
+
+// ParseReactions mengurai kolom reactions menjadi daftar teragregasi (urut kemunculan).
+func (m *Msg) ParseReactions(myJID string) []ReactionAgg {
+	if m.Reactions == "" {
+		return nil
+	}
+	var per map[string]string
+	if json.Unmarshal([]byte(m.Reactions), &per) != nil {
+		return nil
+	}
+	order := []string{}
+	counts := map[string]int{}
+	// urutkan map agar stabil: kumpulkan dulu kunci emoji unik sesuai urutan map (acak) → sortir per emoji
+	for _, e := range per {
+		if e == "" {
+			continue
+		}
+		if _, ok := counts[e]; !ok {
+			order = append(order, e)
+			counts[e] = 0
+		}
+		counts[e]++
+	}
+	sort.Strings(order)
+	var out []ReactionAgg
+	for _, e := range order {
+		out = append(out, ReactionAgg{Emoji: e, Count: counts[e]})
+	}
+	for jid, e := range per {
+		if jid == myJID && e != "" {
+			for i := range out {
+				if out[i].Emoji == e {
+					out[i].Mine = true
+				}
+			}
+		}
+	}
+	return out
 }
 
 const (
@@ -96,6 +151,16 @@ CREATE INDEX IF NOT EXISTS idx_msg_id ON messages(id);
 	}
 	// migrasi v1.1: kolom mute (abaikan error bila sudah ada)
 	db.Exec(`ALTER TABLE chats ADD COLUMN muted_until INTEGER NOT NULL DEFAULT 0`)
+	// migrasi v1.4: balas, teruskan, reaksi
+	for _, q := range []string{
+		`ALTER TABLE messages ADD COLUMN reply_id TEXT NOT NULL DEFAULT ''`,
+		`ALTER TABLE messages ADD COLUMN reply_sender TEXT NOT NULL DEFAULT ''`,
+		`ALTER TABLE messages ADD COLUMN reply_snip TEXT NOT NULL DEFAULT ''`,
+		`ALTER TABLE messages ADD COLUMN forwarded INTEGER NOT NULL DEFAULT 0`,
+		`ALTER TABLE messages ADD COLUMN reactions TEXT NOT NULL DEFAULT ''`,
+	} {
+		db.Exec(q)
+	}
 	// migrasi v1.2: edit, sematkan obrolan, sematkan pesan
 	db.Exec(`ALTER TABLE messages ADD COLUMN edited INTEGER NOT NULL DEFAULT 0`)
 	db.Exec(`ALTER TABLE chats ADD COLUMN pinned INTEGER NOT NULL DEFAULT 0`)
@@ -108,6 +173,30 @@ CREATE INDEX IF NOT EXISTS idx_msg_id ON messages(id);
 }
 
 func (s *Store) Close() { s.db.Close() }
+
+// ApplyReactionLocal memperbarui peta reaksi satu pesan (untuk optimisme UI & mode demo).
+func ApplyReactionLocal(st *Store, myJID, chat, id, emoji string) {
+	m, ok := st.GetMessage(chat, id)
+	if !ok {
+		return
+	}
+	per := map[string]string{}
+	if m.Reactions != "" {
+		json.Unmarshal([]byte(m.Reactions), &per)
+	}
+	if emoji == "" {
+		delete(per, myJID)
+	} else {
+		per[myJID] = emoji
+	}
+	b, _ := json.Marshal(per)
+	st.SetReactions(chat, id, string(b))
+}
+
+// SetReactions menyimpan peta reaksi (JID -> emoji) sebuah pesan.
+func (s *Store) SetReactions(chat, id, jsonStr string) {
+	s.db.Exec(`UPDATE messages SET reactions=? WHERE chat=? AND id=?`, jsonStr, chat, id)
+}
 
 func isGroupJID(j string) bool { return strings.HasSuffix(j, "@g.us") }
 
@@ -192,9 +281,10 @@ func (s *Store) SaveMessage(m *Msg, incUnread bool) bool {
 }
 
 func (s *Store) saveMsg(ex execer, m *Msg, incUnread bool) bool {
-	res, err := ex.Exec(`INSERT INTO messages(chat,id,sender,sender_name,from_me,ts,kind,text,thumb,raw,status,is_read)
-VALUES(?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(chat,id) DO NOTHING`,
-		m.Chat, m.ID, m.Sender, m.SenderName, b2i(m.FromMe), m.TS, m.Kind, m.Text, m.Thumb, m.Raw, m.Status, b2i(m.IsRead))
+	res, err := ex.Exec(`INSERT INTO messages(chat,id,sender,sender_name,from_me,ts,kind,text,thumb,raw,status,is_read,reply_id,reply_sender,reply_snip,forwarded,reactions)
+VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(chat,id) DO NOTHING`,
+		m.Chat, m.ID, m.Sender, m.SenderName, b2i(m.FromMe), m.TS, m.Kind, m.Text, m.Thumb, m.Raw, m.Status, b2i(m.IsRead),
+		m.ReplyID, m.ReplySender, m.ReplySnip, b2i(m.Forwarded), m.Reactions)
 	if err != nil {
 		return false
 	}
@@ -243,15 +333,16 @@ FROM messages WHERE chat=? AND ts < ? ORDER BY ts DESC, rowid DESC LIMIT ?`, cha
 	return out, rows.Err()
 }
 
-const msgCols = `chat,id,sender,sender_name,from_me,ts,kind,text,thumb,raw,status,is_read,edited`
+const msgCols = `chat,id,sender,sender_name,from_me,ts,kind,text,thumb,raw,status,is_read,edited,reply_id,reply_sender,reply_snip,forwarded,reactions`
 
 type scanner interface{ Scan(dest ...any) error }
 
 func scanMsg(r scanner) (Msg, error) {
 	var m Msg
-	var fm, rd, ed int
-	err := r.Scan(&m.Chat, &m.ID, &m.Sender, &m.SenderName, &fm, &m.TS, &m.Kind, &m.Text, &m.Thumb, &m.Raw, &m.Status, &rd, &ed)
-	m.FromMe, m.IsRead, m.Edited = fm == 1, rd == 1, ed == 1
+	var fm, rd, ed, fw int
+	err := r.Scan(&m.Chat, &m.ID, &m.Sender, &m.SenderName, &fm, &m.TS, &m.Kind, &m.Text, &m.Thumb, &m.Raw, &m.Status, &rd, &ed,
+		&m.ReplyID, &m.ReplySender, &m.ReplySnip, &fw, &m.Reactions)
+	m.FromMe, m.IsRead, m.Edited, m.Forwarded = fm == 1, rd == 1, ed == 1, fw == 1
 	return m, err
 }
 
@@ -441,23 +532,23 @@ func previewText(m *Msg) string {
 func kindLabel(kind string) string {
 	switch kind {
 	case "image":
-		return "📷 Foto"
+		return "📷 " + T("Foto")
 	case "video":
-		return "🎥 Video"
+		return "🎥 " + T("Video")
 	case "audio":
-		return "🎵 Audio"
+		return "🎵 " + T("Audio")
 	case "ptt":
-		return "🎤 Pesan suara"
+		return "🎤 " + T("Pesan suara")
 	case "document":
-		return "📄 Dokumen"
+		return "📄 " + T("Dokumen")
 	case "sticker":
-		return "🏷️ Stiker"
+		return "🏷️ " + T("Stiker")
 	case "location":
-		return "📍 Lokasi"
+		return "📍 " + T("Lokasi")
 	case "contact":
-		return "👤 Kontak"
+		return "👤 " + T("Kontak")
 	case "poll":
-		return "📊 Polling"
+		return "📊 " + T("Polling")
 	case "gif":
 		return "🎞️ GIF"
 	}

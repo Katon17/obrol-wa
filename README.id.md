@@ -2,8 +2,8 @@
 
 **[English](README.md)** · **Bahasa Indonesia**
 
-[![build](https://github.com/GANTI-USERNAME/obrol-wa/actions/workflows/build.yml/badge.svg)](https://github.com/GANTI-USERNAME/obrol-wa/actions/workflows/build.yml)
-[![rilis](https://img.shields.io/github/v/release/GANTI-USERNAME/obrol-wa?display_name=tag)](https://github.com/GANTI-USERNAME/obrol-wa/releases/latest)
+[![build](https://github.com/Katon17/obrol-wa/actions/workflows/build.yml/badge.svg)](https://github.com/Katon17/obrol-wa/actions/workflows/build.yml)
+[![rilis](https://img.shields.io/github/v/release/Katon17/obrol-wa?display_name=tag)](https://github.com/Katon17/obrol-wa/releases/latest)
 [![lisensi](https://img.shields.io/badge/lisensi-MIT-green.svg)](LICENSE)
 [![go](https://img.shields.io/badge/Go-1.26-00ADD8.svg?logo=go&logoColor=white)](go.mod)
 
@@ -30,6 +30,12 @@ Dibuat oleh **Katon Bagaskoro**.
 | Stiker (termasuk animasi) | Panel stiker: Terbaru / Favorit / Buat | Buat stiker dari foto atau screenshot |
 |---|---|---|
 | ![Stiker](screenshots/v13-stiker.png) | ![Panel](screenshots/v13-panel.png) | ![Buat](screenshots/v13-buat.png) |
+
+**Baru di 1.4:**
+
+| Balas dengan kutipan + reaksi emoji | Teruskan pesan ke chat mana pun | Antarmuka Bahasa Indonesia / Inggris |
+|---|---|---|
+| ![Balas](screenshots/v14-reply.png) | ![Teruskan](screenshots/v14-forward.png) | ![English](screenshots/v14-english.png) |
 
 ## Kenapa ringan?
 
@@ -79,6 +85,13 @@ Dibuat oleh **Katon Bagaskoro**.
 - ✅ **Buat stiker sendiri** dari foto/file gambar atau screenshot di clipboard: dipotong persegi otomatis,
   sudut membulat, garis tepi putih, lalu dikirim sebagai stiker WebP ≤100 KB (format stiker WhatsApp)
 - ✅ Tombol **"Jadikan stiker…"** langsung di dialog kirim gambar
+- ✅ **Balas pesan** (klik kanan → Balas): kutipan pesan asli tampil di dalam bubble dengan warna nama
+  pengirim; klik kutipan untuk lompat ke pesan aslinya
+- ✅ **Reaksi emoji**: klik kanan → Reaksi (👍 ❤️ 😂 😮 😢 🙏); chip reaksi dengan jumlah peserta tampil
+  di bawah bubble; klik chip untuk ganti/hapus reaksimu. Reaksi dari ponsel ikut tersinkron
+- ✅ **Teruskan pesan** ke chat mana pun lewat dialog pencari obrolan; pesan terusan diberi tanda
+  *Diteruskan*. Teks, stiker, dan media (diunduh lalu diunggah ulang) bisa diteruskan
+- ✅ **Dwibahasa**: Menu ☰ → Bahasa → *Bahasa Indonesia* atau *English*; aplikasi mulai ulang otomatis
 - ✅ **Ikon & logo buatan sendiri**: logo "Ngobrol" (dua gelembung obrolan) dan 27 ikon garis tipis yang
   digambar khusus sebagai SVG, sehingga tajam di skala berapa pun dan warnanya ikut tema terang/gelap
 - ✅ Single-instance: membuka Obrol lagi cukup memunculkan jendela yang sudah ada
@@ -89,7 +102,7 @@ Dibuat oleh **Katon Bagaskoro**.
 ## Instalasi (Linux Mint 21/22, x86_64)
 
 Binary sudah jadi, jadi **tidak perlu install Go**. Unduh tarball terbaru dari
-halaman [Releases](https://github.com/GANTI-USERNAME/obrol-wa/releases/latest), lalu:
+halaman [Releases](https://github.com/Katon17/obrol-wa/releases/latest), lalu:
 
 ```bash
 tar xzf obrol-1.3.0-linux-x86_64.tar.gz
@@ -116,7 +129,7 @@ bash install.sh --purge       # hapus aplikasi + sesi login + riwayat chat
 ## Build dari source (opsional)
 
 ```bash
-git clone https://github.com/GANTI-USERNAME/obrol-wa.git
+git clone https://github.com/Katon17/obrol-wa.git
 cd obrol-wa
 sudo apt install build-essential pkg-config libgtk-3-dev golang-go
 ./build.sh        # build pertama ±3–6 menit (binding GTK-nya besar)
@@ -151,6 +164,7 @@ Opsi baris perintah:
 
 Catatan lengkap per rilis ada di [CHANGELOG.md](CHANGELOG.md).
 
+- **1.4.0**: balas pesan (kutipan), reaksi emoji, teruskan pesan, dan pilihan bahasa Inggris
 - **1.3.0**: stiker penuh (tampil + animasi, panel Terbaru/Favorit, buat stiker dari gambar/screenshot),
   logo & ikon SVG asli buatan sendiri
 - **1.2.0**: tempel screenshot/gambar dari clipboard dengan Ctrl+V, pesan multi-baris dengan Shift+Enter, edit pesan

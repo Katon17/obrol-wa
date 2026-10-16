@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"syscall"
 	"time"
 	"unicode"
 
@@ -122,6 +123,11 @@ type App struct {
 	origPreferDark bool
 	dark           bool
 
+	// v1.4: balas
+	replyBar *gtk.Box
+	replyLbl *gtk.Label
+	replyTo  *Msg
+
 	// stiker & ikon
 	stickers *stickerPanel
 	msgGen   int
@@ -151,14 +157,14 @@ func (a *App) Activate() {
 
 	win, _ := gtk.ApplicationWindowNew(a.gapp)
 	a.win = win
-	win.SetTitle("Obrol")
+	win.SetTitle(T("Obrol"))
 	win.SetDefaultSize(1000, 680)
 	win.SetIcon(a.pixNormal)
 	win.SetPosition(gtk.WIN_POS_CENTER)
 
 	a.header, _ = gtk.HeaderBarNew()
 	a.header.SetShowCloseButton(true)
-	a.header.SetTitle("Obrol")
+	a.header.SetTitle(T("Obrol"))
 	a.header.SetSubtitle("Memulai…")
 	win.SetTitlebar(a.header)
 	a.buildHeaderButtons()
@@ -259,6 +265,9 @@ func (a *App) onKey(_ *gtk.ApplicationWindow, ev *gdk.Event) bool {
 	case ctrl && k.KeyVal() == gdk.KEY_w:
 		a.win.Close()
 		return true
+	case k.KeyVal() == gdk.KEY_Escape && a.replyTo != nil:
+		a.cancelReply()
+		return true
 	case k.KeyVal() == gdk.KEY_Escape && a.editID != "":
 		a.cancelEdit()
 		return true
@@ -321,6 +330,12 @@ row.flash, row.flash:hover { background-color: alpha(#00a884, 0.28); }
 .mutedicon { opacity: 0.6; }
 .iconbtn { padding: 4px 6px; }
 .bubble.sticker.in, .bubble.sticker.out { background-color: transparent; box-shadow: none; padding: 0; }
+.quote { border-left: 3px solid #00a884; border-radius: 6px; padding: 4px 8px; margin-bottom: 3px; background-color: rgba(128,128,128,0.16); }
+label.quotetext { font-size: 0.85em; }
+label.fwd { font-style: italic; font-size: 0.75em; opacity: 0.75; }
+.reactrow { margin-top: 2px; }
+button.react { border-radius: 12px; padding: 0 8px; font-size: 0.82em; background-image: none; box-shadow: none; background-color: rgba(128,128,128,0.28); border: 1px solid rgba(128,128,128,0.45); }
+button.react.mine { border-color: #00a884; background-color: rgba(0,168,132,0.30); }
 .bubble.sticker label.meta { background-color: rgba(0,0,0,0.42); color: #ffffff; border-radius: 8px; padding: 1px 7px; margin-top: 2px; }
 .stickerph { opacity: 0.35; }
 .stickerpanel { padding: 8px; }
@@ -332,6 +347,12 @@ const lightCSS = `
 .bubble { box-shadow: 0 1px 0.5px rgba(0,0,0,0.13); }
 .bubble.in  { background-color: #ffffff; }
 .bubble.sticker.in, .bubble.sticker.out { background-color: transparent; box-shadow: none; padding: 0; }
+.quote { border-left: 3px solid #00a884; border-radius: 6px; padding: 4px 8px; margin-bottom: 3px; background-color: rgba(128,128,128,0.16); }
+label.quotetext { font-size: 0.85em; }
+label.fwd { font-style: italic; font-size: 0.75em; opacity: 0.75; }
+.reactrow { margin-top: 2px; }
+button.react { border-radius: 12px; padding: 0 8px; font-size: 0.82em; background-image: none; box-shadow: none; background-color: rgba(128,128,128,0.28); border: 1px solid rgba(128,128,128,0.45); }
+button.react.mine { border-color: #00a884; background-color: rgba(0,168,132,0.30); }
 .bubble.sticker label.meta { background-color: rgba(0,0,0,0.42); color: #ffffff; border-radius: 8px; padding: 1px 7px; margin-top: 2px; }
 .bubble.out { background-color: #d9fdd3; }
 .bubble label { color: #111b21; }
@@ -354,6 +375,12 @@ const darkCSS = `
 .bubble { box-shadow: 0 1px 0.5px rgba(0,0,0,0.4); }
 .bubble.in  { background-color: #202c33; }
 .bubble.sticker.in, .bubble.sticker.out { background-color: transparent; box-shadow: none; padding: 0; }
+.quote { border-left: 3px solid #00a884; border-radius: 6px; padding: 4px 8px; margin-bottom: 3px; background-color: rgba(128,128,128,0.16); }
+label.quotetext { font-size: 0.85em; }
+label.fwd { font-style: italic; font-size: 0.75em; opacity: 0.75; }
+.reactrow { margin-top: 2px; }
+button.react { border-radius: 12px; padding: 0 8px; font-size: 0.82em; background-image: none; box-shadow: none; background-color: rgba(128,128,128,0.28); border: 1px solid rgba(128,128,128,0.45); }
+button.react.mine { border-color: #00a884; background-color: rgba(0,168,132,0.30); }
 .bubble.sticker label.meta { background-color: rgba(0,0,0,0.42); color: #ffffff; border-radius: 8px; padding: 1px 7px; margin-top: 2px; }
 .bubble.out { background-color: #005c4b; }
 .bubble label { color: #e9edef; }
@@ -474,8 +501,8 @@ func (a *App) buildHeaderButtons() {
 	}
 	sep := func() { s, _ := gtk.SeparatorMenuItemNew(); menu.Append(s) }
 
-	add("Obrolan baru…", a.newChatDialog)
-	add("Buka folder unduhan", func() {
+	add(T("Obrolan baru…"), a.newChatDialog)
+	add(T("Buka folder unduhan"), func() {
 		d := downloadDir()
 		os.MkdirAll(d, 0o755)
 		exec.Command("xdg-open", d).Start()
@@ -492,7 +519,7 @@ func (a *App) buildHeaderButtons() {
 	check("Jalankan saat login", autostartEnabled(), func(v bool) { setAutostart(v) })
 	sep()
 	// submenu tema
-	themeItem, _ := gtk.MenuItemNewWithLabel("Tema")
+	themeItem, _ := gtk.MenuItemNewWithLabel(T("Tema"))
 	themeMenu, _ := gtk.MenuNew()
 	var first *gtk.RadioMenuItem
 	for _, t := range []struct{ id, label string }{{"auto", "Otomatis (ikuti sistem)"}, {"light", "Terang"}, {"dark", "Gelap"}} {
@@ -516,11 +543,35 @@ func (a *App) buildHeaderButtons() {
 	}
 	themeItem.SetSubmenu(themeMenu)
 	menu.Append(themeItem)
+	langItem, _ := gtk.MenuItemNewWithLabel(T("Bahasa"))
+	langMenu, _ := gtk.MenuNew()
+	var lfirst *gtk.RadioMenuItem
+	for _, t := range []struct{ id, label string }{{"id", "Bahasa Indonesia"}, {"en", "English"}} {
+		var it *gtk.RadioMenuItem
+		if lfirst == nil {
+			it, _ = gtk.RadioMenuItemNewWithLabel(nil, t.label)
+			lfirst = it
+		} else {
+			it, _ = gtk.RadioMenuItemNewWithLabelFromWidget(lfirst, t.label)
+		}
+		it.SetActive(a.cfg.Lang == t.id)
+		id := t.id
+		it.Connect("toggled", func() {
+			if it.GetActive() && a.cfg.Lang != id {
+				a.cfg.Lang = id
+				a.cfg.Save()
+				a.confirmRestart()
+			}
+		})
+		langMenu.Append(it)
+	}
+	langItem.SetSubmenu(langMenu)
+	menu.Append(langItem)
 	sep()
-	add("Keluar dari akun (logout)…", a.confirmLogout)
-	add("Tentang Obrol", a.about)
+	add(T("Keluar dari akun (logout)…"), a.confirmLogout)
+	add(T("Tentang Obrol"), a.about)
 	sep()
-	add("Tutup aplikasi (Ctrl+Q)", a.quit)
+	add(T("Tutup aplikasi (Ctrl+Q)"), a.quit)
 	menu.ShowAll()
 
 	mb, _ := gtk.MenuButtonNew()
@@ -528,9 +579,31 @@ func (a *App) buildHeaderButtons() {
 		mb.Remove(old)
 	}
 	mb.Add(newIcon("menu", 18))
-	mb.SetTooltipText("Menu")
+	mb.SetTooltipText(T("Menu"))
 	mb.SetPopup(menu)
 	a.header.PackEnd(mb)
+}
+
+// confirmRestart menawarkan mulai ulang setelah ganti bahasa.
+func (a *App) confirmRestart() {
+	d := gtk.MessageDialogNew(a.win, gtk.DIALOG_MODAL, gtk.MESSAGE_QUESTION, gtk.BUTTONS_NONE, T("Mulai ulang sekarang?"))
+	d.FormatSecondaryText(T("Bahasa diterapkan setelah aplikasi dimulai ulang."))
+	d.AddButton(T("Mulai ulang"), gtk.RESPONSE_YES)
+	d.AddButton(T("Nanti"), gtk.RESPONSE_NO)
+	resp := d.Run()
+	d.Destroy()
+	if resp == gtk.RESPONSE_YES {
+		a.restartApp()
+	}
+}
+
+// restartApp mengganti proses dengan instance baru (bahasa baru diterapkan).
+func (a *App) restartApp() {
+	exe, err := os.Executable()
+	if err != nil {
+		return
+	}
+	syscall.Exec(exe, os.Args, os.Environ())
 }
 
 // ------------------------------------------------------------ login page
@@ -545,7 +618,7 @@ func (a *App) buildLogin() gtk.IWidget {
 
 	left, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 12)
 	left.SetVAlign(gtk.ALIGN_CENTER)
-	title, _ := gtk.LabelNew("Hubungkan Obrol ke WhatsApp")
+	title, _ := gtk.LabelNew(T("Hubungkan Obrol ke WhatsApp"))
 	addClass(title, "bigtitle")
 	title.SetXAlign(0)
 	steps, _ := gtk.LabelNew("")
@@ -562,9 +635,9 @@ func (a *App) buildLogin() gtk.IWidget {
 	alt.SetXAlign(0)
 	prow, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 6)
 	a.phoneEnt, _ = gtk.EntryNew()
-	a.phoneEnt.SetPlaceholderText("contoh: 0812xxxxxxx")
+	a.phoneEnt.SetPlaceholderText(T("contoh: 0812xxxxxxx"))
 	a.phoneEnt.SetInputPurpose(gtk.INPUT_PURPOSE_PHONE)
-	pbtn, _ := gtk.ButtonNewWithLabel("Dapatkan kode")
+	pbtn, _ := gtk.ButtonNewWithLabel(T("Dapatkan kode"))
 	prow.PackStart(a.phoneEnt, true, true, 0)
 	prow.PackStart(pbtn, false, false, 0)
 	a.pairLbl, _ = gtk.LabelNew("")
@@ -573,7 +646,7 @@ func (a *App) buildLogin() gtk.IWidget {
 	a.pairLbl.SetLineWrap(true)
 	doPair := func() {
 		ph := a.phoneEnt.GetChars(0, -1)
-		a.pairLbl.SetText("Meminta kode…")
+		a.pairLbl.SetText(T("Meminta kode…"))
 		go func() {
 			code, err := a.wa.PairPhone(ph)
 			glib.IdleAdd(func() {
@@ -588,7 +661,7 @@ func (a *App) buildLogin() gtk.IWidget {
 	pbtn.Connect("clicked", doPair)
 	a.phoneEnt.Connect("activate", doPair)
 
-	warn, _ := gtk.LabelNew("⚠ Obrol adalah klien tidak resmi (protokol whatsmeow). Ada risiko akun\ndibatasi/diblokir oleh WhatsApp. Gunakan dengan bijak & risiko sendiri.")
+	warn, _ := gtk.LabelNew(T("⚠ Obrol adalah klien tidak resmi (protokol whatsmeow). Ada risiko akun\ndibatasi/diblokir oleh WhatsApp. Gunakan dengan bijak & risiko sendiri."))
 	addClass(warn, "warn")
 	warn.SetXAlign(0)
 
@@ -620,7 +693,7 @@ func (a *App) buildLogin() gtk.IWidget {
 	ov.Add(a.qrImage)
 	ov.AddOverlay(a.qrSpinner)
 	frame.PackStart(ov, false, false, 0)
-	a.qrRetry, _ = gtk.ButtonNewWithLabel("Kode kedaluwarsa — muat ulang QR")
+	a.qrRetry, _ = gtk.ButtonNewWithLabel(T("Kode kedaluwarsa — muat ulang QR"))
 	a.qrRetry.SetNoShowAll(true)
 	a.qrRetry.Connect("clicked", func() {
 		a.qrRetry.Hide()
@@ -648,7 +721,7 @@ func (a *App) buildMain() gtk.IWidget {
 	// kiri
 	left, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
 	a.search, _ = gtk.SearchEntryNew()
-	a.search.SetPlaceholderText("Cari obrolan (Ctrl+F)")
+	a.search.SetPlaceholderText(T("Cari obrolan (Ctrl+F)"))
 	a.search.SetMarginStart(8)
 	a.search.SetMarginEnd(8)
 	a.search.SetMarginTop(8)
@@ -892,14 +965,14 @@ func (a *App) newChatRow(c Chat) *chatRow {
 	r.muteIc = newIcon("bell-off", 14)
 	addClass(r.muteIc, "mutedicon")
 	r.muteIc.SetNoShowAll(true)
-	r.muteIc.SetTooltipText("Notifikasi dibisukan")
+	r.muteIc.SetTooltipText(T("Notifikasi dibisukan"))
 	top.PackStart(r.name, true, true, 0)
 	top.PackEnd(r.when, false, false, 0)
 	top.PackEnd(r.muteIc, false, false, 0)
 	r.pinIc = newIcon("pin", 14)
 	addClass(r.pinIc, "mutedicon")
 	r.pinIc.SetNoShowAll(true)
-	r.pinIc.SetTooltipText("Obrolan disematkan")
+	r.pinIc.SetTooltipText(T("Obrolan disematkan"))
 	top.PackEnd(r.pinIc, false, false, 0)
 
 	bot, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 6)
@@ -979,7 +1052,7 @@ func (a *App) updateUnread() {
 			a.tray.SetTooltipText(fmt.Sprintf("Obrol — %d pesan belum dibaca", total))
 		} else {
 			a.tray.SetFromPixbuf(a.trayPixbuf(false))
-			a.tray.SetTooltipText("Obrol")
+			a.tray.SetTooltipText(T("Obrol"))
 		}
 	}
 }
@@ -1010,7 +1083,7 @@ func (a *App) openChat(jid string) {
 	}
 	sc.AddClass(avatarClass(jid))
 	if c.IsGroup {
-		a.chatSub.SetText("Grup")
+		a.chatSub.SetText(T("Grup"))
 	} else {
 		user := strings.SplitN(jid, "@", 2)[0]
 		if strings.HasSuffix(jid, "@s.whatsapp.net") {
@@ -1217,6 +1290,16 @@ func (a *App) bubbleRow(m *Msg) *gtk.ListBoxRow {
 		b.PackStart(nl, false, false, 0)
 	}
 
+	if m.Forwarded {
+		fl, _ := gtk.LabelNew(T("Diteruskan"))
+		addClass(fl, "fwd")
+		fl.SetXAlign(0)
+		b.PackStart(fl, false, false, 0)
+	}
+	if m.ReplyID != "" {
+		b.PackStart(a.quoteBox(m), false, false, 0)
+	}
+
 	text := m.Text
 	if m.Kind == "deleted" {
 		box, l := iconLabel("ban", "Pesan ini dihapus", 15)
@@ -1307,6 +1390,33 @@ func (a *App) bubbleRow(m *Msg) *gtk.ListBoxRow {
 		b.PackStart(l, false, false, 0)
 	}
 
+	if aggs := m.ParseReactions(a.myJID()); len(aggs) > 0 {
+		rb, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 4)
+		addClass(rb, "reactrow")
+		if m.FromMe {
+			rb.SetHAlign(gtk.ALIGN_END)
+		} else {
+			rb.SetHAlign(gtk.ALIGN_START)
+		}
+		for _, ag := range aggs {
+			ag := ag
+			lbl := ag.Emoji
+			if ag.Count > 1 {
+				lbl += " " + fmt.Sprint(ag.Count)
+			}
+			chip, _ := gtk.ButtonNewWithLabel(lbl)
+			addClass(chip, "react")
+			if ag.Mine {
+				addClass(chip, "mine")
+			}
+			ch, id2 := m.Chat, m.ID
+			chip.Connect("clicked", func() { a.toggleReaction(ch, id2, ag.Emoji, ag.Mine) })
+			chip.SetTooltipText(T("Klik untuk mengubah reaksi Anda"))
+			rb.PackStart(chip, false, false, 0)
+		}
+		b.PackStart(rb, false, false, 0)
+	}
+
 	meta, _ := gtk.LabelNew("")
 	addClass(meta, "meta")
 	meta.SetHAlign(gtk.ALIGN_END)
@@ -1359,7 +1469,7 @@ func (a *App) openMedia(chat, id string) {
 	if a.wa == nil {
 		return
 	}
-	a.flashStatus("Mengunduh media…")
+	a.flashStatus(T("Mengunduh media…"))
 	go func() {
 		err := a.wa.OpenMedia(chat, id)
 		glib.IdleAdd(func() {
@@ -1381,12 +1491,15 @@ func (a *App) sendCurrent() {
 	if text == "" || a.current == "" {
 		return
 	}
+	reply := a.replyTo
 	a.setInputText("")
+	a.cancelReply()
 	var m *Msg
 	if a.wa != nil {
-		m = a.wa.SendText(a.current, text)
+		m = a.wa.SendTextEx(a.current, text, reply, false)
 	} else {
 		m = &Msg{Chat: a.current, ID: fmt.Sprint(time.Now().UnixNano()), FromMe: true, TS: time.Now().Unix(), Kind: "text", Text: text, Status: StRead, IsRead: true}
+		fillReply(m, reply)
 		a.st.SaveMessage(m, false)
 	}
 	a.stickBottom = true
@@ -1398,8 +1511,7 @@ func (a *App) attachFile() {
 	if a.current == "" {
 		return
 	}
-	dlg, _ := gtk.FileChooserDialogNewWith2Buttons("Kirim foto / file", a.win, gtk.FILE_CHOOSER_ACTION_OPEN,
-		"Batal", gtk.RESPONSE_CANCEL, "Kirim", gtk.RESPONSE_ACCEPT)
+	dlg, _ := gtk.FileChooserDialogNewWith2Buttons("Kirim foto / file", a.win, gtk.FILE_CHOOSER_ACTION_OPEN, T("Batal"), gtk.RESPONSE_CANCEL, T("Kirim"), gtk.RESPONSE_ACCEPT)
 	ff, _ := gtk.FileFilterNew()
 	ff.SetName("Semua file")
 	ff.AddPattern("*")
@@ -1410,7 +1522,7 @@ func (a *App) attachFile() {
 	dlg.AddFilter(ff)
 	dlg.AddFilter(fi)
 	capEnt, _ := gtk.EntryNew()
-	capEnt.SetPlaceholderText("Keterangan (opsional)")
+	capEnt.SetPlaceholderText(T("Keterangan (opsional)"))
 	dlg.SetExtraWidget(capEnt)
 	resp := dlg.Run()
 	path := dlg.GetFilename()
@@ -1431,7 +1543,7 @@ func (a *App) newChatDialog() {
 	dlg, _ := gtk.DialogNew()
 	dlg.SetTransientFor(a.win)
 	dlg.SetModal(true)
-	dlg.SetTitle("Obrolan baru")
+	dlg.SetTitle(T("Obrolan baru"))
 	dlg.AddButton("Batal", gtk.RESPONSE_CANCEL)
 	ok, _ := dlg.AddButton("Mulai obrolan", gtk.RESPONSE_OK)
 	addClass(ok, "suggested-action")
@@ -1441,10 +1553,10 @@ func (a *App) newChatDialog() {
 	area.SetMarginStart(14)
 	area.SetMarginEnd(14)
 	area.SetMarginTop(10)
-	lbl, _ := gtk.LabelNew("Masukkan nomor WhatsApp (boleh diawali 0 atau 62):")
+	lbl, _ := gtk.LabelNew(T("Masukkan nomor WhatsApp (boleh diawali 0 atau 62):"))
 	lbl.SetXAlign(0)
 	ent, _ := gtk.EntryNew()
-	ent.SetPlaceholderText("0812 3456 7890")
+	ent.SetPlaceholderText(T("0812 3456 7890"))
 	ent.SetActivatesDefault(true)
 	info, _ := gtk.LabelNew("")
 	info.SetXAlign(0)
@@ -1458,7 +1570,7 @@ func (a *App) newChatDialog() {
 			return
 		}
 		num := ent.GetChars(0, -1)
-		info.SetText("Memeriksa nomor…")
+		info.SetText(T("Memeriksa nomor…"))
 		go func() {
 			jid, err := a.wa.CheckNumber(num)
 			glib.IdleAdd(func() {
@@ -1477,7 +1589,7 @@ func (a *App) newChatDialog() {
 func (a *App) confirmLogout() {
 	d := gtk.MessageDialogNew(a.win, gtk.DIALOG_MODAL, gtk.MESSAGE_QUESTION, gtk.BUTTONS_YES_NO,
 		"Keluar dari akun WhatsApp di Obrol?")
-	d.FormatSecondaryText("Perangkat ini akan dilepas dari WhatsApp dan semua riwayat chat lokal dihapus.")
+	d.FormatSecondaryText(T("Perangkat ini akan dilepas dari WhatsApp dan semua riwayat chat lokal dihapus."))
 	resp := d.Run()
 	d.Destroy()
 	if resp == gtk.RESPONSE_YES && a.wa != nil {
@@ -1533,7 +1645,7 @@ func muteDesc(c Chat) string {
 }
 
 func dayLabelShort(t time.Time) string {
-	return fmt.Sprintf("%s %d %s", hari[t.Weekday()], t.Day(), bulan[t.Month()][:3])
+	return fmt.Sprintf("%s %d %s", T(hari[t.Weekday()]), t.Day(), T(bulan[t.Month()])[:3])
 }
 
 func (a *App) muteMenu(jid string) *gtk.Menu {
@@ -1553,9 +1665,9 @@ func (a *App) muteMenu(jid string) *gtk.Menu {
 	}
 	addI := func(icon, label string, fn func()) { menu.Append(menuItem(icon, label, fn)) }
 	if c.Pinned > 0 {
-		addI("pin-off", "Lepas sematan obrolan", func() { a.pinChat(jid, false) })
+		addI("pin-off", T("Lepas sematan obrolan"), func() { a.pinChat(jid, false) })
 	} else {
-		addI("pin", "Sematkan obrolan", func() { a.pinChat(jid, true) })
+		addI("pin", T("Sematkan obrolan"), func() { a.pinChat(jid, true) })
 	}
 	if ps := a.st.Pins(jid); len(ps) > 0 {
 		add(fmt.Sprintf("    (%d pesan tersemat di obrolan ini)", len(ps)), nil)
@@ -1564,19 +1676,19 @@ func (a *App) muteMenu(jid string) *gtk.Menu {
 	menu.Append(sp)
 	if c.Muted() {
 		addI("bell-off", muteDesc(c), nil)
-		addI("bell", "Bunyikan notifikasi", func() { a.setMute(jid, false, 0) })
+		addI("bell", T("Bunyikan notifikasi"), func() { a.setMute(jid, false, 0) })
 	} else {
-		addI("bell-off", "Bisukan 8 jam", func() { a.setMute(jid, true, 8*time.Hour) })
-		addI("bell-off", "Bisukan 1 minggu", func() { a.setMute(jid, true, 7*24*time.Hour) })
-		addI("bell-off", "Bisukan selamanya", func() { a.setMute(jid, true, 0) })
+		addI("bell-off", T("Bisukan 8 jam"), func() { a.setMute(jid, true, 8*time.Hour) })
+		addI("bell-off", T("Bisukan 1 minggu"), func() { a.setMute(jid, true, 7*24*time.Hour) })
+		addI("bell-off", T("Bisukan selamanya"), func() { a.setMute(jid, true, 0) })
 		if a.cfg.MuteGroups && c.IsGroup {
-			add("(semua grup sedang dibisukan lewat menu ☰)", nil)
+			add(T("(semua grup sedang dibisukan lewat menu ☰)"), nil)
 		}
 	}
 	if c.Unread > 0 {
 		s, _ := gtk.SeparatorMenuItemNew()
 		menu.Append(s)
-		addI("check-all", "Tandai sudah dibaca", func() {
+		addI("check-all", T("Tandai sudah dibaca"), func() {
 			if jid == a.current {
 				a.markCurrentRead()
 				return
@@ -1607,9 +1719,9 @@ func (a *App) setMute(jid string, mute bool, dur time.Duration) {
 		a.st.SetMute(jid, until)
 	}
 	if mute {
-		a.flashStatus("Notifikasi dibisukan")
+		a.flashStatus(T("Notifikasi dibisukan"))
 	} else {
-		a.flashStatus("Notifikasi dibunyikan kembali")
+		a.flashStatus(T("Notifikasi dibunyikan kembali"))
 	}
 	a.reloadChats()
 	if jid == a.current {
@@ -1627,7 +1739,7 @@ func (a *App) refreshMuteBtn(c Chat) {
 		a.muteBtn.SetTooltipText(muteDesc(c) + " — klik untuk mengubah")
 	} else {
 		a.muteIcon.SetName("bell")
-		a.muteBtn.SetTooltipText("Sematkan / bisukan obrolan ini")
+		a.muteBtn.SetTooltipText(T("Sematkan / bisukan obrolan ini"))
 	}
 	a.muteBtn.SetPopup(a.muteMenu(c.JID))
 }
@@ -1652,12 +1764,12 @@ func (a *App) setupTray() {
 		return
 	}
 	a.tray = t
-	t.SetTooltipText("Obrol")
-	t.SetTitle("Obrol")
+	t.SetTooltipText(T("Obrol"))
+	t.SetTitle(T("Obrol"))
 	menu, _ := gtk.MenuNew()
-	show, _ := gtk.MenuItemNewWithLabel("Tampilkan Obrol")
+	show, _ := gtk.MenuItemNewWithLabel(T("Tampilkan Obrol"))
 	show.Connect("activate", a.showWindow)
-	q, _ := gtk.MenuItemNewWithLabel("Keluar")
+	q, _ := gtk.MenuItemNewWithLabel(T("Keluar"))
 	q.Connect("activate", a.quit)
 	menu.Append(show)
 	s, _ := gtk.SeparatorMenuItemNew()
@@ -1945,13 +2057,13 @@ func dayLabel(ts int64) string {
 	today := time.Date(y, mo, d, 0, 0, 0, 0, now.Location())
 	switch {
 	case !t.Before(today):
-		return "Hari ini"
+		return T("Hari ini")
 	case !t.Before(today.AddDate(0, 0, -1)):
-		return "Kemarin"
+		return T("Kemarin")
 	case !t.Before(today.AddDate(0, 0, -6)):
-		return hari[t.Weekday()]
+		return T(hari[t.Weekday()])
 	}
-	return fmt.Sprintf("%d %s %d", t.Day(), bulan[t.Month()], t.Year())
+	return fmt.Sprintf("%d %s %d", t.Day(), T(bulan[t.Month()]), t.Year())
 }
 
 func shortTime(ts int64) string {
@@ -1966,9 +2078,9 @@ func shortTime(ts int64) string {
 	case !t.Before(today):
 		return t.Format("15:04")
 	case !t.Before(today.AddDate(0, 0, -1)):
-		return "Kemarin"
+		return T("Kemarin")
 	case !t.Before(today.AddDate(0, 0, -6)):
-		return hari[t.Weekday()]
+		return T(hari[t.Weekday()])
 	}
 	return t.Format("02/01/06")
 }

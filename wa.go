@@ -23,6 +23,7 @@ import (
 	"go.mau.fi/whatsmeow"
 	"go.mau.fi/whatsmeow/appstate"
 	"go.mau.fi/whatsmeow/proto/waCompanionReg"
+	"go.mau.fi/whatsmeow/proto/waCommon"
 	"go.mau.fi/whatsmeow/proto/waE2E"
 	"go.mau.fi/whatsmeow/proto/waWeb"
 	"go.mau.fi/whatsmeow/store"
@@ -328,6 +329,10 @@ func (w *WA) onMessage(evt *events.Message, live bool) {
 		}
 		return
 	}
+	if rm := evt.Message.GetReactionMessage(); rm != nil {
+		w.applyReaction(chatS, evt, rm)
+		return
+	}
 	if pin := evt.Message.GetPinInChatMessage(); pin != nil {
 		if c := w.applyPin(chatS, evt); c != "" {
 			w.ui.OnMessageChanged(c)
@@ -348,6 +353,51 @@ func (w *WA) onMessage(evt *events.Message, live bool) {
 			w.ui.OnNewMessage(m, true)
 		}
 	}
+}
+
+// applyReaction memperbarui peta reaksi pesan tujuan lalu menyegarkan tampilan.
+func (w *WA) applyReaction(chatS string, evt *events.Message, rm *waE2E.ReactionMessage) {
+	key := rm.GetKey()
+	c := w.st.ChatOfMessage(key.GetID())
+	if c == "" {
+		c = chatS
+	}
+	if _, ok := w.st.GetMessage(c, key.GetID()); !ok {
+		return
+	}
+	sender := evt.Info.Sender.ToNonAD().String()
+	if evt.Info.IsFromMe {
+		sender = w.myUser()
+	}
+	ApplyReactionLocal(w.st, sender, c, key.GetID(), rm.GetText())
+	w.ui.OnMessageChanged(c)
+}
+
+// contextOf mengambil ContextInfo dari jenis pesan apa pun (untuk balas/teruskan).
+func contextOf(m *waE2E.Message) *waE2E.ContextInfo {
+	switch {
+	case m.GetExtendedTextMessage() != nil:
+		return m.GetExtendedTextMessage().GetContextInfo()
+	case m.GetImageMessage() != nil:
+		return m.GetImageMessage().GetContextInfo()
+	case m.GetVideoMessage() != nil:
+		return m.GetVideoMessage().GetContextInfo()
+	case m.GetAudioMessage() != nil:
+		return m.GetAudioMessage().GetContextInfo()
+	case m.GetDocumentMessage() != nil:
+		return m.GetDocumentMessage().GetContextInfo()
+	case m.GetStickerMessage() != nil:
+		return m.GetStickerMessage().GetContextInfo()
+	case m.GetContactMessage() != nil:
+		return m.GetContactMessage().GetContextInfo()
+	case m.GetLocationMessage() != nil:
+		return m.GetLocationMessage().GetContextInfo()
+	case m.GetLiveLocationMessage() != nil:
+		return m.GetLiveLocationMessage().GetContextInfo()
+	case m.GetGroupInviteMessage() != nil:
+		return m.GetGroupInviteMessage().GetContextInfo()
+	}
+	return nil
 }
 
 func (w *WA) toMsg(evt *events.Message, chat types.JID) *Msg {
@@ -376,6 +426,22 @@ func (w *WA) toMsg(evt *events.Message, chat types.JID) *Msg {
 	}
 	if isMediaKind(kind) {
 		m.Raw, _ = proto.Marshal(evt.Message)
+	}
+	if ci := contextOf(evt.Message); ci != nil {
+		if sid := ci.GetStanzaID(); sid != "" {
+			m.ReplyID = sid
+			m.ReplySender = ci.GetParticipant()
+			if m.ReplySender == "" {
+				m.ReplySender = chat.String()
+			}
+			qk, qt, _ := extract(ci.GetQuotedMessage())
+			if qt != "" {
+				m.ReplySnip = qt
+			} else if qk != "" && qk != "text" {
+				m.ReplySnip = "kind:" + qk
+			}
+		}
+		m.Forwarded = ci.GetIsForwarded()
 	}
 	return m
 }
@@ -872,16 +938,91 @@ func (w *WA) newOutgoing(chat, kind, text string) *Msg {
 	}
 }
 
-func (w *WA) SendText(chat, text string) *Msg {
+func (w *WA) SendText(chat, text string) *Msg { return w.SendTextEx(chat, text, nil, false) }
+
+// SendTextEx mengirim teks dengan opsi balasan (reply) dan penanda terusan.
+func (w *WA) SendTextEx(chat, text string, reply *Msg, forwarded bool) *Msg {
 	m := w.newOutgoing(chat, "text", text)
+	fillReply(m, reply)
+	m.Forwarded = forwarded
 	w.st.SaveMessage(m, false)
 	go func() {
 		to, _ := types.ParseJID(chat)
-		_, err := w.cli.SendMessage(bg, to, &waE2E.Message{Conversation: proto.String(text)},
-			whatsmeow.SendRequestExtra{ID: m.ID})
+		var msg *waE2E.Message
+		if ci := quoteContext(reply, forwarded); ci != nil {
+			msg = &waE2E.Message{ExtendedTextMessage: &waE2E.ExtendedTextMessage{Text: proto.String(text), ContextInfo: ci}}
+		} else {
+			msg = &waE2E.Message{Conversation: proto.String(text)}
+		}
+		_, err := w.cli.SendMessage(bg, to, msg, whatsmeow.SendRequestExtra{ID: m.ID})
 		w.finishSend(m, err)
 	}()
 	return m
+}
+
+// fillReply menyalin info kutipan ke pesan baru yang akan dikirim.
+func fillReply(m, reply *Msg) {
+	if reply == nil {
+		return
+	}
+	m.ReplyID, m.ReplySender = reply.ID, reply.Sender
+	if t := oneLine(reply.Text, 90); t != "" {
+		m.ReplySnip = t
+	} else if reply.Kind != "text" {
+		m.ReplySnip = "kind:" + reply.Kind
+	}
+}
+
+// quoteContext menyusun ContextInfo untuk pesan keluar (balasan / terusan).
+func quoteContext(reply *Msg, forwarded bool) *waE2E.ContextInfo {
+	if reply == nil && !forwarded {
+		return nil
+	}
+	ci := &waE2E.ContextInfo{}
+	if forwarded {
+		ci.IsForwarded = proto.Bool(true)
+	}
+	if reply != nil {
+		ci.StanzaID = proto.String(reply.ID)
+		ci.Participant = proto.String(reply.Sender)
+		ci.QuotedMessage = quotedProto(reply)
+	}
+	return ci
+}
+
+// quotedProto menyusun proto minimal pesan yang dikutip (untuk tampilan di ponsel).
+func quotedProto(m *Msg) *waE2E.Message {
+	switch m.Kind {
+	case "sticker":
+		return &waE2E.Message{StickerMessage: &waE2E.StickerMessage{Mimetype: proto.String("image/webp")}}
+	case "image":
+		return &waE2E.Message{ImageMessage: &waE2E.ImageMessage{Caption: proto.String(m.Text), JPEGThumbnail: m.Thumb}}
+	case "video", "gif":
+		return &waE2E.Message{VideoMessage: &waE2E.VideoMessage{Caption: proto.String(m.Text)}}
+	case "document":
+		return &waE2E.Message{DocumentMessage: &waE2E.DocumentMessage{FileName: proto.String(oneLine(m.Text, 60))}}
+	case "audio", "ptt":
+		return &waE2E.Message{AudioMessage: &waE2E.AudioMessage{}}
+	default:
+		return &waE2E.Message{Conversation: proto.String(m.Text)}
+	}
+}
+
+// SendReaction mengirim (atau menghapus, bila emoji kosong) reaksi ke sebuah pesan.
+func (w *WA) SendReaction(chat, id, emoji string) error {
+	m, ok := w.st.GetMessage(chat, id)
+	if !ok {
+		return errors.New("pesan tidak ditemukan")
+	}
+	to, _ := types.ParseJID(chat)
+	key := &waCommon.MessageKey{RemoteJID: proto.String(chat), FromMe: proto.Bool(m.FromMe), ID: proto.String(id)}
+	if isGroupJID(chat) && !m.FromMe {
+		key.Participant = proto.String(m.Sender)
+	}
+	_, err := w.cli.SendMessage(bg, to, &waE2E.Message{ReactionMessage: &waE2E.ReactionMessage{
+		Key: key, Text: proto.String(emoji), SenderTimestampMS: proto.Int64(time.Now().UnixMilli()),
+	}}, whatsmeow.SendRequestExtra{ID: w.cli.GenerateMessageID()})
+	return err
 }
 
 func (w *WA) finishSend(m *Msg, err error) {
@@ -899,6 +1040,11 @@ const maxUpload = 100 << 20
 
 // SendFile mengirim foto (jpg/png) sebagai gambar, file lain sebagai dokumen.
 func (w *WA) SendFile(chat, path, caption string) (*Msg, error) {
+	return w.SendFileEx(chat, path, caption, nil, false)
+}
+
+// SendFileEx = SendFile dengan opsi balasan & penanda terusan.
+func (w *WA) SendFileEx(chat, path, caption string, reply *Msg, forwarded bool) (*Msg, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
@@ -934,6 +1080,8 @@ func (w *WA) SendFile(chat, path, caption string) (*Msg, error) {
 			m.Thumb = p
 		}
 	}
+	fillReply(m, reply)
+	m.Forwarded = forwarded
 	w.st.SaveMessage(m, false)
 
 	go func() {
@@ -973,9 +1121,151 @@ func (w *WA) SendFile(chat, path, caption string) (*Msg, error) {
 				msg.DocumentMessage.Caption = proto.String(caption)
 			}
 		}
+		if ci := quoteContext(reply, forwarded); ci != nil {
+			if msg.ImageMessage != nil {
+				msg.ImageMessage.ContextInfo = ci
+			} else if msg.DocumentMessage != nil {
+				msg.DocumentMessage.ContextInfo = ci
+			}
+		}
 		raw, _ := proto.Marshal(msg)
 		w.st.db.Exec(`UPDATE messages SET raw=? WHERE chat=? AND id=?`, raw, m.Chat, m.ID)
 		_, err := w.cli.SendMessage(bg, to, msg, whatsmeow.SendRequestExtra{ID: m.ID})
+		w.finishSend(m, err)
+	}()
+	return m, nil
+}
+
+// ForwardMessage mengirim ulang isi pesan src ke chat dst (media diunduh lalu diunggah ulang).
+func (w *WA) ForwardMessage(dst string, src Msg) (*Msg, error) {
+	switch src.Kind {
+	case "text":
+		return w.SendTextEx(dst, src.Text, nil, true), nil
+	case "sticker":
+		sha := ""
+		if ref, ok := stickerRef(src.Raw); ok && stickerExists(ref.SHA) {
+			sha = ref.SHA
+		} else {
+			data, err := w.downloadMsg(src)
+			if err != nil {
+				return nil, err
+			}
+			if sha, err = saveStickerFile(data); err != nil {
+				return nil, err
+			}
+			w.st.AddSticker(sha, false, time.Now().Unix())
+		}
+		return w.SendStickerEx(dst, sha, true)
+	case "image", "video", "gif", "audio", "ptt", "document":
+		data, err := w.downloadMsg(src)
+		if err != nil {
+			return nil, err
+		}
+		return w.sendMediaData(dst, src, data)
+	}
+	return nil, errors.New("jenis pesan ini tidak bisa diteruskan")
+}
+
+// downloadMsg mengunduh media pesan dari server WhatsApp berdasarkan raw proto-nya.
+func (w *WA) downloadMsg(src Msg) ([]byte, error) {
+	var msg waE2E.Message
+	if proto.Unmarshal(src.Raw, &msg) != nil {
+		return nil, errors.New("media tidak tersedia")
+	}
+	var dl whatsmeow.DownloadableMessage
+	switch src.Kind {
+	case "image":
+		dl = msg.GetImageMessage()
+	case "gif", "video":
+		dl = msg.GetVideoMessage()
+	case "audio", "ptt":
+		dl = msg.GetAudioMessage()
+	case "document":
+		dl = msg.GetDocumentMessage()
+	case "sticker":
+		dl = msg.GetStickerMessage()
+	}
+	if dl == nil {
+		return nil, errors.New("media tidak tersedia")
+	}
+	return w.cli.Download(bg, dl)
+}
+
+// sendMediaData mengunggah ulang data media sebagai pesan terusan dengan jenis yang sama.
+func (w *WA) sendMediaData(dst string, src Msg, data []byte) (*Msg, error) {
+	var orig waE2E.Message
+	proto.Unmarshal(src.Raw, &orig)
+	m := w.newOutgoing(dst, src.Kind, src.Text)
+	m.Thumb = src.Thumb
+	m.Forwarded = true
+	w.st.SaveMessage(m, false)
+	go func() {
+		to, _ := types.ParseJID(dst)
+		media := whatsmeow.MediaDocument
+		switch src.Kind {
+		case "image":
+			media = whatsmeow.MediaImage
+		case "gif", "video":
+			media = whatsmeow.MediaVideo
+		case "audio", "ptt":
+			media = whatsmeow.MediaAudio
+		}
+		up, err := w.cli.Upload(bg, data, media)
+		if err != nil {
+			w.finishSend(m, err)
+			return
+		}
+		ci := &waE2E.ContextInfo{IsForwarded: proto.Bool(true)}
+		fl := proto.Uint64(uint64(len(data)))
+		enc := func() (string, []byte, []byte) { return up.URL, up.FileEncSHA256, up.FileSHA256 }
+		url, encSHA, sha := enc()
+		var out *waE2E.Message
+		switch src.Kind {
+		case "image":
+			mt := orig.GetImageMessage().GetMimetype()
+			if mt == "" {
+				mt = "image/jpeg"
+			}
+			out = &waE2E.Message{ImageMessage: &waE2E.ImageMessage{
+				URL: proto.String(url), DirectPath: proto.String(up.DirectPath), MediaKey: up.MediaKey,
+				Mimetype: proto.String(mt), FileEncSHA256: encSHA, FileSHA256: sha, FileLength: fl,
+				JPEGThumbnail: src.Thumb, Caption: proto.String(src.Text), ContextInfo: ci}}
+		case "gif", "video":
+			mt := orig.GetVideoMessage().GetMimetype()
+			if mt == "" {
+				mt = "video/mp4"
+			}
+			out = &waE2E.Message{VideoMessage: &waE2E.VideoMessage{
+				URL: proto.String(url), DirectPath: proto.String(up.DirectPath), MediaKey: up.MediaKey,
+				Mimetype: proto.String(mt), FileEncSHA256: encSHA, FileSHA256: sha, FileLength: fl,
+				JPEGThumbnail: src.Thumb, Caption: proto.String(src.Text),
+				GifPlayback: proto.Bool(src.Kind == "gif"), ContextInfo: ci}}
+		case "audio", "ptt":
+			mt := orig.GetAudioMessage().GetMimetype()
+			if mt == "" {
+				mt = "audio/ogg; codecs=opus"
+			}
+			out = &waE2E.Message{AudioMessage: &waE2E.AudioMessage{
+				URL: proto.String(url), DirectPath: proto.String(up.DirectPath), MediaKey: up.MediaKey,
+				Mimetype: proto.String(mt), FileEncSHA256: encSHA, FileSHA256: sha, FileLength: fl,
+				PTT: proto.Bool(src.Kind == "ptt"), ContextInfo: ci}}
+		default:
+			mt := orig.GetDocumentMessage().GetMimetype()
+			if mt == "" {
+				mt = "application/octet-stream"
+			}
+			fn := orig.GetDocumentMessage().GetFileName()
+			if fn == "" {
+				fn = oneLine(src.Text, 60)
+			}
+			out = &waE2E.Message{DocumentMessage: &waE2E.DocumentMessage{
+				URL: proto.String(url), DirectPath: proto.String(up.DirectPath), MediaKey: up.MediaKey,
+				Mimetype: proto.String(mt), FileEncSHA256: encSHA, FileSHA256: sha, FileLength: fl,
+				FileName: proto.String(fn), Title: proto.String(fn), ContextInfo: ci}}
+		}
+		raw, _ := proto.Marshal(out)
+		w.st.db.Exec(`UPDATE messages SET raw=? WHERE chat=? AND id=?`, raw, m.Chat, m.ID)
+		_, err = w.cli.SendMessage(bg, to, out, whatsmeow.SendRequestExtra{ID: m.ID})
 		w.finishSend(m, err)
 	}()
 	return m, nil

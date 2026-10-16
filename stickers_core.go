@@ -210,7 +210,10 @@ func localStickerRaw(sha string, animated bool) []byte {
 }
 
 // SendSticker mengunggah ulang file stiker lokal lalu mengirimnya.
-func (w *WA) SendSticker(chat, sha string) (*Msg, error) {
+func (w *WA) SendSticker(chat, sha string) (*Msg, error) { return w.SendStickerEx(chat, sha, false) }
+
+// SendStickerEx = SendSticker dengan penanda terusan.
+func (w *WA) SendStickerEx(chat, sha string, forwarded bool) (*Msg, error) {
 	data, err := os.ReadFile(stickerPath(sha))
 	if err != nil {
 		return nil, errors.New("file stiker tidak ditemukan")
@@ -221,6 +224,7 @@ func (w *WA) SendSticker(chat, sha string) (*Msg, error) {
 	}
 	m := w.newOutgoing(chat, "sticker", "")
 	m.Raw = localStickerRaw(sha, animated)
+	m.Forwarded = forwarded
 	w.st.SaveMessage(m, false)
 	w.st.TouchSticker(sha)
 
@@ -238,6 +242,9 @@ func (w *WA) SendSticker(chat, sha string) (*Msg, error) {
 			IsAnimated: proto.Bool(animated), MediaKeyTimestamp: proto.Int64(time.Now().Unix()),
 			StickerSentTS: proto.Int64(time.Now().UnixMilli()),
 		}}
+		if forwarded {
+			msg.StickerMessage.ContextInfo = &waE2E.ContextInfo{IsForwarded: proto.Bool(true)}
+		}
 		raw, _ := proto.Marshal(msg)
 		w.st.db.Exec(`UPDATE messages SET raw=? WHERE chat=? AND id=?`, raw, m.Chat, m.ID)
 		_, err = w.cli.SendMessage(bg, to, msg, whatsmeow.SendRequestExtra{ID: m.ID})

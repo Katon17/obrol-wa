@@ -165,7 +165,7 @@ func (a *App) stickerView(m *Msg) gtk.IWidget {
 		if pb := pixbufFromBytes(ref.PNG); pb != nil {
 			img, _ := gtk.ImageNewFromPixbuf(scalePix(pb, stickerShow))
 			box.PackStart(img, true, true, 0)
-			box.SetTooltipText("Stiker animasi Lottie (ditampilkan diam)")
+			box.SetTooltipText(T("Stiker animasi Lottie (ditampilkan diam)"))
 		} else {
 			placeholder("Stiker animasi Lottie belum didukung")
 		}
@@ -188,7 +188,7 @@ func (a *App) stickerView(m *Msg) gtk.IWidget {
 			})
 			img, _ := gtk.ImageNew()
 			box.PackStart(img, true, true, 0)
-			box.SetTooltipText("Klik kanan untuk menyimpan ke favorit")
+			box.SetTooltipText(T("Klik kanan untuk menyimpan ke favorit"))
 			box.ShowAll()
 			a.playSticker(img, s, gen)
 		})
@@ -227,7 +227,7 @@ func (a *App) sendStickerTo(chat, sha string) {
 	if a.wa != nil {
 		var err error
 		if m, err = a.wa.SendSticker(chat, sha); err != nil {
-			a.errorDialog("Gagal mengirim stiker", err.Error())
+			a.errorDialog(T("Gagal mengirim stiker"), err.Error())
 			return
 		}
 	} else { // mode demo
@@ -264,7 +264,7 @@ func (a *App) buildStickerButton() gtk.IWidget {
 	p.btn, _ = gtk.MenuButtonNew()
 	p.btn.SetRelief(gtk.RELIEF_NONE)
 	p.btn.SetVAlign(gtk.ALIGN_END)
-	p.btn.SetTooltipText("Stiker")
+	p.btn.SetTooltipText(T("Stiker"))
 	if old, err := p.btn.GetChild(); err == nil && old != nil {
 		p.btn.Remove(old)
 	}
@@ -285,11 +285,11 @@ func (a *App) buildStickerButton() gtk.IWidget {
 	v.PackStart(sw, false, false, 0)
 	v.PackStart(p.stack, true, true, 0)
 
-	p.recent, p.recentE = a.stickerGrid(p, "recent", "Terbaru",
+	p.recent, p.recentE = a.stickerGrid(p, "recent", T("Terbaru"),
 		"Belum ada stiker.\nStiker yang kamu terima atau kirim\nakan muncul di sini.")
-	p.fav, p.favE = a.stickerGrid(p, "fav", "Favorit",
+	p.fav, p.favE = a.stickerGrid(p, "fav", T("Favorit"),
 		"Belum ada favorit.\nKlik kanan sebuah stiker →\n«Tambah ke favorit».")
-	p.stack.AddTitled(a.stickerCreatePage(p), "create", "Buat")
+	p.stack.AddTitled(a.stickerCreatePage(p), "create", T("Buat"))
 
 	v.ShowAll()
 	p.pop.Add(v)
@@ -320,7 +320,7 @@ func (a *App) stickerGrid(p *stickerPanel, name, title, empty string) (*gtk.Flow
 	addClass(l, "emptyhint")
 	l.SetNoShowAll(true)
 	ov.AddOverlay(l)
-	p.stack.AddTitled(ov, name, title)
+	p.stack.AddTitled(ov, name, T(title))
 	return fb, l
 }
 
@@ -358,9 +358,9 @@ func (a *App) stickerCellWidget(si StickerInfo) gtk.IWidget {
 	img.SetSizeRequest(stickerCell, stickerCell)
 	b.Add(img)
 	if si.Animated {
-		b.SetTooltipText("Stiker animasi — klik untuk mengirim")
+		b.SetTooltipText(T("Stiker animasi — klik untuk mengirim"))
 	} else {
-		b.SetTooltipText("Klik untuk mengirim")
+		b.SetTooltipText(T("Klik untuk mengirim"))
 	}
 	a.loadSticker(si.SHA, stickerCell, false, func(s *stickerAnim) {
 		if s != nil {
@@ -378,11 +378,11 @@ func (a *App) stickerCellWidget(si StickerInfo) gtk.IWidget {
 		}
 		menu, _ := gtk.MenuNew()
 		if a.st.IsStickerFav(sha) {
-			menu.Append(menuItem("star", "Hapus dari favorit", func() { a.st.SetStickerFav(sha, false); a.refreshStickerPanel() }))
+			menu.Append(menuItem("star", T("Hapus dari favorit"), func() { a.st.SetStickerFav(sha, false); a.refreshStickerPanel() }))
 		} else {
-			menu.Append(menuItem("star-fill", "Tambah ke favorit", func() { a.st.SetStickerFav(sha, true); a.refreshStickerPanel() }))
+			menu.Append(menuItem("star-fill", T("Tambah ke favorit"), func() { a.st.SetStickerFav(sha, true); a.refreshStickerPanel() }))
 		}
-		menu.Append(menuItem("trash", "Hapus dari daftar", func() { a.st.HideSticker(sha); a.refreshStickerPanel() }))
+		menu.Append(menuItem("trash", T("Hapus dari daftar"), func() { a.st.HideSticker(sha); a.refreshStickerPanel() }))
 		menu.ShowAll()
 		menu.PopupAtPointer(ev)
 		return true
@@ -427,7 +427,7 @@ func (a *App) stickerCreatePage(p *stickerPanel) gtk.IWidget {
 	if !webpEncoderAvailable() {
 		file.SetSensitive(false)
 		paste.SetSensitive(false)
-		w, _ := gtk.LabelNew("libwebp tidak ditemukan.\nPasang dulu: sudo apt install libwebp7")
+		w, _ := gtk.LabelNew(T("libwebp tidak ditemukan.\nPasang dulu: sudo apt install libwebp7"))
 		addClass(w, "warn")
 		w.SetJustify(gtk.JUSTIFY_CENTER)
 		v.PackStart(w, false, false, 0)
@@ -449,7 +449,7 @@ func (a *App) stickerFromFile() {
 	fc.Destroy()
 	pb, err := gdk.PixbufNewFromFile(path)
 	if err != nil {
-		a.errorDialog("Gambar tidak bisa dibuka", err.Error())
+		a.errorDialog(T("Gambar tidak bisa dibuka"), err.Error())
 		return
 	}
 	a.createStickerDialog(pb)
@@ -471,7 +471,7 @@ func (a *App) stickerFromClipboard() {
 			}
 		}
 	}
-	a.errorDialog("Clipboard tidak berisi gambar", "Salin gambar atau ambil screenshot (PrtSc) dulu, lalu coba lagi.")
+	a.errorDialog(T("Clipboard tidak berisi gambar"), "Salin gambar atau ambil screenshot (PrtSc) dulu, lalu coba lagi.")
 }
 
 // ------------------------------------------------------------ pembuat stiker
@@ -647,11 +647,11 @@ func (a *App) createStickerDialog(src *gdk.Pixbuf) {
 	dlg, _ := gtk.DialogNew()
 	dlg.SetTransientFor(a.win)
 	dlg.SetModal(true)
-	dlg.SetTitle("Buat stiker")
+	dlg.SetTitle(T("Buat stiker"))
 	dlg.SetResizable(false)
 	dlg.AddButton("Batal", gtk.RESPONSE_CANCEL)
 	saveBtn, _ := dlg.AddButton("Simpan saja", gtk.RESPONSE_APPLY)
-	saveBtn.SetTooltipText("Simpan ke favorit tanpa mengirim")
+	saveBtn.SetTooltipText(T("Simpan ke favorit tanpa mengirim"))
 	okLabel := "Kirim stiker"
 	if chat == "" {
 		okLabel = "Simpan"
@@ -689,7 +689,7 @@ func (a *App) createStickerDialog(src *gdk.Pixbuf) {
 	round.SetActive(true)
 	outline, _ := gtk.CheckButtonNewWithLabel("Garis tepi putih")
 	outline.SetActive(src.GetHasAlpha())
-	outline.SetTooltipText("Paling cocok untuk gambar berlatar transparan (PNG)")
+	outline.SetTooltipText(T("Paling cocok untuk gambar berlatar transparan (PNG)"))
 	fav, _ := gtk.CheckButtonNewWithLabel("Simpan ke favorit")
 	fav.SetActive(true)
 	info, _ := gtk.LabelNew("")
@@ -730,12 +730,12 @@ func (a *App) createStickerDialog(src *gdk.Pixbuf) {
 	}
 	data, err := encodeSticker(cur, stickerSize, stickerSize)
 	if err != nil {
-		a.errorDialog("Gagal membuat stiker", err.Error())
+		a.errorDialog(T("Gagal membuat stiker"), err.Error())
 		return
 	}
 	sha, err := saveStickerFile(data)
 	if err != nil {
-		a.errorDialog("Gagal menyimpan stiker", err.Error())
+		a.errorDialog(T("Gagal menyimpan stiker"), err.Error())
 		return
 	}
 	a.st.AddSticker(sha, false, time.Now().Unix())
@@ -745,7 +745,7 @@ func (a *App) createStickerDialog(src *gdk.Pixbuf) {
 	if resp == gtk.RESPONSE_OK && chat != "" {
 		a.sendStickerTo(chat, sha)
 	} else {
-		a.flashStatus("Stiker disimpan ke favorit")
+		a.flashStatus(T("Stiker disimpan ke favorit"))
 	}
 }
 
@@ -757,14 +757,14 @@ func (a *App) stickerMenuItems(menu *gtk.Menu, m Msg) {
 	}
 	sha := ref.SHA
 	if a.st.IsStickerFav(sha) {
-		menu.Append(menuItem("star", "Hapus dari favorit stiker", func() { a.st.SetStickerFav(sha, false) }))
+		menu.Append(menuItem("star", T("Hapus dari favorit stiker"), func() { a.st.SetStickerFav(sha, false) }))
 	} else {
-		menu.Append(menuItem("star-fill", "Tambah ke favorit stiker", func() {
+		menu.Append(menuItem("star-fill", T("Tambah ke favorit stiker"), func() {
 			a.st.SetStickerFav(sha, true)
-			a.flashStatus("Stiker ditambahkan ke favorit")
+			a.flashStatus(T("Stiker ditambahkan ke favorit"))
 		}))
 	}
-	menu.Append(menuItem("send", "Kirim stiker ini lagi", func() { a.sendStickerTo(a.current, sha) }))
+	menu.Append(menuItem("send", T("Kirim stiker ini lagi"), func() { a.sendStickerTo(a.current, sha) }))
 }
 
 var _ = strings.TrimSpace

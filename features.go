@@ -44,6 +44,25 @@ func (a *App) buildComposer() gtk.IWidget {
 	x.Show()
 	outer.PackStart(a.editBar, false, false, 0)
 
+	// bar "sedang membalas"
+	a.replyBar, _ = gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 8)
+	addClass(a.replyBar, "editbar")
+	a.replyBar.SetNoShowAll(true)
+	ric := newIcon("reply", 16)
+	addClass(ric, "accent")
+	a.replyLbl, _ = gtk.LabelNew("")
+	a.replyLbl.SetXAlign(0)
+	a.replyLbl.SetEllipsize(pango.ELLIPSIZE_END)
+	rx := iconButton("close", T("Batal membalas (Esc)"), 16)
+	rx.Connect("clicked", a.cancelReply)
+	a.replyBar.PackStart(ric, false, false, 0)
+	a.replyBar.PackStart(a.replyLbl, true, true, 0)
+	a.replyBar.PackEnd(rx, false, false, 0)
+	ric.Show()
+	a.replyLbl.Show()
+	rx.Show()
+	outer.PackStart(a.replyBar, false, false, 0)
+
 	comp, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 4)
 	addClass(comp, "composer")
 
@@ -70,7 +89,7 @@ func (a *App) buildComposer() gtk.IWidget {
 	a.input.SetAcceptsTab(false)
 	a.inputBuf, _ = a.input.GetBuffer()
 	sw.Add(a.input)
-	a.placeholder, _ = gtk.LabelNew("Ketik pesan…   Enter kirim · Shift+Enter baris baru · Ctrl+V tempel gambar")
+	a.placeholder, _ = gtk.LabelNew(T("Ketik pesan…   Enter kirim · Shift+Enter baris baru · Ctrl+V tempel gambar"))
 	addClass(a.placeholder, "placeholder")
 	a.placeholder.SetHAlign(gtk.ALIGN_START)
 	a.placeholder.SetVAlign(gtk.ALIGN_START)
@@ -169,6 +188,9 @@ func (a *App) onInputKey(_ *gtk.TextView, ev *gdk.Event) bool {
 		return a.tryPaste()
 	case kv == gdk.KEY_Up && a.editID == "" && strings.TrimSpace(a.inputText()) == "":
 		return a.editLast()
+	case kv == gdk.KEY_Escape && a.replyTo != nil:
+		a.cancelReply()
+		return true
 	case kv == gdk.KEY_Escape && a.editID != "":
 		a.cancelEdit()
 		return true
@@ -257,7 +279,7 @@ func (a *App) confirmImage(pb *gdk.Pixbuf, path string) {
 	dlg.AddButton("Batal", gtk.RESPONSE_CANCEL)
 	if webpEncoderAvailable() {
 		st, _ := dlg.AddButton("Jadikan stiker…", gtk.RESPONSE_APPLY)
-		st.SetTooltipText("Ubah gambar ini jadi stiker WhatsApp")
+		st.SetTooltipText(T("Ubah gambar ini jadi stiker WhatsApp"))
 	}
 	ok, _ := dlg.AddButton("Kirim", gtk.RESPONSE_OK)
 	addClass(ok, "suggested-action")
@@ -287,7 +309,7 @@ func (a *App) confirmImage(pb *gdk.Pixbuf, path string) {
 	info, _ := gtk.LabelNew(fmt.Sprintf("%d × %d px", w, h))
 	addClass(info, "when")
 	cap, _ := gtk.EntryNew()
-	cap.SetPlaceholderText("Tambahkan keterangan… (opsional)")
+	cap.SetPlaceholderText(T("Tambahkan keterangan… (opsional)"))
 	cap.SetActivatesDefault(true)
 	cap.SetProperty("show-emoji-icon", true)
 	area.PackStart(img, false, false, 0)
@@ -314,7 +336,7 @@ func (a *App) confirmImage(pb *gdk.Pixbuf, path string) {
 		if err := pb.SaveJPEG(path, 92); err != nil {
 			path = strings.TrimSuffix(path, ".jpg") + ".png"
 			if err := pb.SavePNG(path, 6); err != nil {
-				a.errorDialog("Gagal menyiapkan gambar", err.Error())
+				a.errorDialog(T("Gagal menyiapkan gambar"), err.Error())
 				return
 			}
 		}
@@ -359,7 +381,7 @@ func (a *App) sendFileTo(chat, path, caption string) {
 		var err error
 		m, err = a.wa.SendFile(chat, path, caption)
 		if err != nil {
-			a.errorDialog("Gagal mengirim file", err.Error())
+			a.errorDialog(T("Gagal mengirim file"), err.Error())
 			return
 		}
 	} else { // mode demo
@@ -394,7 +416,7 @@ func (a *App) startEdit(chat, id string) {
 		return
 	}
 	if !a.canEdit(m) {
-		a.flashStatus("Pesan hanya bisa diedit maksimal 15 menit setelah dikirim")
+		a.flashStatus(T("Pesan hanya bisa diedit maksimal 15 menit setelah dikirim"))
 		return
 	}
 	a.editID, a.editChat = id, chat
@@ -422,13 +444,13 @@ func (a *App) finishEdit(text string) {
 	}
 	if a.wa != nil {
 		if err := a.wa.EditText(chat, id, text); err != nil {
-			a.errorDialog("Tidak bisa mengedit", err.Error())
+			a.errorDialog(T("Tidak bisa mengedit"), err.Error())
 			return
 		}
 	} else {
 		a.st.EditMessage(chat, id, text)
 	}
-	a.flashStatus("Pesan diedit")
+	a.flashStatus(T("Pesan diedit"))
 	if chat == a.current {
 		a.reopenKeepScroll(chat)
 	}
@@ -464,31 +486,45 @@ func (a *App) fillMsgMenu(menu *gtk.Menu, chat, id string, withCopy bool) {
 		return it
 	}
 	if m.Kind == "deleted" {
-		add("ban", "Pesan sudah dihapus", nil)
+		add("ban", T("Pesan sudah dihapus"), nil)
 		return
 	}
+	add("reply", T("Balas"), func() { a.startReply(chat, id) })
+	rit := menuItem("react", T("Reaksi"), nil)
+	subR, _ := gtk.MenuNew()
+	for _, e := range []string{"👍", "❤️", "😂", "😮", "😢", "🙏"} {
+		e := e
+		it, _ := gtk.MenuItemNewWithLabel(e)
+		it.Connect("activate", func() { a.toggleReaction(chat, id, e, false) })
+		subR.Append(it)
+	}
+	rit.SetSubmenu(subR)
+	menu.Append(rit)
+	add("forward", T("Teruskan…"), func() { a.forwardDialog(m) })
+	sepR, _ := gtk.SeparatorMenuItemNew()
+	menu.Append(sepR)
 	if m.Kind == "sticker" {
 		a.stickerMenuItems(menu, m)
 	}
 	if withCopy && m.Text != "" {
-		add("copy", "Salin teks", func() {
+		add("copy", T("Salin teks"), func() {
 			if cb, err := gtk.ClipboardGet(gdk.SELECTION_CLIPBOARD); err == nil {
 				cb.SetText(m.Text)
-				a.flashStatus("Teks disalin")
+				a.flashStatus(T("Teks disalin"))
 			}
 		})
 	}
 	if m.FromMe && m.Kind == "text" {
 		if a.canEdit(m) {
-			add("edit", "Edit pesan", func() { a.startEdit(chat, id) })
+			add("edit", T("Edit pesan"), func() { a.startEdit(chat, id) })
 		} else {
-			add("edit", "Edit (lewat batas 15 menit)", nil)
+			add("edit", T("Edit (lewat batas 15 menit)"), nil)
 		}
 	}
 	if a.st.IsPinned(chat, id) {
-		add("pin-off", "Lepas sematan", func() { a.pinMessage(chat, id, false, 0) })
+		add("pin-off", T("Lepas sematan"), func() { a.pinMessage(chat, id, false, 0) })
 	} else {
-		pin := add("pin", "Sematkan pesan", func() {})
+		pin := add("pin", T("Sematkan pesan"), func() {})
 		sub, _ := gtk.MenuNew()
 		for _, o := range []struct {
 			label string
@@ -504,7 +540,7 @@ func (a *App) fillMsgMenu(menu *gtk.Menu, chat, id string, withCopy bool) {
 	if m.FromMe && (a.wa == nil || time.Since(time.Unix(m.TS, 0)) <= RevokeWindow) {
 		sep, _ := gtk.SeparatorMenuItemNew()
 		menu.Append(sep)
-		add("trash", "Hapus untuk semua orang…", func() { a.confirmRevoke(chat, id) })
+		add("trash", T("Hapus untuk semua orang…"), func() { a.confirmRevoke(chat, id) })
 	}
 }
 
@@ -518,7 +554,7 @@ func (a *App) popupMsgMenu(ev *gdk.Event, chat, id string) {
 func (a *App) confirmRevoke(chat, id string) {
 	d := gtk.MessageDialogNew(a.win, gtk.DIALOG_MODAL, gtk.MESSAGE_QUESTION, gtk.BUTTONS_YES_NO,
 		"Hapus pesan ini untuk semua orang?")
-	d.FormatSecondaryText("Pesan akan diganti dengan \"Pesan ini dihapus\" di semua perangkat.")
+	d.FormatSecondaryText(T("Pesan akan diganti dengan \"Pesan ini dihapus\" di semua perangkat."))
 	resp := d.Run()
 	d.Destroy()
 	if resp != gtk.RESPONSE_YES {
@@ -540,7 +576,7 @@ func (a *App) confirmRevoke(chat, id string) {
 func (a *App) pinMessage(chat, id string, pin bool, d time.Duration) {
 	if a.wa != nil {
 		if err := a.wa.PinMessage(chat, id, pin, d); err != nil {
-			a.errorDialog("Gagal menyematkan", err.Error())
+			a.errorDialog(T("Gagal menyematkan"), err.Error())
 			return
 		}
 	} else if pin {
@@ -549,10 +585,10 @@ func (a *App) pinMessage(chat, id string, pin bool, d time.Duration) {
 		a.st.RemovePin(chat, id)
 	}
 	if pin {
-		a.flashStatus("Pesan disematkan")
+		a.flashStatus(T("Pesan disematkan"))
 		a.pinIdx = 0
 	} else {
-		a.flashStatus("Sematan dilepas")
+		a.flashStatus(T("Sematan dilepas"))
 	}
 	if chat == a.current {
 		a.refreshPins()
@@ -575,9 +611,9 @@ func (a *App) buildPinBar() gtk.IWidget {
 	a.pinLbl.SetEllipsize(pango.ELLIPSIZE_END)
 	v.PackStart(a.pinTitle, false, false, 0)
 	v.PackStart(a.pinLbl, false, false, 0)
-	un, _ := gtk.ButtonNewWithLabel("Lepas")
+	un, _ := gtk.ButtonNewWithLabel(T("Lepas"))
 	un.SetRelief(gtk.RELIEF_NONE)
-	un.SetTooltipText("Lepas sematan pesan ini")
+	un.SetTooltipText(T("Lepas sematan pesan ini"))
 	un.SetVAlign(gtk.ALIGN_CENTER)
 	un.Connect("clicked", func() {
 		if a.pinIdx < len(a.pins) {
@@ -590,7 +626,7 @@ func (a *App) buildPinBar() gtk.IWidget {
 	h.PackEnd(un, false, false, 0)
 	a.pinBar.Add(h)
 	h.ShowAll()
-	a.pinBar.SetTooltipText("Klik untuk melompat ke pesan tersemat")
+	a.pinBar.SetTooltipText(T("Klik untuk melompat ke pesan tersemat"))
 	a.pinBar.Connect("button-press-event", func(_ *gtk.EventBox, ev *gdk.Event) bool {
 		if gdk.EventButtonNewFromEvent(ev).Button() != gdk.BUTTON_PRIMARY || len(a.pins) == 0 {
 			return false
@@ -638,7 +674,7 @@ func (a *App) updatePinLabel() {
 	if m, ok := a.st.GetMessage(p.Chat, p.ID); ok {
 		a.pinLbl.SetText(previewText(&m))
 	} else {
-		a.pinLbl.SetText("(pesan tidak ada di riwayat lokal)")
+		a.pinLbl.SetText(T("(pesan tidak ada di riwayat lokal)"))
 	}
 }
 
@@ -650,7 +686,7 @@ func (a *App) jumpTo(id string) {
 	}
 	m, ok := a.st.GetMessage(a.current, id)
 	if !ok {
-		a.flashStatus("Pesan tersemat tidak ada di riwayat lokal")
+		a.flashStatus(T("Pesan tersemat tidak ada di riwayat lokal"))
 		return
 	}
 	n := a.st.CountSince(a.current, m.TS) + 10
@@ -685,7 +721,7 @@ func (a *App) scrollToRow(row *gtk.ListBoxRow) {
 
 func (a *App) pinChat(jid string, pin bool) {
 	if pin && a.st.PinnedChatCount() >= 3 {
-		a.errorDialog("Maksimal 3 obrolan disematkan", "Lepas sematan salah satu obrolan dulu (sama seperti di WhatsApp).")
+		a.errorDialog(T("Maksimal 3 obrolan disematkan"), "Lepas sematan salah satu obrolan dulu (sama seperti di WhatsApp).")
 		return
 	}
 	if a.wa != nil {
@@ -694,9 +730,9 @@ func (a *App) pinChat(jid string, pin bool) {
 		a.st.SetChatPinned(jid, pin)
 	}
 	if pin {
-		a.flashStatus("Obrolan disematkan di atas")
+		a.flashStatus(T("Obrolan disematkan di atas"))
 	} else {
-		a.flashStatus("Sematan obrolan dilepas")
+		a.flashStatus(T("Sematan obrolan dilepas"))
 	}
 	a.reloadChats()
 	if jid == a.current {
@@ -716,3 +752,258 @@ func oneLine(s string, n int) string {
 }
 
 func escape(s string) string { return html.EscapeString(s) }
+
+// ------------------------------------------------------------ v1.4: balas, teruskan, reaksi
+
+func (a *App) myJID() string {
+	if a.wa != nil {
+		return a.wa.myUser()
+	}
+	return "demo-me"
+}
+
+// nameOf: nama tampilan pengirim sebuah pesan.
+func (a *App) nameOf(m Msg) string {
+	if m.FromMe {
+		return T("Anda")
+	}
+	if m.SenderName != "" {
+		return m.SenderName
+	}
+	if a.wa != nil {
+		return a.wa.DisplayName(m.Sender, "")
+	}
+	return strings.SplitN(m.Sender, "@", 2)[0]
+}
+
+func quoteKindLabel(k string) string {
+	switch k {
+	case "image":
+		return T("Foto")
+	case "video":
+		return T("Video")
+	case "gif":
+		return T("GIF")
+	case "sticker":
+		return T("Stiker")
+	case "audio":
+		return T("Audio")
+	case "ptt":
+		return T("Pesan suara")
+	case "document":
+		return T("Dokumen")
+	case "location":
+		return T("Lokasi")
+	case "contact":
+		return T("Kontak")
+	case "poll":
+		return T("Polling")
+	}
+	return T("Pesan")
+}
+
+// quoteText: cuplikan satu baris isi pesan untuk kutipan balasan.
+func quoteText(m Msg) string {
+	if t := oneLine(m.Text, 90); t != "" {
+		return t
+	}
+	return quoteKindLabel(m.Kind)
+}
+
+func (a *App) startReply(chat, id string) {
+	m, ok := a.st.GetMessage(chat, id)
+	if !ok || chat != a.current {
+		return
+	}
+	a.replyTo = &m
+	a.replyLbl.SetMarkup("<b>" + html.EscapeString(T("Membalas")+" "+a.nameOf(m)) + "</b>  <span alpha='70%'>" + html.EscapeString(quoteText(m)) + "</span>")
+	a.replyBar.Show()
+	a.input.GrabFocus()
+}
+
+func (a *App) cancelReply() {
+	if a.replyTo == nil {
+		return
+	}
+	a.replyTo = nil
+	a.replyBar.Hide()
+}
+
+// quoteBox: kotak kutipan di atas isi bubble pesan balasan.
+func (a *App) quoteBox(m *Msg) gtk.IWidget {
+	eb, _ := gtk.EventBoxNew()
+	vb, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 1)
+	addClass(vb, "quote")
+	nl, _ := gtk.LabelNew("")
+	nl.SetMarkup(fmt.Sprintf("<span foreground=\"%s\"><b>%s</b></span>", senderColor(m.ReplySender, a.dark), html.EscapeString(a.quoteName(m))))
+	nl.SetXAlign(0)
+	tl, _ := gtk.LabelNew(a.quoteSnip(m))
+	addClass(tl, "quotetext")
+	tl.SetXAlign(0)
+	tl.SetEllipsize(pango.ELLIPSIZE_END)
+	vb.PackStart(nl, false, false, 0)
+	vb.PackStart(tl, false, false, 0)
+	eb.Add(vb)
+	rid := m.ReplyID
+	eb.Connect("button-press-event", func() { a.jumpTo(rid) })
+	eb.SetTooltipText(T("Klik untuk melihat pesan asli"))
+	return eb
+}
+
+func (a *App) quoteName(m *Msg) string {
+	if om, ok := a.st.GetMessage(m.Chat, m.ReplyID); ok {
+		return a.nameOf(om)
+	}
+	if m.ReplySender == a.myJID() {
+		return T("Anda")
+	}
+	if m.ReplySender == "" {
+		return T("Pesan")
+	}
+	return strings.SplitN(m.ReplySender, "@", 2)[0]
+}
+
+func (a *App) quoteSnip(m *Msg) string {
+	if om, ok := a.st.GetMessage(m.Chat, m.ReplyID); ok {
+		return quoteText(om)
+	}
+	if strings.HasPrefix(m.ReplySnip, "kind:") {
+		return quoteKindLabel(strings.TrimPrefix(m.ReplySnip, "kind:"))
+	}
+	if m.ReplySnip != "" {
+		return oneLine(m.ReplySnip, 90)
+	}
+	return T("Pesan")
+}
+
+// toggleReaction: pasang/lepas reaksi saya pada sebuah pesan.
+func (a *App) toggleReaction(chat, id, emoji string, mine bool) {
+	send := emoji
+	if mine {
+		send = ""
+	}
+	ApplyReactionLocal(a.st, a.myJID(), chat, id, send)
+	if chat == a.current {
+		a.reopenKeepScroll(chat)
+	}
+	if a.wa != nil {
+		if err := a.wa.SendReaction(chat, id, send); err != nil {
+			a.flashStatus(T("Gagal mengirim reaksi") + ": " + err.Error())
+		}
+	}
+}
+
+// forwardDialog: dialog pilihan obrolan tujuan terusan.
+func (a *App) forwardDialog(src Msg) {
+	dlg, _ := gtk.DialogNewWithButtons(T("Teruskan pesan"), a.win, gtk.DIALOG_MODAL,
+		[]interface{}{T("Batal"), gtk.RESPONSE_CANCEL})
+	dlg.SetDefaultSize(380, 440)
+	content, _ := dlg.GetContentArea()
+	content.SetSpacing(6)
+	se, _ := gtk.SearchEntryNew()
+	se.SetPlaceholderText(T("Cari obrolan…"))
+	content.PackStart(se, false, false, 4)
+	sw, _ := gtk.ScrolledWindowNew(nil, nil)
+	sw.SetPolicy(gtk.POLICY_NEVER, gtk.POLICY_AUTOMATIC)
+	lb, _ := gtk.ListBoxNew()
+	lb.SetActivateOnSingleClick(true)
+	sw.Add(lb)
+	content.PackStart(sw, true, true, 4)
+
+	chats, _ := a.st.ListChats()
+	var jids []string
+	rowJID := map[uintptr]string{}
+	fill := func(q string) {
+		lb.GetChildren().Foreach(func(item interface{}) {
+			if w, ok := item.(*gtk.Widget); ok {
+				lb.Remove(w)
+			}
+		})
+		q = strings.ToLower(q)
+		jids = nil
+		rowJID = map[uintptr]string{}
+		for _, c := range chats {
+			name := c.Name
+			if a.wa != nil {
+				name = a.wa.DisplayName(c.JID, c.Name)
+			}
+			if q != "" && !strings.Contains(strings.ToLower(name)+" "+strings.ToLower(c.JID), q) {
+				continue
+			}
+			row, _ := gtk.ListBoxRowNew()
+			vb, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 1)
+			vb.SetMarginStart(8)
+			vb.SetMarginEnd(8)
+			vb.SetMarginTop(6)
+			vb.SetMarginBottom(6)
+			nl, _ := gtk.LabelNew("")
+			nl.SetMarkup("<b>" + html.EscapeString(name) + "</b>")
+			nl.SetXAlign(0)
+			nl.SetEllipsize(pango.ELLIPSIZE_END)
+			sl, _ := gtk.LabelNew(oneLine(c.LastText, 60))
+			addClass(sl, "meta")
+			sl.SetXAlign(0)
+			sl.SetEllipsize(pango.ELLIPSIZE_END)
+			vb.PackStart(nl, false, false, 0)
+			vb.PackStart(sl, false, false, 0)
+			row.Add(vb)
+			lb.Add(row)
+			jids = append(jids, c.JID)
+			rowJID[row.Native()] = c.JID
+		}
+		lb.ShowAll()
+	}
+	fill("")
+	se.Connect("changed", func() {
+		t, _ := se.GetText()
+		fill(t)
+	})
+	var picked string
+	lb.Connect("row-activated", func(_ *gtk.ListBox, r *gtk.ListBoxRow) {
+		if v, ok := rowJID[r.Native()]; ok {
+			picked = v
+			dlg.Response(gtk.RESPONSE_ACCEPT)
+		}
+	})
+	content.ShowAll()
+	resp := dlg.Run()
+	dlg.Destroy()
+	if resp == gtk.RESPONSE_ACCEPT && picked != "" {
+		a.doForward(picked, src)
+	}
+}
+
+// doForward mengirim ulang pesan src ke chat dst.
+func (a *App) doForward(dst string, src Msg) {
+	wasCurrent := dst == a.current
+	if wasCurrent {
+		a.stickBottom = true
+	}
+	if a.wa == nil {
+		m := src
+		m.Chat = dst
+		m.ID = fmt.Sprint(time.Now().UnixNano())
+		m.FromMe, m.IsRead = true, true
+		m.TS = time.Now().Unix()
+		m.Status = StRead
+		m.Forwarded = true
+		m.Reactions = ""
+		m.ReplyID, m.ReplySender, m.ReplySnip = "", "", ""
+		m.Sender = a.myJID()
+		a.st.SaveMessage(&m, false)
+		if wasCurrent {
+			a.appendMessage(&m)
+		}
+	} else {
+		m, err := a.wa.ForwardMessage(dst, src)
+		if err != nil {
+			a.errorDialog(T("Tidak bisa meneruskan"), err.Error())
+			return
+		}
+		if wasCurrent {
+			a.appendMessage(m)
+		}
+	}
+	a.flashStatus(T("Pesan diteruskan"))
+	a.reloadChats()
+}
