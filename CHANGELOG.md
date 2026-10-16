@@ -4,6 +4,14 @@ All notable changes to Obrol are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.1] — 2026-10-16
+
+### Fixed
+- Menu klik kanan: item **Reaksi** tampil abu-abu dan submenu emoji tidak bisa dibuka
+  (item dibuat dengan penangan kosong sehingga dianggap nonaktif). Sekarang submenu
+  reaksi terbuka normal. / Right-click menu: the **React** item was greyed out and its
+  emoji submenu could not open; fixed.
+
 ## [1.4.0] — 2026-10-16
 
 ### Added
@@ -62,6 +70,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   read receipts, photo/video thumbnails, documents, voice notes, locations, group chats,
   desktop notifications with sound, system tray with unread dot, autostart, single instance.
 
+[1.4.1]: https://github.com/Katon17/obrol-wa/releases/tag/v1.4.1
 [1.4.0]: https://github.com/Katon17/obrol-wa/releases/tag/v1.4.0
 [1.3.0]: https://github.com/Katon17/obrol-wa/releases/tag/v1.3.0
 [1.2.0]: https://github.com/Katon17/obrol-wa/releases/tag/v1.2.0

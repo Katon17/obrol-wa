@@ -14,7 +14,7 @@ import (
 	"github.com/gotk3/gotk3/gtk"
 )
 
-const version = "1.4.0"
+const version = "1.4.1"
 
 //go:embed assets/obrol.png
 var iconPNG []byte

@@ -490,7 +490,7 @@ func (a *App) fillMsgMenu(menu *gtk.Menu, chat, id string, withCopy bool) {
 		return
 	}
 	add("reply", T("Balas"), func() { a.startReply(chat, id) })
-	rit := menuItem("react", T("Reaksi"), nil)
+	rit := menuItem("react", T("Reaksi"), func() {})
 	subR, _ := gtk.MenuNew()
 	for _, e := range []string{"👍", "❤️", "😂", "😮", "😢", "🙏"} {
 		e := e
