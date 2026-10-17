@@ -46,6 +46,7 @@ type UIHooks interface {
 	OnMessageChanged(chat string)
 	OnChatsChanged()
 	OnReceipt(ids []string, st int)
+	OnCall(jid string, video bool, phase, reason, callID string)
 }
 
 type WA struct {
@@ -254,6 +255,12 @@ func (w *WA) handle(raw any) {
 	case *events.Pin:
 		w.st.SetChatPinned(w.normJID(evt.JID).String(), evt.Action.GetPinned())
 		w.debouncedChats()
+	case *events.CallOffer:
+		w.ui.OnCall(evt.From.String(), false, "offer", "", evt.CallID)
+	case *events.CallOfferNotice:
+		w.ui.OnCall(evt.From.String(), evt.Media == "video", "offer", "", evt.CallID)
+	case *events.CallTerminate:
+		w.ui.OnCall(evt.From.String(), false, "terminate", evt.Reason, evt.CallID)
 	case *events.MarkChatAsRead:
 		if evt.Action.GetRead() {
 			w.st.MarkChatRead(w.normJID(evt.JID).String())
@@ -1136,6 +1143,56 @@ func (w *WA) SendFileEx(chat, path, caption string, reply *Msg, forwarded bool) 
 	return m, nil
 }
 
+// SendAudio mengirim berkas audio sebagai pesan suara (ptt) atau audio biasa.
+func (w *WA) SendAudio(chat, path string, ptt bool) (*Msg, error) { return w.SendAudioEx(chat, path, ptt, nil) }
+
+// SendAudioEx = SendAudio dengan opsi balasan.
+func (w *WA) SendAudioEx(chat, path string, ptt bool, reply *Msg) (*Msg, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	if len(data) > maxUpload {
+		return nil, errors.New("ukuran file maksimal 100 MB")
+	}
+	mt := mime.TypeByExtension(strings.ToLower(filepath.Ext(path)))
+	if mt == "" {
+		mt = http.DetectContentType(data)
+	}
+	if mt == "" || !strings.HasPrefix(mt, "audio/") {
+		mt = "audio/ogg"
+	}
+	kind := "audio"
+	if ptt {
+		kind = "ptt"
+	}
+	m := w.newOutgoing(chat, kind, "")
+	fillReply(m, reply)
+	w.st.SaveMessage(m, false)
+	go func() {
+		to, _ := types.ParseJID(chat)
+		up, err := w.cli.Upload(bg, data, whatsmeow.MediaAudio)
+		if err != nil {
+			w.finishSend(m, err)
+			return
+		}
+		msg := &waE2E.Message{AudioMessage: &waE2E.AudioMessage{
+			URL: proto.String(up.URL), DirectPath: proto.String(up.DirectPath), MediaKey: up.MediaKey,
+			Mimetype: proto.String(mt), FileEncSHA256: up.FileEncSHA256, FileSHA256: up.FileSHA256,
+			FileLength: proto.Uint64(uint64(len(data))), PTT: proto.Bool(ptt),
+			Seconds: proto.Uint32(audioSeconds(data)),
+		}}
+		if ci := quoteContext(reply, false); ci != nil {
+			msg.AudioMessage.ContextInfo = ci
+		}
+		raw, _ := proto.Marshal(msg)
+		w.st.db.Exec(`UPDATE messages SET raw=? WHERE chat=? AND id=?`, raw, m.Chat, m.ID)
+		_, err = w.cli.SendMessage(bg, to, msg, whatsmeow.SendRequestExtra{ID: m.ID})
+		w.finishSend(m, err)
+	}()
+	return m, nil
+}
+
 // ForwardMessage mengirim ulang isi pesan src ke chat dst (media diunduh lalu diunggah ulang).
 func (w *WA) ForwardMessage(dst string, src Msg) (*Msg, error) {
 	switch src.Kind {
@@ -1316,14 +1373,14 @@ func makeThumbSize(data []byte, maxS, quality int) ([]byte, uint32, uint32) {
 }
 
 // OpenMedia mengunduh media (bila belum) lalu membukanya dengan aplikasi default.
-func (w *WA) OpenMedia(chat, id string) error {
+func (w *WA) OpenMediaPath(chat, id string) (string, error) {
 	raw := w.st.GetRaw(chat, id)
 	if raw == nil {
-		return errors.New("media tidak tersedia")
+		return "", errors.New("media tidak tersedia")
 	}
 	var m waE2E.Message
 	if err := proto.Unmarshal(raw, &m); err != nil {
-		return err
+		return "", err
 	}
 	var dl whatsmeow.DownloadableMessage
 	var mt, name string
@@ -1339,7 +1396,7 @@ func (w *WA) OpenMedia(chat, id string) error {
 	case m.StickerMessage != nil:
 		dl, mt = m.StickerMessage, m.StickerMessage.GetMimetype()
 	default:
-		return errors.New("jenis media tidak didukung")
+		return "", errors.New("jenis media tidak didukung")
 	}
 	dir := downloadDir()
 	os.MkdirAll(dir, 0o755)
@@ -1364,13 +1421,21 @@ func (w *WA) OpenMedia(chat, id string) error {
 	if _, err := os.Stat(path); err != nil {
 		data, err := w.cli.Download(bg, dl)
 		if err != nil {
-			return fmt.Errorf("unduh gagal: %w", err)
+			return "", fmt.Errorf("unduh gagal: %w", err)
 		}
 		if err := os.WriteFile(path, data, 0o644); err != nil {
-			return err
+			return "", err
 		}
 	}
-	return exec.Command("xdg-open", path).Start()
+	return path, nil
+}
+
+func (w *WA) OpenMedia(chat, id string) error {
+	p, err := w.OpenMediaPath(chat, id)
+	if err != nil {
+		return err
+	}
+	return exec.Command("xdg-open", p).Start()
 }
 
 func downloadDir() string {

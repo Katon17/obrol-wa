@@ -88,6 +88,10 @@ type App struct {
 	editID      string
 	editChat    string
 
+	// v1.5: rekam pesan suara & peristiwa panggilan
+	micBtn       *gtk.Button
+	pendingCalls map[string]pendingCall
+
 	// pesan tersemat
 	pinBar   *gtk.EventBox
 	pinTitle *gtk.Label
@@ -329,6 +333,7 @@ row.flash, row.flash:hover { background-color: alpha(#00a884, 0.28); }
 .accent { color: #00a884; }
 .mutedicon { opacity: 0.6; }
 .iconbtn { padding: 4px 6px; }
+button.rec, button.rec:hover, button.rec:active { background-color: #b03a3a; border-color: #b03a3a; color: #ffffff; }
 .bubble.sticker.in, .bubble.sticker.out { background-color: transparent; box-shadow: none; padding: 0; }
 .quote { border-left: 3px solid #00a884; border-radius: 6px; padding: 4px 8px; margin-bottom: 3px; background-color: rgba(128,128,128,0.16); }
 label.quotetext { font-size: 0.85em; }
@@ -1260,6 +1265,19 @@ func (a *App) bubbleRow(m *Msg) *gtk.ListBoxRow {
 	row.SetActivatable(false)
 	row.SetSelectable(false)
 
+	if m.Kind == "call" {
+		hb, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 6)
+		hb.SetHAlign(gtk.ALIGN_CENTER)
+		hb.SetMarginTop(8)
+		hb.SetMarginBottom(2)
+		hb.PackStart(newIcon("call", 13), false, false, 0)
+		l, _ := gtk.LabelNew(callLabel(m.Text))
+		addClass(l, "meta")
+		hb.PackStart(l, false, false, 0)
+		row.Add(hb)
+		return row
+	}
+
 	b, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 3)
 	addClass(b, "bubble")
 	chatID, msgID := m.Chat, m.ID
@@ -1362,7 +1380,7 @@ func (a *App) bubbleRow(m *Msg) *gtk.ListBoxRow {
 		btn.Add(bb)
 		btn.SetHAlign(gtk.ALIGN_START)
 		chat, id := m.Chat, m.ID
-		btn.Connect("clicked", func() { a.openMedia(chat, id) })
+		btn.Connect("clicked", func() { a.playMsg(chat, id) })
 		b.PackStart(btn, false, false, 0)
 	} else if lbl := kindLabel(m.Kind); lbl != "" {
 		l, _ := gtk.LabelNew(lbl)

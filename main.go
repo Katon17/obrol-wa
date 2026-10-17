@@ -14,7 +14,7 @@ import (
 	"github.com/gotk3/gotk3/gtk"
 )
 
-const version = "1.4.1"
+const version = "1.5.0"
 
 //go:embed assets/obrol.png
 var iconPNG []byte
@@ -110,6 +110,7 @@ func main() {
 		os.Exit(1)
 	}
 	a := &App{gapp: gapp, st: st, cfg: loadConfig(dir), opts: o}
+	a.pendingCalls = map[string]pendingCall{}
 	if a.cfg.Lang == "" {
 		a.cfg.Lang = "id"
 	}
@@ -140,6 +141,7 @@ func seedDemo(st *Store) {
 	now := time.Now()
 	ts := func(d time.Duration) int64 { return now.Add(-d).Unix() }
 	sh := seedDemoStickers(st, now)
+	writeDemoVN()
 	type dm struct {
 		chat, name string
 		msgs       []Msg
@@ -151,6 +153,8 @@ func seedDemo(st *Store) {
 			{Text: "Le, sudah makan belum?", TS: ts(26 * time.Hour)},
 			{Text: "Sudah bu, tadi makan soto di Simpang Lima 😄", FromMe: true, TS: ts(26*time.Hour - 5*time.Minute), Status: StRead},
 			{Kind: "sticker", FromMe: true, Raw: localStickerRaw(sh["siap"], false), TS: ts(26*time.Hour - 6*time.Minute), Status: StRead},
+			{Kind: "ptt", Raw: localAudioRaw(), TS: ts(25 * time.Hour)},
+			{Kind: "call", Text: "missed-voice", TS: ts(25*time.Hour - 2*time.Minute)},
 			{Text: "Nanti sore jadi pulang ke rumah?", TS: ts(40 * time.Minute)},
 			{Text: "Jangan lupa bawa oleh-oleh lumpia ya 🥟", TS: ts(38 * time.Minute)},
 		}, 2},

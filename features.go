@@ -77,6 +77,11 @@ func (a *App) buildComposer() gtk.IWidget {
 		a.input.Emit("insert-emoji", glib.TYPE_NONE)
 	})
 
+	mic := iconButton("mic", T("Rekam pesan suara"), 20)
+	mic.SetVAlign(gtk.ALIGN_END)
+	mic.Connect("clicked", func() { a.toggleRec() })
+	a.micBtn = mic
+
 	box, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
 	addClass(box, "inputbox")
 	ov, _ := gtk.OverlayNew()
@@ -119,6 +124,7 @@ func (a *App) buildComposer() gtk.IWidget {
 
 	comp.PackStart(attach, false, false, 0)
 	comp.PackStart(emoji, false, false, 0)
+	comp.PackStart(mic, false, false, 0)
 	comp.PackStart(a.buildStickerButton(), false, false, 0)
 	comp.PackStart(box, true, true, 2)
 	comp.PackStart(send, false, false, 0)

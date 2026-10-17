@@ -539,6 +539,8 @@ func kindLabel(kind string) string {
 		return "🎵 " + T("Audio")
 	case "ptt":
 		return "🎤 " + T("Pesan suara")
+	case "call":
+		return "📞 " + T("Panggilan")
 	case "document":
 		return "📄 " + T("Dokumen")
 	case "sticker":

@@ -16,6 +16,22 @@ func T(s string) string {
 }
 
 var enStrings = map[string]string{
+	// v1.5: pesan suara & panggilan
+	"Panggilan":                        "Call",
+	"Panggilan suara tak terjawab":     "Missed voice call",
+	"Panggilan video tak terjawab":     "Missed video call",
+	"Panggilan suara · diangkat di ponsel": "Voice call · answered on phone",
+	"Panggilan video · diangkat di ponsel": "Video call · answered on phone",
+	"Panggilan %s masuk dari %s — angkat di ponsel": "Incoming %s call from %s — answer on your phone",
+	"suara":                            "voice",
+	"video":                            "video",
+	"Merekam… klik lagi untuk mengirim": "Recording… click again to send",
+	"Pesan suara terkirim":             "Voice message sent",
+	"Rekaman kosong atau gagal":        "Recording empty or failed",
+	"Perekam suara tidak ditemukan (pasang ffmpeg/pulseaudio-utils)": "No audio recorder found (install ffmpeg or pulseaudio-utils)",
+	"Memutar pesan suara…":             "Playing voice message…",
+	"Pemutar audio tidak ditemukan":    "No audio player found",
+	"Rekam pesan suara":                "Record a voice message",
 	// umum
 	"Anda":        "You",
 	"Pesan":       "Message",

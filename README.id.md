@@ -37,6 +37,12 @@ Dibuat oleh **Katon Bagaskoro**.
 |---|---|---|
 | ![Balas](screenshots/v14-reply.png) | ![Teruskan](screenshots/v14-forward.png) | ![English](screenshots/v14-english.png) |
 
+**Baru di 1.5:**
+
+| Pesan suara (rekam & putar) | Baris panggilan tak terjawab |
+|---|---|
+| ![VN](screenshots/v15-pesan-suara.png) | ![Panggilan](screenshots/v15-panggilan.png) |
+
 ## Kenapa ringan?
 
 | | Obrol | WhatsApp Web di browser | Klien Electron |
@@ -92,6 +98,10 @@ Dibuat oleh **Katon Bagaskoro**.
 - ✅ **Teruskan pesan** ke chat mana pun lewat dialog pencari obrolan; pesan terusan diberi tanda
   *Diteruskan*. Teks, stiker, dan media (diunduh lalu diunggah ulang) bisa diteruskan
 - ✅ **Dwibahasa**: Menu ☰ → Bahasa → *Bahasa Indonesia* atau *English*; aplikasi mulai ulang otomatis
+- ✅ **Pesan suara**: tombol mik merekam VN (opus lewat ffmpeg, fallback PulseAudio/ALSA), klik lagi
+  untuk kirim; VN masuk diputar langsung di aplikasi
+- ✅ **Notifikasi panggilan**: panggilan masuk/tak terjawab tampil sebagai baris 📞 di chat plus
+  notifikasi desktop (menjawab tetap di ponsel — protokol unofficial tidak mendukung audio panggilan)
 - ✅ **Ikon & logo buatan sendiri**: logo "Ngobrol" (dua gelembung obrolan) dan 27 ikon garis tipis yang
   digambar khusus sebagai SVG, sehingga tajam di skala berapa pun dan warnanya ikut tema terang/gelap
 - ✅ Single-instance: membuka Obrol lagi cukup memunculkan jendela yang sudah ada
@@ -164,6 +174,7 @@ Opsi baris perintah:
 
 Catatan lengkap per rilis ada di [CHANGELOG.md](CHANGELOG.md).
 
+- **1.5.0**: pesan suara (rekam/kirim/putar) + notifikasi panggilan
 - **1.4.0**: balas pesan (kutipan), reaksi emoji, teruskan pesan, dan pilihan bahasa Inggris
 - **1.3.0**: stiker penuh (tampil + animasi, panel Terbaru/Favorit, buat stiker dari gambar/screenshot),
   logo & ikon SVG asli buatan sendiri

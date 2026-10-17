@@ -32,6 +32,12 @@ Made by **Katon Bagaskoro**.
 |---|---|---|
 | ![Reply](screenshots/v14-reply.png) | ![Forward](screenshots/v14-forward.png) | ![English](screenshots/v14-english.png) |
 
+**New in 1.5 — voice messages & call events:**
+
+| Record & play voice messages | Missed-call rows in chat |
+|---|---|
+| ![VN](screenshots/v15-pesan-suara.png) | ![Calls](screenshots/v15-panggilan.png) |
+
 ## Why is it so light?
 
 | | Obrol | WhatsApp Web in a browser | Electron clients |
@@ -63,6 +69,10 @@ Made by **Katon Bagaskoro**.
 - ✅ **Forward messages** to any chat through a searchable picker; forwarded messages are labelled
   *Forwarded*. Text, stickers and media (download + re-upload) can all be forwarded
 - ✅ **Bilingual UI**: Menu ☰ → Language → *Bahasa Indonesia* or *English*; the app restarts to apply
+- ✅ **Voice messages**: the mic button records a VN (opus via ffmpeg, PulseAudio/ALSA fallback),
+  click again to send; incoming VNs play right inside the app
+- ✅ **Call notifications**: incoming/missed calls appear as 📞 rows in the chat plus a desktop
+  notification (answering stays on the phone — the unofficial protocol carries no call audio)
 - ✅ **Send photos & files** with a caption; **paste images with Ctrl+V** (PrtSc screenshots,
   Flameshot, or files copied from Thunar/Nemo) with a preview dialog
 - ✅ **Multi-line messages**: `Enter` sends, `Shift+Enter` newline; the input box grows to ±7 lines

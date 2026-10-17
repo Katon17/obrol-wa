@@ -4,6 +4,19 @@ All notable changes to Obrol are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] — 2026-10-17
+
+### Added
+- **Pesan suara (VN)**: tombol mik di composer merekam dari mikrofon (ffmpeg → opus/ogg,
+  fallback pulseaudio/ALSA), klik lagi untuk berhenti & kirim; bubble VN punya tombol putar
+  dalam aplikasi (mpv/ffplay/paplay/vlc). VN dari kontak diputar tanpa meninggalkan aplikasi.
+  / **Voice messages**: mic button records (ffmpeg opus, pulse/ALSA fallback), click again to
+  stop & send; incoming VNs play in-app.
+- **Notifikasi panggilan**: peristiwa panggilan WhatsApp (masuk/tak terjawab/berakhir) tampil
+  sebagai baris 📞 di chat, notifikasi desktop + bunyi, dan status header saat berdering.
+  Menjawab tetap di ponsel — protokol unofficial tidak mendukung audio panggilan.
+  / **Call events**: incoming/missed calls show as 📞 rows with desktop notifications.
+
 ## [1.4.1] — 2026-10-16
 
 ### Fixed
@@ -70,6 +83,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   read receipts, photo/video thumbnails, documents, voice notes, locations, group chats,
   desktop notifications with sound, system tray with unread dot, autostart, single instance.
 
+[1.5.0]: https://github.com/Katon17/obrol-wa/releases/tag/v1.5.0
 [1.4.1]: https://github.com/Katon17/obrol-wa/releases/tag/v1.4.1
 [1.4.0]: https://github.com/Katon17/obrol-wa/releases/tag/v1.4.0
 [1.3.0]: https://github.com/Katon17/obrol-wa/releases/tag/v1.3.0
