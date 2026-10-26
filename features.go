@@ -34,7 +34,7 @@ func (a *App) buildComposer() gtk.IWidget {
 	a.editLbl, _ = gtk.LabelNew("")
 	a.editLbl.SetXAlign(0)
 	a.editLbl.SetEllipsize(pango.ELLIPSIZE_END)
-	x := iconButton("close", "Batal edit (Esc)", 16)
+	x := iconButton("close", T("Batal edit (Esc)"), 16)
 	x.Connect("clicked", a.cancelEdit)
 	a.editBar.PackStart(ic, false, false, 0)
 	a.editBar.PackStart(a.editLbl, true, true, 0)
@@ -66,7 +66,7 @@ func (a *App) buildComposer() gtk.IWidget {
 	comp, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 4)
 	addClass(comp, "composer")
 
-	attach := iconButton("attach", "Kirim foto / file", 20)
+	attach := iconButton("attach", T("Kirim foto / file"), 20)
 	attach.SetVAlign(gtk.ALIGN_END)
 	attach.Connect("clicked", a.attachFile)
 
@@ -115,7 +115,7 @@ func (a *App) buildComposer() gtk.IWidget {
 	})
 	a.input.Connect("key-press-event", a.onInputKey)
 
-	send := iconButton("send", "Kirim (Enter)", 18)
+	send := iconButton("send", T("Kirim (Enter)"), 18)
 	send.SetRelief(gtk.RELIEF_NORMAL)
 	addClass(send, "sendbtn")
 	send.SetVAlign(gtk.ALIGN_END)
@@ -281,13 +281,13 @@ func (a *App) confirmImage(pb *gdk.Pixbuf, path string) {
 	dlg, _ := gtk.DialogNew()
 	dlg.SetTransientFor(a.win)
 	dlg.SetModal(true)
-	dlg.SetTitle("Kirim gambar ke " + a.chatTitle.GetLabel())
-	dlg.AddButton("Batal", gtk.RESPONSE_CANCEL)
+	dlg.SetTitle(T("Kirim gambar ke") + " " + a.chatTitle.GetLabel())
+	dlg.AddButton(T("Batal"), gtk.RESPONSE_CANCEL)
 	if webpEncoderAvailable() {
-		st, _ := dlg.AddButton("Jadikan stiker…", gtk.RESPONSE_APPLY)
+		st, _ := dlg.AddButton(T("Jadikan stiker…"), gtk.RESPONSE_APPLY)
 		st.SetTooltipText(T("Ubah gambar ini jadi stiker WhatsApp"))
 	}
-	ok, _ := dlg.AddButton("Kirim", gtk.RESPONSE_OK)
+	ok, _ := dlg.AddButton(T("Kirim"), gtk.RESPONSE_OK)
 	addClass(ok, "suggested-action")
 	dlg.SetDefaultResponse(gtk.RESPONSE_OK)
 	area, _ := dlg.GetContentArea()
@@ -367,7 +367,7 @@ func (a *App) confirmFiles(files []string) {
 		names = append(names, "• "+filepath.Base(f))
 	}
 	d := gtk.MessageDialogNew(a.win, gtk.DIALOG_MODAL, gtk.MESSAGE_QUESTION, gtk.BUTTONS_OK_CANCEL,
-		"Kirim %d file ke %s?", len(files), a.chatTitle.GetLabel())
+		T("Kirim %d file ke %s?"), len(files), a.chatTitle.GetLabel())
 	d.FormatSecondaryText("%s", strings.Join(names, "\n"))
 	resp := d.Run()
 	d.Destroy()
@@ -426,7 +426,7 @@ func (a *App) startEdit(chat, id string) {
 		return
 	}
 	a.editID, a.editChat = id, chat
-	a.editLbl.SetMarkup("<b>Edit pesan</b>  <span alpha='70%'>" + escape(oneLine(m.Text, 80)) + "</span>")
+	a.editLbl.SetMarkup("<b>" + escape(T("Edit pesan")) + "</b>  <span alpha='70%'>" + escape(oneLine(m.Text, 80)) + "</span>")
 	a.editBar.Show()
 	a.setInputText(m.Text)
 	a.input.GrabFocus()
@@ -535,7 +535,7 @@ func (a *App) fillMsgMenu(menu *gtk.Menu, chat, id string, withCopy bool) {
 		for _, o := range []struct {
 			label string
 			d     time.Duration
-		}{{"24 jam", 24 * time.Hour}, {"7 hari", 7 * 24 * time.Hour}, {"30 hari", 30 * 24 * time.Hour}} {
+		}{{T("24 jam"), 24 * time.Hour}, {T("7 hari"), 7 * 24 * time.Hour}, {T("30 hari"), 30 * 24 * time.Hour}} {
 			d := o.d
 			it, _ := gtk.MenuItemNewWithLabel(o.label)
 			it.Connect("activate", func() { a.pinMessage(chat, id, true, d) })
@@ -559,7 +559,7 @@ func (a *App) popupMsgMenu(ev *gdk.Event, chat, id string) {
 
 func (a *App) confirmRevoke(chat, id string) {
 	d := gtk.MessageDialogNew(a.win, gtk.DIALOG_MODAL, gtk.MESSAGE_QUESTION, gtk.BUTTONS_YES_NO,
-		"Hapus pesan ini untuk semua orang?")
+		T("Hapus pesan ini untuk semua orang?"))
 	d.FormatSecondaryText(T("Pesan akan diganti dengan \"Pesan ini dihapus\" di semua perangkat."))
 	resp := d.Run()
 	d.Destroy()
@@ -669,12 +669,12 @@ func (a *App) updatePinLabel() {
 		return
 	}
 	p := a.pins[a.pinIdx%len(a.pins)]
-	title := "Pesan tersemat"
+	title := T("Pesan tersemat")
 	if len(a.pins) > 1 {
-		title = fmt.Sprintf("Pesan tersemat %d dari %d", a.pinIdx%len(a.pins)+1, len(a.pins))
+		title = fmt.Sprintf(T("Pesan tersemat %d dari %d"), a.pinIdx%len(a.pins)+1, len(a.pins))
 	}
 	if p.Until > 0 {
-		title += " · sampai " + dayLabelShort(time.Unix(p.Until, 0))
+		title += " · " + T("sampai") + " " + dayLabelShort(time.Unix(p.Until, 0))
 	}
 	a.pinTitle.SetText(title)
 	if m, ok := a.st.GetMessage(p.Chat, p.ID); ok {
@@ -727,7 +727,8 @@ func (a *App) scrollToRow(row *gtk.ListBoxRow) {
 
 func (a *App) pinChat(jid string, pin bool) {
 	if pin && a.st.PinnedChatCount() >= 3 {
-		a.errorDialog(T("Maksimal 3 obrolan disematkan"), "Lepas sematan salah satu obrolan dulu (sama seperti di WhatsApp).")
+		a.errorDialog(T("Maksimal 3 obrolan disematkan"),
+			T("Lepas sematan salah satu obrolan dulu (sama seperti di WhatsApp)."))
 		return
 	}
 	if a.wa != nil {
@@ -822,7 +823,7 @@ func (a *App) startReply(chat, id string) {
 		return
 	}
 	a.replyTo = &m
-	a.replyLbl.SetMarkup("<b>" + html.EscapeString(T("Membalas")+" "+a.nameOf(m)) + "</b>  <span alpha='70%'>" + html.EscapeString(quoteText(m)) + "</span>")
+	a.replyLbl.SetMarkup("<b>" + escape(T("Membalas")+" "+a.nameOf(m)) + "</b>  <span alpha='70%'>" + escape(quoteText(m)) + "</span>")
 	a.replyBar.Show()
 	a.input.GrabFocus()
 }
@@ -841,7 +842,7 @@ func (a *App) quoteBox(m *Msg) gtk.IWidget {
 	vb, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 1)
 	addClass(vb, "quote")
 	nl, _ := gtk.LabelNew("")
-	nl.SetMarkup(fmt.Sprintf("<span foreground=\"%s\"><b>%s</b></span>", senderColor(m.ReplySender, a.dark), html.EscapeString(a.quoteName(m))))
+	nl.SetMarkup(fmt.Sprintf("<span foreground=\"%s\"><b>%s</b></span>", senderColor(m.ReplySender, a.dark), escape(a.quoteName(m))))
 	nl.SetXAlign(0)
 	tl, _ := gtk.LabelNew(a.quoteSnip(m))
 	addClass(tl, "quotetext")

@@ -158,7 +158,7 @@ func (a *App) stickerView(m *Msg) gtk.IWidget {
 	}
 	ref, ok := stickerRef(m.Raw)
 	if !ok {
-		placeholder("Stiker")
+		placeholder(T("Stiker"))
 		return box
 	}
 	if ref.Lottie {
@@ -167,7 +167,7 @@ func (a *App) stickerView(m *Msg) gtk.IWidget {
 			box.PackStart(img, true, true, 0)
 			box.SetTooltipText(T("Stiker animasi Lottie (ditampilkan diam)"))
 		} else {
-			placeholder("Stiker animasi Lottie belum didukung")
+			placeholder(T("Stiker animasi Lottie belum didukung"))
 		}
 		return box
 	}
@@ -178,7 +178,7 @@ func (a *App) stickerView(m *Msg) gtk.IWidget {
 				return
 			}
 			if s == nil {
-				placeholder("Stiker tidak bisa ditampilkan")
+				placeholder(T("Stiker tidak bisa ditampilkan"))
 				return
 			}
 			box.GetChildren().Foreach(func(it interface{}) {
@@ -197,14 +197,14 @@ func (a *App) stickerView(m *Msg) gtk.IWidget {
 		a.st.AddSticker(ref.SHA, ref.Animated, m.TS)
 		show()
 	} else if a.wa != nil {
-		placeholder("Mengunduh stiker…")
+		placeholder(T("Mengunduh stiker…"))
 		a.wa.FetchSticker(m.Raw, m.TS, func(err error) {
 			glib.IdleAdd(func() bool {
 				if gen != a.msgGen {
 					return false
 				}
 				if err != nil {
-					placeholder("Stiker tidak tersedia lagi di server")
+					placeholder(T("Stiker tidak tersedia lagi di server"))
 				} else {
 					show()
 				}
@@ -212,7 +212,7 @@ func (a *App) stickerView(m *Msg) gtk.IWidget {
 			})
 		})
 	} else {
-		placeholder("Stiker")
+		placeholder(T("Stiker"))
 	}
 	return box
 }
@@ -286,9 +286,9 @@ func (a *App) buildStickerButton() gtk.IWidget {
 	v.PackStart(p.stack, true, true, 0)
 
 	p.recent, p.recentE = a.stickerGrid(p, "recent", T("Terbaru"),
-		"Belum ada stiker.\nStiker yang kamu terima atau kirim\nakan muncul di sini.")
+		T("Belum ada stiker.\nStiker yang kamu terima atau kirim\nakan muncul di sini."))
 	p.fav, p.favE = a.stickerGrid(p, "fav", T("Favorit"),
-		"Belum ada favorit.\nKlik kanan sebuah stiker →\n«Tambah ke favorit».")
+		T("Belum ada favorit.\nKlik kanan sebuah stiker →\n«Tambah ke favorit»."))
 	p.stack.AddTitled(a.stickerCreatePage(p), "create", T("Buat"))
 
 	v.ShowAll()
@@ -399,7 +399,9 @@ func (a *App) stickerCreatePage(p *stickerPanel) gtk.IWidget {
 	addClass(ic, "accent")
 	v.PackStart(ic, false, false, 0)
 	t, _ := gtk.LabelNew("")
-	t.SetMarkup("<b>Buat stiker sendiri</b>\n<small>Ubah foto atau screenshot jadi stiker WhatsApp.\nBisa dipotong persegi, sudut membulat, dan diberi\ngaris tepi putih ala stiker.</small>")
+	t.SetMarkup("<b>" + T("Buat stiker sendiri") + "</b>\n<small>" +
+		T("Ubah foto atau screenshot jadi stiker WhatsApp.\nBisa dipotong persegi, sudut membulat, dan diberi\ngaris tepi putih ala stiker.") +
+		"</small>")
 	t.SetJustify(gtk.JUSTIFY_CENTER)
 	v.PackStart(t, false, false, 4)
 	mk := func(icon, label string, fn func()) *gtk.Button {
@@ -413,11 +415,11 @@ func (a *App) stickerCreatePage(p *stickerPanel) gtk.IWidget {
 		b.Connect("clicked", fn)
 		return b
 	}
-	file := mk("image", "Pilih gambar…", func() {
+	file := mk("image", T("Pilih gambar…"), func() {
 		p.pop.Popdown()
 		a.stickerFromFile()
 	})
-	paste := mk("paste", "Tempel dari clipboard", func() {
+	paste := mk("paste", T("Tempel dari clipboard"), func() {
 		p.pop.Popdown()
 		a.stickerFromClipboard()
 	})
@@ -436,9 +438,9 @@ func (a *App) stickerCreatePage(p *stickerPanel) gtk.IWidget {
 }
 
 func (a *App) stickerFromFile() {
-	fc, _ := gtk.FileChooserNativeDialogNew("Pilih gambar untuk stiker", a.win, gtk.FILE_CHOOSER_ACTION_OPEN, "Pilih", "Batal")
+	fc, _ := gtk.FileChooserNativeDialogNew(T("Pilih gambar untuk stiker"), a.win, gtk.FILE_CHOOSER_ACTION_OPEN, T("Pilih"), T("Batal"))
 	flt, _ := gtk.FileFilterNew()
-	flt.SetName("Gambar")
+	flt.SetName(T("Gambar"))
 	flt.AddPixbufFormats()
 	fc.AddFilter(flt)
 	if gtk.ResponseType(fc.Run()) != gtk.RESPONSE_ACCEPT {
@@ -471,7 +473,7 @@ func (a *App) stickerFromClipboard() {
 			}
 		}
 	}
-	a.errorDialog(T("Clipboard tidak berisi gambar"), "Salin gambar atau ambil screenshot (PrtSc) dulu, lalu coba lagi.")
+	a.errorDialog(T("Clipboard tidak berisi gambar"), T("Salin gambar atau ambil screenshot (PrtSc) dulu, lalu coba lagi."))
 }
 
 // ------------------------------------------------------------ pembuat stiker
@@ -482,7 +484,7 @@ type stickerOpts struct{ crop, round, outline bool }
 func makeStickerRGBA(src *gdk.Pixbuf, o stickerOpts) ([]byte, error) {
 	if !src.GetHasAlpha() {
 		if src = src.AddAlpha(false, 0, 0, 0); src == nil {
-			return nil, fmt.Errorf("gambar tidak valid")
+			return nil, fmt.Errorf(T("gambar tidak valid"))
 		}
 	}
 	const S = stickerSize
@@ -649,12 +651,12 @@ func (a *App) createStickerDialog(src *gdk.Pixbuf) {
 	dlg.SetModal(true)
 	dlg.SetTitle(T("Buat stiker"))
 	dlg.SetResizable(false)
-	dlg.AddButton("Batal", gtk.RESPONSE_CANCEL)
-	saveBtn, _ := dlg.AddButton("Simpan saja", gtk.RESPONSE_APPLY)
+	dlg.AddButton(T("Batal"), gtk.RESPONSE_CANCEL)
+	saveBtn, _ := dlg.AddButton(T("Simpan saja"), gtk.RESPONSE_APPLY)
 	saveBtn.SetTooltipText(T("Simpan ke favorit tanpa mengirim"))
-	okLabel := "Kirim stiker"
+	okLabel := T("Kirim stiker")
 	if chat == "" {
-		okLabel = "Simpan"
+		okLabel = T("Simpan")
 	}
 	ok, _ := dlg.AddButton(okLabel, gtk.RESPONSE_OK)
 	addClass(ok, "suggested-action")
@@ -675,22 +677,22 @@ func (a *App) createStickerDialog(src *gdk.Pixbuf) {
 	opts, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 6)
 	opts.SetVAlign(gtk.ALIGN_CENTER)
 	title, _ := gtk.LabelNew("")
-	title.SetMarkup("<b>Bentuk</b>")
+	title.SetMarkup("<b>" + T("Bentuk") + "</b>")
 	title.SetXAlign(0)
-	fit, _ := gtk.RadioButtonNewWithLabel(nil, "Gambar utuh")
-	crop, _ := gtk.RadioButtonNewWithLabelFromWidget(fit, "Potong persegi (tengah)")
+	fit, _ := gtk.RadioButtonNewWithLabel(nil, T("Gambar utuh"))
+	crop, _ := gtk.RadioButtonNewWithLabelFromWidget(fit, T("Potong persegi (tengah)"))
 	if w, hh := src.GetWidth(), src.GetHeight(); float64(max(w, hh))/float64(max(1, min(w, hh))) < 1.35 {
 		crop.SetActive(true)
 	}
 	t2, _ := gtk.LabelNew("")
-	t2.SetMarkup("<b>Gaya</b>")
+	t2.SetMarkup("<b>" + T("Gaya") + "</b>")
 	t2.SetXAlign(0)
-	round, _ := gtk.CheckButtonNewWithLabel("Sudut membulat")
+	round, _ := gtk.CheckButtonNewWithLabel(T("Sudut membulat"))
 	round.SetActive(true)
-	outline, _ := gtk.CheckButtonNewWithLabel("Garis tepi putih")
+	outline, _ := gtk.CheckButtonNewWithLabel(T("Garis tepi putih"))
 	outline.SetActive(src.GetHasAlpha())
 	outline.SetTooltipText(T("Paling cocok untuk gambar berlatar transparan (PNG)"))
-	fav, _ := gtk.CheckButtonNewWithLabel("Simpan ke favorit")
+	fav, _ := gtk.CheckButtonNewWithLabel(T("Simpan ke favorit"))
 	fav.SetActive(true)
 	info, _ := gtk.LabelNew("")
 	addClass(info, "when")
@@ -714,7 +716,7 @@ func (a *App) createStickerDialog(src *gdk.Pixbuf) {
 		}
 		cur = rgba
 		img.SetFromPixbuf(previewPixbuf(rgba, stickerSize, 256, a.dark))
-		info.SetText(fmt.Sprintf("512 × 512 px · WebP\nsumber %d × %d px", src.GetWidth(), src.GetHeight()))
+		info.SetText(fmt.Sprintf("512 × 512 px · WebP\n"+T("sumber")+" %d × %d px", src.GetWidth(), src.GetHeight()))
 	}
 	fit.Connect("toggled", update)
 	round.Connect("toggled", update)

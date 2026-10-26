@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 
@@ -64,17 +65,57 @@ func dataDir() string {
 	return filepath.Join(d, "obrol")
 }
 
+func setLanguage() {
+	// Priority 1: Explicit environment variable
+	if v := os.Getenv("OBROL_LANG"); slices.Contains(supportedLanguages, v) {
+		lang = v
+		return
+	}
+
+	// Priority 2: Config file
+	cfg := loadConfig(dataDir())
+	if slices.Contains(supportedLanguages, cfg.Lang) {
+		lang = cfg.Lang
+		return
+	}
+
+	// Priority 3: Other standard environment variables
+	for _, name := range []string{"LC_ALL", "LC_MESSAGES", "LANG"} {
+		if locale := os.Getenv(name); locale != "" {
+			language := locale
+			if i := strings.IndexAny(language, "_.@"); i >= 0 {
+				language = language[:i]
+			}
+
+			if slices.Contains(supportedLanguages, language) {
+				lang = language
+				return
+			}
+
+			// If hit a non-blank locale setting, convention says we should try to use it. If it gets here, it's not
+			//  supported, so we should fall back to the default language.
+			break
+		}
+	}
+
+	// Fallback to default
+	lang = defaultLanguage
+}
+
 func main() {
+	// Initialise language first so that translations are available
+	setLanguage()
+
 	var o Options
-	flag.BoolVar(&o.Hidden, "hidden", false, "mulai tersembunyi di system tray")
-	flag.BoolVar(&o.Demo, "demo", false, "mode demo dengan data contoh (tanpa koneksi)")
-	flag.BoolVar(&o.DemoLogin, "demo-login", false, "tampilkan halaman login contoh")
-	flag.BoolVar(&o.Debug, "debug", false, "log whatsmeow ke terminal")
-	showVer := flag.Bool("version", false, "tampilkan versi")
-	exportIcon := flag.String("export-icon", "", "tulis ikon PNG bawaan ke path ini lalu keluar")
+	flag.BoolVar(&o.Hidden, "hidden", false, T("mulai tersembunyi di system tray"))
+	flag.BoolVar(&o.Demo, "demo", false, T("mode demo dengan data contoh (tanpa koneksi)"))
+	flag.BoolVar(&o.DemoLogin, "demo-login", false, T("tampilkan halaman login contoh"))
+	flag.BoolVar(&o.Debug, "debug", false, T("log whatsmeow ke terminal"))
+	showVer := flag.Bool("version", false, T("tampilkan versi"))
+	exportIcon := flag.String("export-icon", "", T("tulis ikon PNG bawaan ke path ini lalu keluar"))
 	flag.Parse()
 	if *showVer {
-		fmt.Println("Obrol", version, "— dibuat oleh", author)
+		fmt.Println("Obrol", version, "—", T("dibuat oleh"), author)
 		return
 	}
 	if *exportIcon != "" {
@@ -94,7 +135,7 @@ func main() {
 	}
 	appDir = dir
 	if err := os.MkdirAll(dir, 0o700); err != nil {
-		fmt.Fprintln(os.Stderr, "tidak bisa membuat folder data:", err)
+		fmt.Fprintln(os.Stderr, T("tidak bisa membuat folder data:"), err)
 		os.Exit(1)
 	}
 	st, err := OpenStore(filepath.Join(dir, "app.db"))
@@ -111,13 +152,6 @@ func main() {
 	}
 	a := &App{gapp: gapp, st: st, cfg: loadConfig(dir), opts: o}
 	a.pendingCalls = map[string]pendingCall{}
-	if a.cfg.Lang == "" {
-		a.cfg.Lang = "id"
-	}
-	lang = a.cfg.Lang
-	if v := os.Getenv("OBROL_LANG"); v == "en" || v == "id" {
-		lang = v
-	}
 	a.iconPath = filepath.Join(dir, "obrol.png")
 	os.WriteFile(a.iconPath, iconPNG, 0o644)
 
