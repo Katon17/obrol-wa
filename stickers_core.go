@@ -153,7 +153,7 @@ func (w *WA) FetchSticker(raw []byte, ts int64, cb func(error)) {
 	ref, ok := stickerRef(raw)
 	if !ok || ref.Lottie {
 		if cb != nil {
-			cb(errors.New("stiker tidak didukung"))
+			cb(errors.New(T("stiker tidak didukung")))
 		}
 		return
 	}
@@ -216,7 +216,7 @@ func (w *WA) SendSticker(chat, sha string) (*Msg, error) { return w.SendStickerE
 func (w *WA) SendStickerEx(chat, sha string, forwarded bool) (*Msg, error) {
 	data, err := os.ReadFile(stickerPath(sha))
 	if err != nil {
-		return nil, errors.New("file stiker tidak ditemukan")
+		return nil, errors.New(T("file stiker tidak ditemukan"))
 	}
 	wd, ht, animated := webpInfo(data)
 	if wd == 0 {

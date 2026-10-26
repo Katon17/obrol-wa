@@ -22,8 +22,8 @@ import (
 
 	"go.mau.fi/whatsmeow"
 	"go.mau.fi/whatsmeow/appstate"
-	"go.mau.fi/whatsmeow/proto/waCompanionReg"
 	"go.mau.fi/whatsmeow/proto/waCommon"
+	"go.mau.fi/whatsmeow/proto/waCompanionReg"
 	"go.mau.fi/whatsmeow/proto/waE2E"
 	"go.mau.fi/whatsmeow/proto/waWeb"
 	"go.mau.fi/whatsmeow/store"
@@ -108,10 +108,10 @@ func (w *WA) Start() {
 		w.startQR()
 		return
 	}
-	w.ui.OnStatus("Menghubungkan…")
+	w.ui.OnStatus(T("Menghubungkan…"))
 	go func() {
 		if err := w.cli.Connect(); err != nil {
-			w.ui.OnStatus("Gagal terhubung: " + err.Error())
+			w.ui.OnStatus(T("Gagal terhubung") + ": " + err.Error())
 		}
 	}()
 }
@@ -123,11 +123,11 @@ func (w *WA) startQR() {
 		}
 		qrChan, err := w.cli.GetQRChannel(bg)
 		if err != nil {
-			w.ui.OnStatus("Error QR: " + err.Error())
+			w.ui.OnStatus(T("Error QR") + ": " + err.Error())
 			return
 		}
 		if err := w.cli.Connect(); err != nil {
-			w.ui.OnStatus("Gagal terhubung: " + err.Error())
+			w.ui.OnStatus(T("Gagal terhubung") + ": " + err.Error())
 			w.ui.OnQRTimeout()
 			return
 		}
@@ -141,7 +141,7 @@ func (w *WA) startQR() {
 				w.ui.OnQRTimeout()
 			default:
 				if evt.Error != nil {
-					w.ui.OnStatus("Login gagal: " + evt.Error.Error())
+					w.ui.OnStatus(T("Login gagal") + ": " + evt.Error.Error())
 				}
 				w.ui.OnQRTimeout()
 			}
@@ -155,10 +155,10 @@ func (w *WA) RetryQR() { w.startQR() }
 func (w *WA) PairPhone(phone string) (string, error) {
 	phone = digitsOnly(phone)
 	if strings.HasPrefix(phone, "0") {
-		phone = "62" + phone[1:]
+		phone = "62" + phone[1:] // FIXME: Needs to look at users' country prefix not hardcode indo
 	}
 	if len(phone) < 8 {
-		return "", errors.New("nomor tidak valid")
+		return "", errors.New(T("nomor tidak valid"))
 	}
 	return w.cli.PairPhone(bg, phone, true, whatsmeow.PairClientChrome, "Chrome (Linux)")
 }
@@ -197,30 +197,30 @@ func (w *WA) Close() {
 func (w *WA) handle(raw any) {
 	switch evt := raw.(type) {
 	case *events.PairSuccess:
-		w.ui.OnStatus("Berhasil dipasangkan, menyiapkan…")
+		w.ui.OnStatus(T("Berhasil dipasangkan, menyiapkan…"))
 	case *events.Connected:
 		w.loggedIn.Store(true)
 		w.ui.OnLoggedIn()
 		if !w.syncing.Load() {
-			w.ui.OnStatus("Terhubung")
+			w.ui.OnStatus(T("Terhubung"))
 		}
 		go w.refreshGroups()
 	case *events.OfflineSyncCompleted:
 		if !w.syncing.Load() {
-			w.ui.OnStatus("Terhubung")
+			w.ui.OnStatus(T("Terhubung"))
 		}
 	case *events.Disconnected:
-		w.ui.OnStatus("Terputus — menyambung ulang…")
+		w.ui.OnStatus(T("Terputus — menyambung ulang…"))
 	case *events.KeepAliveTimeout:
-		w.ui.OnStatus("Koneksi lambat…")
+		w.ui.OnStatus(T("Koneksi lambat…"))
 	case *events.StreamReplaced:
-		w.ui.OnStatus("Sesi dibuka di tempat lain")
+		w.ui.OnStatus(T("Sesi dibuka di tempat lain"))
 	case *events.TemporaryBan:
-		w.ui.OnStatus("⚠ Diblokir sementara: " + evt.String())
+		w.ui.OnStatus("⚠ " + T("Diblokir sementara") + ": " + evt.String())
 	case *events.ConnectFailure:
-		w.ui.OnStatus(fmt.Sprintf("Gagal terhubung (%v)", evt.Reason))
+		w.ui.OnStatus(fmt.Sprintf(T("Gagal terhubung")+" (%v)", evt.Reason))
 	case *events.LoggedOut:
-		w.ui.OnStatus("Keluar dari perangkat")
+		w.ui.OnStatus(T("Keluar dari perangkat"))
 		go w.afterLogout()
 	case *events.Message:
 		w.onMessage(evt, true)
@@ -507,11 +507,11 @@ func extract(m *waE2E.Message) (kind, text string, thumb []byte) {
 		return "location", t, x.GetJPEGThumbnail()
 	case m.LiveLocationMessage != nil:
 		x := m.GetLiveLocationMessage()
-		return "location", fmt.Sprintf("Lokasi terkini\nhttps://maps.google.com/?q=%f,%f", x.GetDegreesLatitude(), x.GetDegreesLongitude()), x.GetJPEGThumbnail()
+		return "location", fmt.Sprintf(T("Lokasi terkini")+"\nhttps://maps.google.com/?q=%f,%f", x.GetDegreesLatitude(), x.GetDegreesLongitude()), x.GetJPEGThumbnail()
 	case m.ContactMessage != nil:
 		return "contact", m.GetContactMessage().GetDisplayName(), nil
 	case m.ContactsArrayMessage != nil:
-		return "contact", fmt.Sprintf("%d kontak", len(m.GetContactsArrayMessage().GetContacts())), nil
+		return "contact", fmt.Sprintf(T("%d kontak"), len(m.GetContactsArrayMessage().GetContacts())), nil
 	case m.PollCreationMessage != nil || m.PollCreationMessageV2 != nil || m.PollCreationMessageV3 != nil:
 		p := m.GetPollCreationMessage()
 		if p == nil {
@@ -614,7 +614,7 @@ func (w *WA) setSyncing() {
 	defer w.syncMu.Unlock()
 	if !w.syncing.Load() {
 		w.syncing.Store(true)
-		w.ui.OnStatus("Menyinkronkan riwayat chat…")
+		w.ui.OnStatus(T("Menyinkronkan riwayat chat…"))
 	}
 	if w.syncTmr != nil {
 		w.syncTmr.Stop()
@@ -622,7 +622,7 @@ func (w *WA) setSyncing() {
 	w.syncTmr = time.AfterFunc(6*time.Second, func() {
 		w.syncing.Store(false)
 		if w.cli.IsConnected() {
-			w.ui.OnStatus("Terhubung")
+			w.ui.OnStatus(T("Terhubung"))
 		}
 		w.ui.OnChatsChanged()
 	})
@@ -688,7 +688,7 @@ func (w *WA) DisplayName(jid string, stored string) string {
 		if stored != "" {
 			return stored
 		}
-		return "Grup"
+		return T("Grup")
 	}
 	if v, ok := w.names.Load(jid); ok {
 		return v.(string)
@@ -709,7 +709,7 @@ func (w *WA) DisplayName(jid string, stored string) string {
 		name = jid
 	}
 	if j.User == w.myUser() {
-		name += " (Anda)"
+		name += " (" + T("Anda") + ")"
 	}
 	w.names.Store(jid, name)
 	return name
@@ -791,7 +791,7 @@ func (w *WA) SetMute(chat string, mute bool, dur time.Duration) {
 	}
 	go func() {
 		if err := w.cli.SendAppState(bg, appstate.BuildMute(j, mute, dur)); err != nil {
-			w.ui.OnStatus("Mute hanya lokal (gagal sinkron ke ponsel)")
+			w.ui.OnStatus(T("Mute hanya lokal (gagal sinkron ke ponsel)"))
 		}
 	}()
 }
@@ -823,10 +823,10 @@ const RevokeWindow = 60 * time.Hour // batas "hapus untuk semua orang"
 func (w *WA) EditText(chat, id, text string) error {
 	m, ok := w.st.GetMessage(chat, id)
 	if !ok || !m.FromMe {
-		return errors.New("pesan tidak ditemukan")
+		return errors.New(T("pesan tidak ditemukan"))
 	}
 	if time.Since(time.Unix(m.TS, 0)) > EditWindow {
-		return errors.New("pesan hanya bisa diedit maksimal 15 menit setelah dikirim")
+		return errors.New(T("pesan hanya bisa diedit maksimal 15 menit setelah dikirim"))
 	}
 	cj, err := types.ParseJID(chat)
 	if err != nil {
@@ -836,7 +836,7 @@ func (w *WA) EditText(chat, id, text string) error {
 	go func() {
 		_, err := w.cli.SendMessage(bg, cj, w.cli.BuildEdit(cj, id, &waE2E.Message{Conversation: proto.String(text)}))
 		if err != nil {
-			w.ui.OnStatus("Gagal mengirim editan: " + err.Error())
+			w.ui.OnStatus(T("Gagal mengirim editan") + ": " + err.Error())
 		}
 	}()
 	return nil
@@ -851,7 +851,7 @@ func (w *WA) Revoke(chat, id string) error {
 	w.st.RevokeMessage(chat, id)
 	go func() {
 		if _, err := w.cli.SendMessage(bg, cj, w.cli.BuildRevoke(cj, types.EmptyJID, id)); err != nil {
-			w.ui.OnStatus("Gagal menghapus: " + err.Error())
+			w.ui.OnStatus(T("Gagal menghapus") + ": " + err.Error())
 		}
 	}()
 	return nil
@@ -861,7 +861,7 @@ func (w *WA) Revoke(chat, id string) error {
 func (w *WA) PinMessage(chat, id string, pin bool, dur time.Duration) error {
 	m, ok := w.st.GetMessage(chat, id)
 	if !ok {
-		return errors.New("pesan tidak ditemukan")
+		return errors.New(T("pesan tidak ditemukan"))
 	}
 	cj, err := types.ParseJID(chat)
 	if err != nil {
@@ -891,7 +891,7 @@ func (w *WA) PinMessage(chat, id string, pin bool, dur time.Duration) error {
 	}
 	go func() {
 		if _, err := w.cli.SendMessage(bg, cj, msg); err != nil {
-			w.ui.OnStatus("Sematan hanya lokal: " + err.Error())
+			w.ui.OnStatus(T("Sematan hanya lokal") + ": " + err.Error())
 		}
 	}()
 	return nil
@@ -906,7 +906,7 @@ func (w *WA) PinChat(chat string, pin bool) {
 	}
 	go func() {
 		if err := w.cli.SendAppState(bg, appstate.BuildPin(j, pin)); err != nil {
-			w.ui.OnStatus("Sematan obrolan hanya lokal (gagal sinkron)")
+			w.ui.OnStatus(T("Sematan obrolan hanya lokal (gagal sinkron)"))
 		}
 	}()
 }
@@ -1019,7 +1019,7 @@ func quotedProto(m *Msg) *waE2E.Message {
 func (w *WA) SendReaction(chat, id, emoji string) error {
 	m, ok := w.st.GetMessage(chat, id)
 	if !ok {
-		return errors.New("pesan tidak ditemukan")
+		return errors.New(T("pesan tidak ditemukan"))
 	}
 	to, _ := types.ParseJID(chat)
 	key := &waCommon.MessageKey{RemoteJID: proto.String(chat), FromMe: proto.Bool(m.FromMe), ID: proto.String(id)}
@@ -1035,7 +1035,7 @@ func (w *WA) SendReaction(chat, id, emoji string) error {
 func (w *WA) finishSend(m *Msg, err error) {
 	if err != nil {
 		w.st.SetStatus(m.Chat, m.ID, StFailed)
-		w.ui.OnStatus("Gagal mengirim: " + err.Error())
+		w.ui.OnStatus(T("Gagal mengirim") + ": " + err.Error())
 		w.ui.OnReceipt([]string{m.ID}, StFailed)
 		return
 	}
@@ -1057,7 +1057,7 @@ func (w *WA) SendFileEx(chat, path, caption string, reply *Msg, forwarded bool) 
 		return nil, err
 	}
 	if len(data) > maxUpload {
-		return nil, errors.New("ukuran file maksimal 100 MB")
+		return nil, errors.New(T("ukuran file maksimal 100 MB"))
 	}
 	mt := mime.TypeByExtension(strings.ToLower(filepath.Ext(path)))
 	if mt == "" {
@@ -1144,7 +1144,9 @@ func (w *WA) SendFileEx(chat, path, caption string, reply *Msg, forwarded bool) 
 }
 
 // SendAudio mengirim berkas audio sebagai pesan suara (ptt) atau audio biasa.
-func (w *WA) SendAudio(chat, path string, ptt bool) (*Msg, error) { return w.SendAudioEx(chat, path, ptt, nil) }
+func (w *WA) SendAudio(chat, path string, ptt bool) (*Msg, error) {
+	return w.SendAudioEx(chat, path, ptt, nil)
+}
 
 // SendAudioEx = SendAudio dengan opsi balasan.
 func (w *WA) SendAudioEx(chat, path string, ptt bool, reply *Msg) (*Msg, error) {
@@ -1153,7 +1155,7 @@ func (w *WA) SendAudioEx(chat, path string, ptt bool, reply *Msg) (*Msg, error) 
 		return nil, err
 	}
 	if len(data) > maxUpload {
-		return nil, errors.New("ukuran file maksimal 100 MB")
+		return nil, errors.New(T("ukuran file maksimal 100 MB"))
 	}
 	mt := mime.TypeByExtension(strings.ToLower(filepath.Ext(path)))
 	if mt == "" {
@@ -1220,14 +1222,14 @@ func (w *WA) ForwardMessage(dst string, src Msg) (*Msg, error) {
 		}
 		return w.sendMediaData(dst, src, data)
 	}
-	return nil, errors.New("jenis pesan ini tidak bisa diteruskan")
+	return nil, errors.New(T("jenis pesan ini tidak bisa diteruskan"))
 }
 
 // downloadMsg mengunduh media pesan dari server WhatsApp berdasarkan raw proto-nya.
 func (w *WA) downloadMsg(src Msg) ([]byte, error) {
 	var msg waE2E.Message
 	if proto.Unmarshal(src.Raw, &msg) != nil {
-		return nil, errors.New("media tidak tersedia")
+		return nil, errors.New(T("media tidak tersedia"))
 	}
 	var dl whatsmeow.DownloadableMessage
 	switch src.Kind {
@@ -1243,7 +1245,7 @@ func (w *WA) downloadMsg(src Msg) ([]byte, error) {
 		dl = msg.GetStickerMessage()
 	}
 	if dl == nil {
-		return nil, errors.New("media tidak tersedia")
+		return nil, errors.New(T("media tidak tersedia"))
 	}
 	return w.cli.Download(bg, dl)
 }
@@ -1376,7 +1378,7 @@ func makeThumbSize(data []byte, maxS, quality int) ([]byte, uint32, uint32) {
 func (w *WA) OpenMediaPath(chat, id string) (string, error) {
 	raw := w.st.GetRaw(chat, id)
 	if raw == nil {
-		return "", errors.New("media tidak tersedia")
+		return "", errors.New(T("media tidak tersedia"))
 	}
 	var m waE2E.Message
 	if err := proto.Unmarshal(raw, &m); err != nil {
@@ -1396,7 +1398,7 @@ func (w *WA) OpenMediaPath(chat, id string) (string, error) {
 	case m.StickerMessage != nil:
 		dl, mt = m.StickerMessage, m.StickerMessage.GetMimetype()
 	default:
-		return "", errors.New("jenis media tidak didukung")
+		return "", errors.New(T("jenis media tidak didukung"))
 	}
 	dir := downloadDir()
 	os.MkdirAll(dir, 0o755)
@@ -1421,7 +1423,7 @@ func (w *WA) OpenMediaPath(chat, id string) (string, error) {
 	if _, err := os.Stat(path); err != nil {
 		data, err := w.cli.Download(bg, dl)
 		if err != nil {
-			return "", fmt.Errorf("unduh gagal: %w", err)
+			return "", fmt.Errorf(T("unduh gagal")+": %w", err)
 		}
 		if err := os.WriteFile(path, data, 0o644); err != nil {
 			return "", err
@@ -1455,14 +1457,14 @@ func (w *WA) CheckNumber(phone string) (string, error) {
 		phone = "62" + phone[1:]
 	}
 	if len(phone) < 8 {
-		return "", errors.New("nomor tidak valid")
+		return "", errors.New(T("nomor tidak valid"))
 	}
 	res, err := w.cli.IsOnWhatsApp(bg, []string{"+" + phone})
 	if err != nil {
 		return "", err
 	}
 	if len(res) == 0 || !res[0].IsIn {
-		return "", errors.New("nomor ini tidak terdaftar di WhatsApp")
+		return "", errors.New(T("nomor ini tidak terdaftar di WhatsApp"))
 	}
 	return res[0].JID.ToNonAD().String(), nil
 }

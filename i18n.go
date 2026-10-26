@@ -3,7 +3,24 @@ package main
 // i18n.go — terjemahan antarmuka. Kunci peta adalah teks Bahasa Indonesia;
 // bila bahasa aktif "en", T() mengembalikan padanan Inggrisnya.
 
-var lang = "id"
+// Languages that are supported by the application, in this format for ui.go
+var languages = []struct{ id, label string }{
+	{"id", "Bahasa Indonesia"},
+	{"en", "English"},
+}
+
+// Derive the list of supported language id's from languages to avoid duplication
+var supportedLanguages = func() []string {
+	ids := make([]string, len(languages))
+	for i, language := range languages {
+		ids[i] = language.id
+	}
+	return ids
+}()
+
+// English is the most universal if we don't support the user's local language
+var defaultLanguage = "en"
+var lang = defaultLanguage
 
 // T menerjemahkan string antarmuka ke bahasa aktif.
 func T(s string) string {
@@ -17,21 +34,21 @@ func T(s string) string {
 
 var enStrings = map[string]string{
 	// v1.5: pesan suara & panggilan
-	"Panggilan":                        "Call",
-	"Panggilan suara tak terjawab":     "Missed voice call",
-	"Panggilan video tak terjawab":     "Missed video call",
-	"Panggilan suara · diangkat di ponsel": "Voice call · answered on phone",
-	"Panggilan video · diangkat di ponsel": "Video call · answered on phone",
+	"Panggilan":                                     "Call",
+	"Panggilan suara tak terjawab":                  "Missed voice call",
+	"Panggilan video tak terjawab":                  "Missed video call",
+	"Panggilan suara · diangkat di ponsel":          "Voice call · answered on phone",
+	"Panggilan video · diangkat di ponsel":          "Video call · answered on phone",
 	"Panggilan %s masuk dari %s — angkat di ponsel": "Incoming %s call from %s — answer on your phone",
-	"suara":                            "voice",
-	"video":                            "video",
+	"suara":                             "voice",
+	"video":                             "video",
 	"Merekam… klik lagi untuk mengirim": "Recording… click again to send",
-	"Pesan suara terkirim":             "Voice message sent",
-	"Rekaman kosong atau gagal":        "Recording empty or failed",
+	"Pesan suara terkirim":              "Voice message sent",
+	"Rekaman kosong atau gagal":         "Recording empty or failed",
 	"Perekam suara tidak ditemukan (pasang ffmpeg/pulseaudio-utils)": "No audio recorder found (install ffmpeg or pulseaudio-utils)",
-	"Memutar pesan suara…":             "Playing voice message…",
-	"Pemutar audio tidak ditemukan":    "No audio player found",
-	"Rekam pesan suara":                "Record a voice message",
+	"Memutar pesan suara…":          "Playing voice message…",
+	"Pemutar audio tidak ditemukan": "No audio player found",
+	"Rekam pesan suara":             "Record a voice message",
 	// umum
 	"Anda":        "You",
 	"Pesan":       "Message",
@@ -180,10 +197,11 @@ var enStrings = map[string]string{
 	"Tandai sudah dibaca":                       "Mark as read",
 	"Terbaru":                                   "Recent",
 	"Tidak bisa mengedit":                       "Cannot edit",
+	"Jadikan stiker…":                           "Make this a sticker…",
 	"Ubah gambar ini jadi stiker WhatsApp":      "Turn this image into a WhatsApp sticker",
 	"contoh: 0812xxxxxxx":                       "e.g. 0812xxxxxxx",
-	"libwebp tidak ditemukan.\\nPasang dulu: sudo apt install libwebp7":                                                                                "libwebp not found.\\nInstall it first: sudo apt install libwebp7",
-	"⚠ Obrol adalah klien tidak resmi (protokol whatsmeow). Ada risiko akun\\ndibatasi/diblokir oleh WhatsApp. Gunakan dengan bijak & risiko sendiri.": "⚠ Obrol is an unofficial client (whatsmeow protocol). Your account may\\nbe limited/banned by WhatsApp. Use wisely & at your own risk.",
+	"libwebp tidak ditemukan.\nPasang dulu: sudo apt install libwebp7":                                                                                "libwebp not found.\nInstall it first: sudo apt install libwebp7",
+	"⚠ Obrol adalah klien tidak resmi (protokol whatsmeow). Ada risiko akun\ndibatasi/diblokir oleh WhatsApp. Gunakan dengan bijak & risiko sendiri.": "⚠ Obrol is an unofficial client (whatsmeow protocol). Your account may\nbe limited/banned by WhatsApp. Use wisely & at your own risk.",
 	"Minggu":    "Sunday",
 	"Senin":     "Monday",
 	"Selasa":    "Tuesday",
@@ -225,4 +243,103 @@ var enStrings = map[string]string{
 	"Ctrl+F cari · Ctrl+N obrolan baru · Esc tutup obrolan":     "Ctrl+F search · Ctrl+N new chat · Esc close chat",
 	"dibuat oleh": "made by",
 	"Mode demo":   "Demo mode",
+
+	//new english translations that need to be put into the appropriate place
+	"Kirim %d file ke %s?": "Send %d file(s) to %s?",
+	"Lepas sematan salah satu obrolan dulu (sama seperti di WhatsApp).":           "Unpin one of the chats first (same as on WhatsApp).",
+	"Stiker animasi Lottie belum didukung":                                        "Lottie animated stickers are not yet supported",
+	"Stiker tidak bisa ditampilkan":                                               "Sticker cannot be displayed",
+	"Mengunduh stiker…":                                                           "Downloading stickers…",
+	"Stiker tidak tersedia lagi di server":                                        "The sticker is no longer available on the server",
+	"Belum ada stiker.\nStiker yang kamu terima atau kirim\nakan muncul di sini.": "No stickers yet.\nStickers you receive or send\nwill appear here.",
+	"Belum ada favorit.\nKlik kanan sebuah stiker →\n«Tambah ke favorit».":        "No favorites yet.\nRight-click a sticker →\n'Add to favorites'.",
+	"Ubah foto atau screenshot jadi stiker WhatsApp.\nBisa dipotong persegi, sudut membulat, dan diberi\ngaris tepi putih ala stiker.": "Turn photos or screenshots into WhatsApp stickers.\nYou can crop them into squares or shapes with rounded corners,\nand add a white border - just like a real sticker.",
+	"Pilih gambar untuk stiker":         "Select an image for the sticker",
+	"Pilih":                             "Select",
+	"Gambar":                            "Image",
+	"Simpan":                            "Save",
+	"sumber":                            "source",
+	"stiker tidak didukung":             "stickers are not supported",
+	"file stiker tidak ditemukan":       "sticker file not found",
+	"Menghubungkan…":                    "Connecting…",
+	"Gagal terhubung":                   "Failed to connect",
+	"Login gagal":                       "Login failed",
+	"nomor tidak valid":                 "Invalid number",
+	"Berhasil dipasangkan, menyiapkan…": "Successfully paired, preparing…",
+	"Terhubung":                         "Connected",
+	"Terputus — menyambung ulang…":      "Disconnected — reconnecting…",
+	"Koneksi lambat…":                   "Slow connection…",
+	"Sesi dibuka di tempat lain":        "Session opened elsewhere",
+	"Diblokir sementara":                "Temporarily blocked",
+	"Keluar dari perangkat":             "Logged out",
+	"Lokasi terkini":                    "Current location",
+	"%d kontak":                         "%d contacts",
+	"Menyinkronkan riwayat chat…":       "Syncing chat history…",
+	"Mute hanya lokal (gagal sinkron ke ponsel)":                "Mute is local only (failed to sync to phone)",
+	"pesan tidak ditemukan":                                     "message not found",
+	"pesan hanya bisa diedit maksimal 15 menit setelah dikirim": "message can only be edited within 15 minutes of sending",
+	"Gagal mengirim editan":                                     "Failed to send edits",
+	"Gagal menghapus":                                           "Failed to delete",
+	"Sematan hanya lokal":                                       "Pin is local only",
+	"Sematan obrolan hanya lokal (gagal sinkron)":               "Chat pins are local only (failed to sync)",
+	"ukuran file maksimal 100 MB":                               "maximum file size is 100 MB",
+	"jenis pesan ini tidak bisa diteruskan":                     "message type cannot be forwarded",
+	"media tidak tersedia":                                      "media not available",
+	"jenis media tidak didukung":                                "media type not supported",
+	"unduh gagal":                                               "download failed",
+	"nomor ini tidak terdaftar di WhatsApp":                     "this number is not registered on WhatsApp",
+	"animasi kosong":                                            "empty animation",
+	"kanvas terlalu besar":                                      "canvas too large",
+	"bukan file WebP":                                           "not a WebP file",
+	"buffer gambar tidak valid":                                 "invalid image buffer",
+	"libwebp tidak ditemukan (sudo apt install libwebp7)":       "libwebp not found (sudo apt install libwebp7)",
+	"encode WebP gagal":                                         "WebP encoding failed",
+	"Kirim gambar ke":                                           "Send image to",
+	"Pesan tersemat":                                            "Pinned message",
+	"Pesan tersemat %d dari %d":                                 "Pinned message %d of %d",
+	"sampai":                                                    "until",
+	"gambar tidak valid":                                        "invalid image",
+	"Memulai…":                                                  "Starting…",
+	"Obrolan baru (Ctrl+N)":                                     "New chat (Ctrl+N)",
+	"Atau masuk dengan nomor telepon":                           "Or sign in with phone number",
+	"Gagal":                                                     "Failed",
+	"Obrol — %d pesan belum dibaca":                             "Obrol - %d unread messages",
+	"Klik untuk membuka":                                        "Click to open",
+	"klik gambar untuk memutar":                                 "Click image to play",
+	"Buka":                                                      "Open",
+	"Media disimpan di":                                         "Media saved in",
+	"Semua file":                                                "All files",
+	"Mulai obrolan":                                             "Start a conversation",
+	"Gagal mengirim":                                            "Failed to send",
+	"Error QR":                                                  "QR Code Error",
+	"Pindai kode QR dengan ponsel":                              "Scan QR code with phone",
+	"klik untuk mengubah":                                       "click to change",
+	"%d pesan tersemat di obrolan ini":                          "%d pinned messages in this chat",
+	"Dibisukan selamanya":                                       "Muted forever",
+	"Dibisukan sampai":                                          "Muted until",
+	"Masuk sebagai":                                             "Signed in as",
+	"Keluar dari akun WhatsApp di Obrol?":                       "Logout from WhatsApp account in Obrol?",
+	"Klien WhatsApp native & super ringan untuk Linux":          "A native and super lightweight WhatsApp client for Linux",
+	"Dibuat oleh":                                               "Created by",
+	"Kode aplikasi":                                             "Application code",
+	"Masukkan kode ini di ponsel":                               "Enter this code on your phone",
+	"Ponsel: Perangkat tertaut → Tautkan perangkat → Tautkan dengan nomor telepon": "Mobile: Linked devices → Link a device → Link with phone number",
+	"Klien WhatsApp native":                         "Native WhatsApp Client",
+	"Edit (lewat batas 15 menit)":                   "Edit (15-minute limit exceeded)",
+	"mulai tersembunyi di system tray":              "start hidden in system tray",
+	"mode demo dengan data contoh (tanpa koneksi)":  "demo mode with sample data (no connection)",
+	"tampilkan halaman login contoh":                "show example login page",
+	"log whatsmeow ke terminal":                     "log whatsmeow to terminal",
+	"tampilkan versi":                               "show version",
+	"tulis ikon PNG bawaan ke path ini lalu keluar": "write default PNG icon to path and exit",
+	"tidak bisa membuat folder data:":               "can't create data folder:",
+
+	// QR login instructions
+	"1.  Buka <b>WhatsApp</b> di ponsel\n" +
+		"2.  Ketuk <b>⋮ Menu</b> (Android) atau <b>Pengaturan</b> (iPhone)\n" +
+		"3.  Pilih <b>Perangkat tertaut</b> → <b>Tautkan perangkat</b>\n" +
+		"4.  Arahkan kamera ponsel ke kode QR di samping": "1.  Open <b>WhatsApp</b> on your phone\n" +
+		"2.  Tap <b>⋮ Menu</b> (Android) or <b>Settings</b> (iPhone)\n" +
+		"3.  Select <b>Linked devices</b> → <b>Link a device</b>\n" +
+		"4.  Point your phone’s camera at the QR code beside these instructions",
 }
