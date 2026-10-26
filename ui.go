@@ -324,7 +324,7 @@ const baseCSS = `
 .emptyhint { opacity: 0.6; }
 .credit { opacity: 0.55; font-size: 0.85em; }
 .inputbox { background-color: @theme_base_color; border: 1px solid @borders; border-radius: 18px; padding: 7px 12px; }
-.inputbox textview, .inputbox textview text { background-color: transparent; }
+.inputbox textview, .inputbox textview text { background-color: @theme_base_color; }
 .placeholder { opacity: 0.45; }
 .editbar { padding: 4px 8px 4px 12px; border-left: 4px solid #00a884; background-color: alpha(@theme_fg_color, 0.05); }
 .pinbar { padding: 5px 12px; background-color: alpha(@theme_fg_color, 0.04); border-bottom: 1px solid alpha(@theme_fg_color, 0.1); }
