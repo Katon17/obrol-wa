@@ -137,6 +137,20 @@ sudo apt install build-essential pkg-config libgtk-3-dev golang-go
 
 Go 1.22+ is enough; the 1.26 toolchain required by whatsmeow is downloaded automatically.
 
+To build a Debian/Ubuntu package without installing it:
+
+```bash
+sudo apt install dpkg-dev binutils  # in addition to the build dependencies above
+./build-deb.sh
+```
+
+Packages are written to `dist/`. The script reads the version from `main.go` and
+uses your repository Git name/email as the package maintainer. Override these
+with `DEB_VERSION` and `DEB_MAINTAINER` if needed; see `./build-deb.sh --help`.
+Build on the oldest Debian/Ubuntu release you intend to support, since runtime
+library requirements are detected from the build machine. The script requires
+no root privileges and does not install the package.
+
 Command-line options:
 
 | Option | Effect |

@@ -15,3 +15,6 @@ Thumbs.db
 
 # Cache Go (tidak perlu ikut di repo)
 vendor/
+
+# Debian package build output
+/dist/
