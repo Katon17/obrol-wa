@@ -43,6 +43,12 @@ Dibuat oleh **Katon Bagaskoro**.
 |---|---|
 | ![VN](screenshots/v15-pesan-suara.png) | ![Panggilan](screenshots/v15-panggilan.png) |
 
+**Baru di 1.6:**
+
+| Baris "Diarsipkan" di daftar chat | Isi folder arsip + tombol kembali |
+|---|---|
+| ![Arsip](screenshots/v16-arsip.png) | ![Isi arsip](screenshots/v16-arsip-view.png) |
+
 ## Kenapa ringan?
 
 | | Obrol | WhatsApp Web di browser | Klien Electron |
@@ -102,6 +108,8 @@ Dibuat oleh **Katon Bagaskoro**.
   untuk kirim; VN masuk diputar langsung di aplikasi
 - ✅ **Notifikasi panggilan**: panggilan masuk/tak terjawab tampil sebagai baris 📞 di chat plus
   notifikasi desktop (menjawab tetap di ponsel — protokol unofficial tidak mendukung audio panggilan)
+- ✅ **Arsip chat**: klik kanan chat → *Arsipkan obrolan*; semua chat tersimpan rapi di baris
+  **Diarsipkan** (dengan jumlah), bisa dibuka dan dikembalikan kapan pun; status tersimpan permanen
 - ✅ **Ikon & logo buatan sendiri**: logo "Ngobrol" (dua gelembung obrolan) dan 27 ikon garis tipis yang
   digambar khusus sebagai SVG, sehingga tajam di skala berapa pun dan warnanya ikut tema terang/gelap
 - ✅ Single-instance: membuka Obrol lagi cukup memunculkan jendela yang sudah ada
@@ -174,6 +182,7 @@ Opsi baris perintah:
 
 Catatan lengkap per rilis ada di [CHANGELOG.md](CHANGELOG.md).
 
+- **1.6.0**: arsip chat (folder Diarsipkan, simpan permanen)
 - **1.5.0**: pesan suara (rekam/kirim/putar) + notifikasi panggilan
 - **1.4.0**: balas pesan (kutipan), reaksi emoji, teruskan pesan, dan pilihan bahasa Inggris
 - **1.3.0**: stiker penuh (tampil + animasi, panel Terbaru/Favorit, buat stiker dari gambar/screenshot),

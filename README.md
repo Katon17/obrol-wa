@@ -38,6 +38,12 @@ Made by **Katon Bagaskoro**.
 |---|---|
 | ![VN](screenshots/v15-pesan-suara.png) | ![Calls](screenshots/v15-panggilan.png) |
 
+**New in 1.6 — chat archive:**
+
+| "Archived" row in the chat list | Archive contents + back row |
+|---|---|
+| ![Archive](screenshots/v16-arsip.png) | ![Archive view](screenshots/v16-arsip-view.png) |
+
 ## Why is it so light?
 
 | | Obrol | WhatsApp Web in a browser | Electron clients |
@@ -73,6 +79,8 @@ Made by **Katon Bagaskoro**.
   click again to send; incoming VNs play right inside the app
 - ✅ **Call notifications**: incoming/missed calls appear as 📞 rows in the chat plus a desktop
   notification (answering stays on the phone — the unofficial protocol carries no call audio)
+- ✅ **Chat archive**: right-click a chat → *Archive chat*; archived conversations collect under an
+  **Archived** row (with count) and can be restored any time; the state persists across restarts
 - ✅ **Send photos & files** with a caption; **paste images with Ctrl+V** (PrtSc screenshots,
   Flameshot, or files copied from Thunar/Nemo) with a preview dialog
 - ✅ **Multi-line messages**: `Enter` sends, `Shift+Enter` newline; the input box grows to ±7 lines
@@ -136,20 +144,6 @@ sudo apt install build-essential pkg-config libgtk-3-dev golang-go
 ```
 
 Go 1.22+ is enough; the 1.26 toolchain required by whatsmeow is downloaded automatically.
-
-To build a Debian/Ubuntu package without installing it:
-
-```bash
-sudo apt install dpkg-dev binutils  # in addition to the build dependencies above
-./build-deb.sh
-```
-
-Packages are written to `dist/`. The script reads the version from `main.go` and
-uses your repository Git name/email as the package maintainer. Override these
-with `DEB_VERSION` and `DEB_MAINTAINER` if needed; see `./build-deb.sh --help`.
-Build on the oldest Debian/Ubuntu release you intend to support, since runtime
-library requirements are detected from the build machine. The script requires
-no root privileges and does not install the package.
 
 Command-line options:
 

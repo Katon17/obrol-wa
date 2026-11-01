@@ -6,8 +6,8 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
-	"sort"
 	"strings"
+	"sort"
 	"sync"
 	"time"
 
@@ -23,8 +23,10 @@ type Chat struct {
 	IsGroup  bool
 	// MutedUntil: 0 = tidak dibisukan, -1 = selamanya, >0 = unix detik
 	MutedUntil int64
-	// Pinned: 0 = tidak disematkan, >0 = waktu disematkan (unix detik)
+	// Pinned: 0 = tidak di sematkan, >0 = waktu disematkan (unix detik)
 	Pinned int64
+	// Archived: 0 = aktif, 1 = diarsipkan
+	Archived int64
 }
 
 func (c Chat) Muted() bool {
@@ -164,6 +166,7 @@ CREATE INDEX IF NOT EXISTS idx_msg_id ON messages(id);
 	// migrasi v1.2: edit, sematkan obrolan, sematkan pesan
 	db.Exec(`ALTER TABLE messages ADD COLUMN edited INTEGER NOT NULL DEFAULT 0`)
 	db.Exec(`ALTER TABLE chats ADD COLUMN pinned INTEGER NOT NULL DEFAULT 0`)
+	db.Exec(`ALTER TABLE chats ADD COLUMN archived INTEGER NOT NULL DEFAULT 0`)
 	db.Exec(`CREATE TABLE IF NOT EXISTS pins (chat TEXT NOT NULL, id TEXT NOT NULL, until INTEGER NOT NULL DEFAULT 0, pinned_at INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(chat, id))`)
 	// bersihkan penanda lama " ✎" dari v1.0/1.1
 	db.Exec(`UPDATE messages SET text = substr(text, 1, length(text)-2), edited = 1 WHERE text LIKE '% ✎'`)
@@ -201,7 +204,7 @@ func (s *Store) SetReactions(chat, id, jsonStr string) {
 func isGroupJID(j string) bool { return strings.HasSuffix(j, "@g.us") }
 
 func (s *Store) ListChats() ([]Chat, error) {
-	rows, err := s.db.Query(`SELECT jid, name, last_ts, last_text, unread, muted_until, pinned FROM chats WHERE last_ts > 0 ORDER BY pinned DESC, last_ts DESC`)
+	rows, err := s.db.Query(`SELECT jid, name, last_ts, last_text, unread, muted_until, pinned, archived FROM chats WHERE last_ts > 0 ORDER BY pinned DESC, last_ts DESC`)
 	if err != nil {
 		return nil, err
 	}
@@ -209,7 +212,7 @@ func (s *Store) ListChats() ([]Chat, error) {
 	var out []Chat
 	for rows.Next() {
 		var c Chat
-		if err := rows.Scan(&c.JID, &c.Name, &c.LastTS, &c.LastText, &c.Unread, &c.MutedUntil, &c.Pinned); err != nil {
+		if err := rows.Scan(&c.JID, &c.Name, &c.LastTS, &c.LastText, &c.Unread, &c.MutedUntil, &c.Pinned, &c.Archived); err != nil {
 			return nil, err
 		}
 		c.IsGroup = isGroupJID(c.JID)
@@ -220,8 +223,8 @@ func (s *Store) ListChats() ([]Chat, error) {
 
 func (s *Store) GetChat(jid string) (Chat, bool) {
 	var c Chat
-	err := s.db.QueryRow(`SELECT jid, name, last_ts, last_text, unread, muted_until, pinned FROM chats WHERE jid=?`, jid).
-		Scan(&c.JID, &c.Name, &c.LastTS, &c.LastText, &c.Unread, &c.MutedUntil, &c.Pinned)
+	err := s.db.QueryRow(`SELECT jid, name, last_ts, last_text, unread, muted_until, pinned, archived FROM chats WHERE jid=?`, jid).
+		Scan(&c.JID, &c.Name, &c.LastTS, &c.LastText, &c.Unread, &c.MutedUntil, &c.Pinned, &c.Archived)
 	c.IsGroup = isGroupJID(jid)
 	return c, err == nil
 }
@@ -246,11 +249,27 @@ func (s *Store) SetUnread(jid string, n int) {
 // (dan grup bila "bisukan semua grup" aktif).
 func (s *Store) TotalUnread(muteGroups bool) int {
 	var n int
-	q := `SELECT COALESCE(SUM(unread),0) FROM chats WHERE NOT (muted_until = -1 OR muted_until > ?)`
+	q := `SELECT COALESCE(SUM(unread),0) FROM chats WHERE archived=0 AND NOT (muted_until = -1 OR muted_until > ?)`
 	if muteGroups {
 		q += ` AND jid NOT LIKE '%@g.us'`
 	}
 	s.db.QueryRow(q, time.Now().Unix()).Scan(&n)
+	return n
+}
+
+// SetArchived menandai chat sebagai diarsipkan (atau mengembalikannya).
+func (s *Store) SetArchived(jid string, arch bool) {
+	v := 0
+	if arch {
+		v = 1
+	}
+	s.db.Exec(`UPDATE chats SET archived=? WHERE jid=?`, v, jid)
+}
+
+// ArchivedCount = jumlah chat di arsip (untuk baris "Diarsipkan").
+func (s *Store) ArchivedCount() int {
+	var n int
+	s.db.QueryRow(`SELECT COUNT(*) FROM chats WHERE archived=1 AND last_ts>0`).Scan(&n)
 	return n
 }
 
@@ -512,14 +531,14 @@ func previewText(m *Msg) string {
 	lbl := kindLabel(m.Kind)
 	switch {
 	case m.Kind == "deleted":
-		t = "🚫 " + T("Pesan ini dihapus")
+		t = "🚫 Pesan ini dihapus"
 	case lbl != "" && t != "":
 		t = lbl + " · " + t
 	case lbl != "":
 		t = lbl
 	}
 	if m.FromMe {
-		t = T("Anda") + ": " + t
+		t = "Anda: " + t
 	} else if isGroupJID(m.Chat) && m.SenderName != "" {
 		t = m.SenderName + ": " + t
 	}

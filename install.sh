@@ -10,17 +10,13 @@ APPS="$HOME/.local/share/applications"
 ICONS="$HOME/.local/share/icons/hicolor"
 DATA="${XDG_DATA_HOME:-$HOME/.local/share}/obrol"
 
-# Import multi-lingual script support
-# By having msg() use english as the key, this provides a default fallback language
-source ./i18n.sh
-
 if [ "$1" = "--uninstall" ] || [ "$1" = "--purge" ]; then
   pkill -x obrol 2>/dev/null || true
   rm -f "$BIN/obrol" "$APPS/obrol.desktop" "$HOME/.config/autostart/obrol.desktop"
   rm -f "$ICONS"/*/apps/obrol.png
-  [ "$1" = "--purge" ] && rm -rf "$DATA" && msg '✔ Data and session deleted.'
+  [ "$1" = "--purge" ] && rm -rf "$DATA" && echo "✔ Data & sesi dihapus."
   command -v update-desktop-database >/dev/null && update-desktop-database "$APPS" 2>/dev/null || true
-  msg '✔ Obrol uninstalled.'
+  echo "✔ Obrol sudah dihapus."
   exit 0
 fi
 
@@ -28,13 +24,13 @@ fi
 chmod +x obrol build.sh 2>/dev/null || true
 
 if [ ! -f ./obrol ]; then
-  msg "Binary 'obrol' not found in this directory; building from source…"
+  echo "Binary 'obrol' tidak ditemukan di folder ini, build dari source…"
   bash ./build.sh
 fi
 if ! ./obrol --version >/dev/null 2>&1; then
-  msg '✘ The binary cannot run on this system. Details:'
+  echo "✘ Binary tidak bisa dijalankan di sistem ini. Detail:"
   ./obrol --version || true
-  msg "  → Make sure 'obrol' was fully downloaded (±19 MB), or build from source: bash build.sh"
+  echo "  → Pastikan file 'obrol' terunduh utuh (±19 MB), atau build dari source: bash build.sh"
   exit 1
 fi
 
@@ -65,16 +61,13 @@ cat > "$APPS/obrol.desktop" <<DESK
 [Desktop Entry]
 Type=Application
 Name=Obrol
-GenericName=WhatsApp Client
-GenericName[id]=Klien WhatsApp
-Comment=A lightweight native WhatsApp client
-Comment[id]=Klien WhatsApp native & super ringan
-Exec=obrol
+GenericName=Klien WhatsApp
+Comment=Klien WhatsApp native & super ringan
+Exec=$BIN/obrol
 Icon=obrol
 Terminal=false
 Categories=Network;InstantMessaging;Chat;GTK;
-Keywords=whatsapp;wa;chat;messaging;messages;
-Keywords[id]=whatsapp;wa;chat;pesan;obrol;
+Keywords=whatsapp;wa;chat;pesan;obrol;
 StartupNotify=true
 StartupWMClass=obrol
 DESK
@@ -82,7 +75,7 @@ command -v gtk-update-icon-cache >/dev/null && gtk-update-icon-cache -f -t "$ICO
 command -v update-desktop-database >/dev/null && update-desktop-database "$APPS" 2>/dev/null || true
 
 echo ""
-msg '✔ Obrol %s installed!' "$(./obrol --version | cut -d' ' -f2)"
-msg '  • Open Menu → Internet → Obrol, or run: obrol'
-msg '  • Data and session stored in: %s' "$DATA"
-case ":$PATH:" in *":$BIN:"*) ;; *) msg "  • (Note: %s is not in PATH — log out and back in so the 'obrol' command is available)" "$BIN";; esac
+echo "✔ Obrol $(./obrol --version | cut -d' ' -f2) terpasang!"
+echo "  • Buka dari Menu → Internet → Obrol, atau ketik:  obrol"
+echo "  • Data & sesi tersimpan di: $DATA"
+case ":$PATH:" in *":$BIN:"*) ;; *) echo "  • (Catatan: $BIN belum ada di PATH — logout/login sekali agar perintah 'obrol' dikenali)";; esac

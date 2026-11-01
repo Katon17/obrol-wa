@@ -1,15 +1,12 @@
 [Desktop Entry]
 Type=Application
 Name=Obrol
-GenericName=WhatsApp Client
-GenericName[id]=Klien WhatsApp
-Comment=A lightweight native WhatsApp client
-Comment[id]=Klien WhatsApp native & super ringan
+GenericName=Klien WhatsApp
+Comment=Klien WhatsApp native & super ringan
 Exec=obrol
 Icon=obrol
 Terminal=false
 Categories=Network;InstantMessaging;Chat;GTK;
-Keywords=whatsapp;wa;chat;messaging;messages;
-Keywords[id]=whatsapp;wa;chat;pesan;obrol;
+Keywords=whatsapp;wa;chat;pesan;obrol;
 StartupNotify=true
 StartupWMClass=obrol
