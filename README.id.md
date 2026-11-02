@@ -49,6 +49,12 @@ Dibuat oleh **Katon Bagaskoro**.
 |---|---|
 | ![Arsip](screenshots/v16-arsip.png) | ![Isi arsip](screenshots/v16-arsip-view.png) |
 
+**Baru di 1.7:**
+
+| Profil kontak | Profil grup | Donasi di Tentang |
+|---|---|---|
+| ![Profil kontak](screenshots/v17-profil-kontak.png) | ![Profil grup](screenshots/v17-profil-grup.png) | ![About](screenshots/v17-about.png) |
+
 ## Kenapa ringan?
 
 | | Obrol | WhatsApp Web di browser | Klien Electron |
@@ -110,6 +116,9 @@ Dibuat oleh **Katon Bagaskoro**.
   notifikasi desktop (menjawab tetap di ponsel — protokol unofficial tidak mendukung audio panggilan)
 - ✅ **Arsip chat**: klik kanan chat → *Arsipkan obrolan*; semua chat tersimpan rapi di baris
   **Diarsipkan** (dengan jumlah), bisa dibuka dan dikembalikan kapan pun; status tersimpan permanen
+- ✅ **Profil kontak & grup**: klik header chat untuk melihat foto profil (otomatis diunduh &
+  di-cache), nomor, teks about, serta jumlah peserta + deskripsi grup; ada tombol salin nomor
+- ☕ **Dukungan**: link donasi Saweria tersedia di dialog *Tentang Obrol*
 - ✅ **Ikon & logo buatan sendiri**: logo "Ngobrol" (dua gelembung obrolan) dan 27 ikon garis tipis yang
   digambar khusus sebagai SVG, sehingga tajam di skala berapa pun dan warnanya ikut tema terang/gelap
 - ✅ Single-instance: membuka Obrol lagi cukup memunculkan jendela yang sudah ada
@@ -182,6 +191,7 @@ Opsi baris perintah:
 
 Catatan lengkap per rilis ada di [CHANGELOG.md](CHANGELOG.md).
 
+- **1.7.0**: profil kontak/grup (foto, about, info grup) + link donasi Saweria
 - **1.6.0**: arsip chat (folder Diarsipkan, simpan permanen)
 - **1.5.0**: pesan suara (rekam/kirim/putar) + notifikasi panggilan
 - **1.4.0**: balas pesan (kutipan), reaksi emoji, teruskan pesan, dan pilihan bahasa Inggris

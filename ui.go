@@ -311,6 +311,7 @@ const baseCSS = `
 .datesep { border-radius: 8px; padding: 3px 12px; font-size: 0.8em; }
 .avatar { border-radius: 999px; color: #ffffff; font-weight: bold; min-width: 44px; min-height: 44px; }
 .avatar.small { min-width: 36px; min-height: 36px; font-size: 0.9em; }
+.avatar.big { min-width: 96px; min-height: 96px; font-size: 2.2em; }
 .av0 { background-color: #00a884; } .av1 { background-color: #53bdeb; } .av2 { background-color: #ff7eb6; }
 .av3 { background-color: #8a6fdf; } .av4 { background-color: #f5a623; } .av5 { background-color: #e5533d; }
 .av6 { background-color: #3a8bd6; } .av7 { background-color: #5d9c59; }
@@ -908,7 +909,14 @@ func (a *App) buildChatView() gtk.IWidget {
 	a.muteIcon = newIcon("bell", 18)
 	a.muteBtn.Add(a.muteIcon)
 	hdr.PackEnd(a.muteBtn, false, false, 0)
-	v.PackStart(hdr, false, false, 0)
+	heb, _ := gtk.EventBoxNew()
+	heb.Add(hdr)
+	heb.SetTooltipText(T("Klik untuk melihat profil"))
+	heb.Connect("button-press-event", func() bool {
+		a.showProfile(a.current)
+		return true
+	})
+	v.PackStart(heb, false, false, 0)
 	v.PackStart(a.buildPinBar(), false, false, 0)
 
 	a.msgScroll, _ = gtk.ScrolledWindowNew(nil, nil)
@@ -1724,6 +1732,8 @@ func (a *App) about() {
 		cr += "\nMasuk sebagai: " + a.wa.MyName()
 	}
 	d.SetCopyright(cr)
+	d.SetWebsite("https://saweria.co/Kabako")
+	d.SetWebsiteLabel("☕ " + T("Dukung pengembangan via Saweria"))
 	d.Run()
 	d.Destroy()
 }
@@ -1769,6 +1779,9 @@ func (a *App) muteMenu(jid string) *gtk.Menu {
 		menu.Append(it)
 	}
 	addI := func(icon, label string, fn func()) { menu.Append(menuItem(icon, label, fn)) }
+	addI("user", T("Lihat profil"), func() { a.showProfile(jid) })
+	sp0, _ := gtk.SeparatorMenuItemNew()
+	menu.Append(sp0)
 	if c.Archived > 0 {
 		addI("archive", T("Kembalikan dari arsip"), func() { a.archiveChat(jid, false) })
 	} else {

@@ -39,6 +39,15 @@ var enStrings = map[string]string{
 	"Kembali ke obrolan aktif":       "Back to active chats",
 	"Obrolan diarsipkan":             "Chat archived",
 	"Obrolan dikeluarkan dari arsip": "Chat unarchived",
+	// v1.7: profil & donasi
+	"Profil":                          "Profile",
+	"Lihat profil":                    "View profile",
+	"Klik untuk melihat profil":       "Click to view profile",
+	"Salin nomor":                     "Copy number",
+	"Nomor disalin":                   "Number copied",
+	"Deskripsi grup":                  "Group description",
+	"%d peserta":                      "%d participants",
+	"Dukung pengembangan via Saweria": "Support development via Saweria",
 	// umum
 	"Anda":        "You",
 	"Pesan":       "Message",

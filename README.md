@@ -44,6 +44,12 @@ Made by **Katon Bagaskoro**.
 |---|---|
 | ![Archive](screenshots/v16-arsip.png) | ![Archive view](screenshots/v16-arsip-view.png) |
 
+**New in 1.7 — profiles & donation link:**
+
+| Contact profile | Group profile | Donation in About |
+|---|---|---|
+| ![Contact](screenshots/v17-profil-kontak.png) | ![Group](screenshots/v17-profil-grup.png) | ![About](screenshots/v17-about.png) |
+
 ## Why is it so light?
 
 | | Obrol | WhatsApp Web in a browser | Electron clients |
@@ -81,6 +87,9 @@ Made by **Katon Bagaskoro**.
   notification (answering stays on the phone — the unofficial protocol carries no call audio)
 - ✅ **Chat archive**: right-click a chat → *Archive chat*; archived conversations collect under an
   **Archived** row (with count) and can be restored any time; the state persists across restarts
+- ✅ **Contact & group profile**: click the chat header to see the profile picture (auto-downloaded
+  & cached), phone number, about text, and for groups the participant count + description
+- ☕ **Support**: a Saweria donation link lives in the *About* dialog
 - ✅ **Send photos & files** with a caption; **paste images with Ctrl+V** (PrtSc screenshots,
   Flameshot, or files copied from Thunar/Nemo) with a preview dialog
 - ✅ **Multi-line messages**: `Enter` sends, `Shift+Enter` newline; the input box grows to ±7 lines
