@@ -634,16 +634,16 @@ func (a *App) buildLogin() gtk.IWidget {
 	addClass(title, "bigtitle")
 	title.SetXAlign(0)
 	steps, _ := gtk.LabelNew("")
-	steps.SetMarkup("1.  Buka <b>WhatsApp</b> di ponsel\n" +
-		"2.  Ketuk <b>⋮ Menu</b> (Android) atau <b>Pengaturan</b> (iPhone)\n" +
-		"3.  Pilih <b>Perangkat tertaut</b> → <b>Tautkan perangkat</b>\n" +
-		"4.  Arahkan kamera ponsel ke kode QR di samping")
+	steps.SetMarkup(T("1.  Buka <b>WhatsApp</b> di ponsel") + "\n" +
+		T("2.  Ketuk <b>⋮ Menu</b> (Android) atau <b>Pengaturan</b> (iPhone)") + "\n" +
+		T("3.  Pilih <b>Perangkat tertaut</b> → <b>Tautkan perangkat</b>") + "\n" +
+		T("4.  Arahkan kamera ponsel ke kode QR di samping"))
 	steps.SetXAlign(0)
 	steps.SetLineWrap(true)
 
 	sepr, _ := gtk.SeparatorNew(gtk.ORIENTATION_HORIZONTAL)
 	alt, _ := gtk.LabelNew("")
-	alt.SetMarkup("<b>Atau masuk dengan nomor telepon</b>")
+	alt.SetMarkup(T("<b>Atau masuk dengan nomor telepon</b>"))
 	alt.SetXAlign(0)
 	prow, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 6)
 	a.phoneEnt, _ = gtk.EntryNew()
@@ -663,10 +663,10 @@ func (a *App) buildLogin() gtk.IWidget {
 			code, err := a.wa.PairPhone(ph)
 			glib.IdleAdd(func() {
 				if err != nil {
-					a.pairLbl.SetText("Gagal: " + err.Error())
+					a.pairLbl.SetText(T("Gagal: ") + err.Error())
 					return
 				}
-				a.pairLbl.SetMarkup("<span size='large'>Masukkan kode ini di ponsel:</span>\n<span font_family='monospace' size='xx-large' weight='bold'>" + html.EscapeString(code) + "</span>\n<small>Ponsel: Perangkat tertaut → Tautkan perangkat → Tautkan dengan nomor telepon</small>")
+				a.pairLbl.SetMarkup(T("<span size='large'>Masukkan kode ini di ponsel:</span>") + "\n<span font_family='monospace' size='xx-large' weight='bold'>" + html.EscapeString(code) + "</span>\n" + T("<small>Ponsel: Perangkat tertaut → Tautkan perangkat → Tautkan dengan nomor telepon</small>"))
 			})
 		}()
 	}
@@ -684,7 +684,7 @@ func (a *App) buildLogin() gtk.IWidget {
 	left.PackStart(prow, false, false, 0)
 	left.PackStart(a.pairLbl, false, false, 0)
 	left.PackStart(warn, false, false, 12)
-	credit, _ := gtk.LabelNew("Obrol " + version + " · dibuat oleh " + author)
+	credit, _ := gtk.LabelNew("Obrol " + version + " · " + T("dibuat oleh") + " " + author)
 	addClass(credit, "credit")
 	credit.SetXAlign(0)
 	left.PackStart(credit, false, false, 0)
@@ -868,7 +868,7 @@ func (a *App) buildMain() gtk.IWidget {
 	emptyBg.PackStart(empty, true, true, 0)
 	logo, _ := gtk.ImageNewFromPixbuf(svgPixbuf(logoSVG, 112))
 	eh, _ := gtk.LabelNew("")
-	eh.SetMarkup("<span size='x-large' weight='bold'>Obrol</span>\nPilih obrolan di sebelah kiri untuk mulai mengirim pesan.\n<small>Ctrl+F cari · Ctrl+N obrolan baru · Esc tutup obrolan</small>\n\n<small>Obrol " + version + " · dibuat oleh " + html.EscapeString(author) + "</small>")
+	eh.SetMarkup("<span size='x-large' weight='bold'>Obrol</span>\n" + T("Pilih obrolan di sebelah kiri untuk mulai mengirim pesan.") + "\n" + T("<small>Ctrl+F cari · Ctrl+N obrolan baru · Esc tutup obrolan</small>") + "\n\n<small>Obrol " + version + " · " + T("dibuat oleh") + " " + html.EscapeString(author) + "</small>")
 	eh.SetJustify(gtk.JUSTIFY_CENTER)
 	addClass(eh, "emptyhint")
 	empty.PackStart(logo, false, false, 0)
@@ -1131,7 +1131,7 @@ func (a *App) updateUnread() {
 	if a.tray != nil {
 		if total > 0 {
 			a.tray.SetFromPixbuf(a.trayPixbuf(true))
-			a.tray.SetTooltipText(fmt.Sprintf("Obrol — %d pesan belum dibaca", total))
+			a.tray.SetTooltipText(fmt.Sprintf(T("Obrol — %d pesan belum dibaca"), total))
 		} else {
 			a.tray.SetFromPixbuf(a.trayPixbuf(false))
 			a.tray.SetTooltipText(T("Obrol"))
@@ -1413,7 +1413,7 @@ func (a *App) bubbleRow(m *Msg) *gtk.ListBoxRow {
 			eb, _ := gtk.EventBoxNew()
 			eb.Add(img)
 			if isMediaKind(m.Kind) {
-				eb.SetTooltipText("Klik untuk membuka " + strings.TrimSpace(strings.TrimLeftFunc(kindLabel(m.Kind), func(r rune) bool { return !unicode.IsLetter(r) })))
+				eb.SetTooltipText(T("Klik untuk membuka ") + strings.TrimSpace(strings.TrimLeftFunc(kindLabel(m.Kind), func(r rune) bool { return !unicode.IsLetter(r) })))
 				chat, id := m.Chat, m.ID
 				eb.Connect("button-press-event", func() { a.openMedia(chat, id) })
 			}
@@ -1450,7 +1450,7 @@ func (a *App) bubbleRow(m *Msg) *gtk.ListBoxRow {
 		btn, _ := gtk.ButtonNew()
 		bb, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 8)
 		bb.PackStart(newIcon(icon, 18), false, false, 0)
-		bl, _ := gtk.LabelNew(label + "  ·  Buka")
+		bl, _ := gtk.LabelNew(label + "  ·  " + T("Buka"))
 		bl.SetEllipsize(pango.ELLIPSIZE_MIDDLE)
 		bl.SetMaxWidthChars(40)
 		bb.PackStart(bl, false, false, 0)
@@ -1571,7 +1571,7 @@ func (a *App) openMedia(chat, id string) {
 			if err != nil {
 				a.flashStatus("⚠ " + err.Error())
 			} else {
-				a.flashStatus("Media disimpan di " + downloadDir())
+				a.flashStatus(T("Media disimpan di ") + downloadDir())
 			}
 		})
 	}()
@@ -1657,8 +1657,8 @@ func (a *App) newChatDialog() {
 	dlg.SetTransientFor(a.win)
 	dlg.SetModal(true)
 	dlg.SetTitle(T("Obrolan baru"))
-	dlg.AddButton("Batal", gtk.RESPONSE_CANCEL)
-	ok, _ := dlg.AddButton("Mulai obrolan", gtk.RESPONSE_OK)
+	dlg.AddButton(T("Batal"), gtk.RESPONSE_CANCEL)
+	ok, _ := dlg.AddButton(T("Mulai obrolan"), gtk.RESPONSE_OK)
 	addClass(ok, "suggested-action")
 	dlg.SetDefaultResponse(gtk.RESPONSE_OK)
 	area, _ := dlg.GetContentArea()
@@ -1725,15 +1725,23 @@ func (a *App) about() {
 	d.SetVersion(version)
 	d.SetLogo(svgPixbuf(logoSVG, 128))
 	d.SetAuthors([]string{author})
-	d.SetComments("Klien WhatsApp native & super ringan untuk Linux (GTK3 + whatsmeow).\n\nDibuat oleh " + author + ".")
+	d.SetComments(T("Klien WhatsApp native & super ringan untuk Linux (GTK3 + whatsmeow).") + "\n\n" + T("dibuat oleh") + " " + author + ".")
 	d.SetLicense("Kode aplikasi: MIT. whatsmeow: MPL-2.0. gotk3: ISC.")
 	cr := "© 2026 " + author
 	if a.wa != nil {
-		cr += "\nMasuk sebagai: " + a.wa.MyName()
+		cr += "\n" + T("Masuk sebagai: ") + a.wa.MyName()
 	}
 	d.SetCopyright(cr)
-	d.SetWebsite("https://saweria.co/Kabako")
-	d.SetWebsiteLabel("☕ " + T("Dukung pengembangan via Saweria"))
+	ca, _ := d.GetContentArea()
+	dbox, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 24)
+	dbox.SetHAlign(gtk.ALIGN_CENTER)
+	dbox.SetMarginBottom(4)
+	saw, _ := gtk.LinkButtonNewWithLabel("https://saweria.co/Kabako", "☕ "+T("Dukung via Saweria"))
+	kof, _ := gtk.LinkButtonNewWithLabel("https://ko-fi.com/katonbagaskoro", "☕ "+T("Dukung via Ko-fi"))
+	dbox.PackStart(saw, false, false, 0)
+	dbox.PackStart(kof, false, false, 0)
+	ca.PackStart(dbox, false, false, 6)
+	ca.ShowAll()
 	d.Run()
 	d.Destroy()
 }
@@ -1748,13 +1756,13 @@ func (a *App) isMuted(c Chat) bool {
 func muteDesc(c Chat) string {
 	switch {
 	case c.MutedUntil == -1:
-		return "Dibisukan selamanya"
+		return T("Dibisukan selamanya")
 	case c.Muted():
 		t := time.Unix(c.MutedUntil, 0)
 		if dayKey(c.MutedUntil) == dayKey(time.Now().Unix()) {
-			return "Dibisukan sampai " + t.Format("15:04")
+			return T("Dibisukan sampai ") + t.Format("15:04")
 		}
-		return fmt.Sprintf("Dibisukan sampai %s, %s", dayLabelShort(t), t.Format("15:04"))
+		return fmt.Sprintf(T("Dibisukan sampai %s, %s"), dayLabelShort(t), t.Format("15:04"))
 	}
 	return ""
 }
@@ -1859,7 +1867,11 @@ func (a *App) refreshMuteBtn(c Chat) {
 	}
 	if c.Muted() {
 		a.muteIcon.SetName("bell-off")
-		a.muteBtn.SetTooltipText(muteDesc(c) + " — klik untuk mengubah")
+		if md := muteDesc(c); md != "" {
+			a.muteBtn.SetTooltipText(md + " — " + T("klik untuk mengubah"))
+		} else {
+			a.muteBtn.SetTooltipText(T("klik untuk mengubah"))
+		}
 	} else {
 		a.muteIcon.SetName("bell")
 		a.muteBtn.SetTooltipText(T("Sematkan / bisukan obrolan ini"))

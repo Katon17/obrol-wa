@@ -281,13 +281,13 @@ func (a *App) confirmImage(pb *gdk.Pixbuf, path string) {
 	dlg, _ := gtk.DialogNew()
 	dlg.SetTransientFor(a.win)
 	dlg.SetModal(true)
-	dlg.SetTitle("Kirim gambar ke " + a.chatTitle.GetLabel())
-	dlg.AddButton("Batal", gtk.RESPONSE_CANCEL)
+	dlg.SetTitle(T("Kirim gambar ke ") + a.chatTitle.GetLabel())
+	dlg.AddButton(T("Batal"), gtk.RESPONSE_CANCEL)
 	if webpEncoderAvailable() {
-		st, _ := dlg.AddButton("Jadikan stiker…", gtk.RESPONSE_APPLY)
+		st, _ := dlg.AddButton(T("Jadikan stiker…"), gtk.RESPONSE_APPLY)
 		st.SetTooltipText(T("Ubah gambar ini jadi stiker WhatsApp"))
 	}
-	ok, _ := dlg.AddButton("Kirim", gtk.RESPONSE_OK)
+	ok, _ := dlg.AddButton(T("Kirim"), gtk.RESPONSE_OK)
 	addClass(ok, "suggested-action")
 	dlg.SetDefaultResponse(gtk.RESPONSE_OK)
 	area, _ := dlg.GetContentArea()
@@ -426,7 +426,7 @@ func (a *App) startEdit(chat, id string) {
 		return
 	}
 	a.editID, a.editChat = id, chat
-	a.editLbl.SetMarkup("<b>Edit pesan</b>  <span alpha='70%'>" + escape(oneLine(m.Text, 80)) + "</span>")
+	a.editLbl.SetMarkup("<b>" + T("Edit pesan") + "</b>  <span alpha='70%'>" + escape(oneLine(m.Text, 80)) + "</span>")
 	a.editBar.Show()
 	a.setInputText(m.Text)
 	a.input.GrabFocus()
@@ -669,9 +669,9 @@ func (a *App) updatePinLabel() {
 		return
 	}
 	p := a.pins[a.pinIdx%len(a.pins)]
-	title := "Pesan tersemat"
+	title := T("Pesan tersemat")
 	if len(a.pins) > 1 {
-		title = fmt.Sprintf("Pesan tersemat %d dari %d", a.pinIdx%len(a.pins)+1, len(a.pins))
+		title = fmt.Sprintf(T("Pesan tersemat %d dari %d"), a.pinIdx%len(a.pins)+1, len(a.pins))
 	}
 	if p.Until > 0 {
 		title += " · sampai " + dayLabelShort(time.Unix(p.Until, 0))

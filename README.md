@@ -48,7 +48,7 @@ Made by **Katon Bagaskoro**.
 
 | Contact profile | Group profile | Donation in About |
 |---|---|---|
-| ![Contact](screenshots/v17-profil-kontak.png) | ![Group](screenshots/v17-profil-grup.png) | ![About](screenshots/v17-about.png) |
+| ![Contact](screenshots/v17-profil-kontak.png) | ![Group](screenshots/v17-profil-grup.png) | ![About](screenshots/v18-about-donasi.png) |
 
 ## Why is it so light?
 
@@ -89,7 +89,9 @@ Made by **Katon Bagaskoro**.
   **Archived** row (with count) and can be restored any time; the state persists across restarts
 - ✅ **Contact & group profile**: click the chat header to see the profile picture (auto-downloaded
   & cached), phone number, about text, and for groups the participant count + description
-- ☕ **Support**: a Saweria donation link lives in the *About* dialog
+- ✅ **Full English coverage**: the entire UI (login page, tooltips, connection statuses,
+  sticker dialogs, …) is translated — no more Indonesian leftovers in English mode
+- ☕ **Support**: both Saweria **and Ko-fi** links live in the *About* dialog
 - ✅ **Send photos & files** with a caption; **paste images with Ctrl+V** (PrtSc screenshots,
   Flameshot, or files copied from Thunar/Nemo) with a preview dialog
 - ✅ **Multi-line messages**: `Enter` sends, `Shift+Enter` newline; the input box grows to ±7 lines

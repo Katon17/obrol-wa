@@ -22,8 +22,8 @@ import (
 
 	"go.mau.fi/whatsmeow"
 	"go.mau.fi/whatsmeow/appstate"
-	"go.mau.fi/whatsmeow/proto/waCompanionReg"
 	"go.mau.fi/whatsmeow/proto/waCommon"
+	"go.mau.fi/whatsmeow/proto/waCompanionReg"
 	"go.mau.fi/whatsmeow/proto/waE2E"
 	"go.mau.fi/whatsmeow/proto/waWeb"
 	"go.mau.fi/whatsmeow/store"
@@ -108,10 +108,10 @@ func (w *WA) Start() {
 		w.startQR()
 		return
 	}
-	w.ui.OnStatus("Menghubungkan…")
+	w.ui.OnStatus(T("Menghubungkan…"))
 	go func() {
 		if err := w.cli.Connect(); err != nil {
-			w.ui.OnStatus("Gagal terhubung: " + err.Error())
+			w.ui.OnStatus(T("Gagal terhubung: ") + err.Error())
 		}
 	}()
 }
@@ -123,7 +123,7 @@ func (w *WA) startQR() {
 		}
 		qrChan, err := w.cli.GetQRChannel(bg)
 		if err != nil {
-			w.ui.OnStatus("Error QR: " + err.Error())
+			w.ui.OnStatus(T("Error QR: ") + err.Error())
 			return
 		}
 		if err := w.cli.Connect(); err != nil {
@@ -141,7 +141,7 @@ func (w *WA) startQR() {
 				w.ui.OnQRTimeout()
 			default:
 				if evt.Error != nil {
-					w.ui.OnStatus("Login gagal: " + evt.Error.Error())
+					w.ui.OnStatus(T("Login gagal: ") + evt.Error.Error())
 				}
 				w.ui.OnQRTimeout()
 			}
@@ -197,30 +197,30 @@ func (w *WA) Close() {
 func (w *WA) handle(raw any) {
 	switch evt := raw.(type) {
 	case *events.PairSuccess:
-		w.ui.OnStatus("Berhasil dipasangkan, menyiapkan…")
+		w.ui.OnStatus(T("Berhasil dipasangkan, menyiapkan…"))
 	case *events.Connected:
 		w.loggedIn.Store(true)
 		w.ui.OnLoggedIn()
 		if !w.syncing.Load() {
-			w.ui.OnStatus("Terhubung")
+			w.ui.OnStatus(T("Terhubung"))
 		}
 		go w.refreshGroups()
 	case *events.OfflineSyncCompleted:
 		if !w.syncing.Load() {
-			w.ui.OnStatus("Terhubung")
+			w.ui.OnStatus(T("Terhubung"))
 		}
 	case *events.Disconnected:
-		w.ui.OnStatus("Terputus — menyambung ulang…")
+		w.ui.OnStatus(T("Terputus — menyambung ulang…"))
 	case *events.KeepAliveTimeout:
-		w.ui.OnStatus("Koneksi lambat…")
+		w.ui.OnStatus(T("Koneksi lambat…"))
 	case *events.StreamReplaced:
-		w.ui.OnStatus("Sesi dibuka di tempat lain")
+		w.ui.OnStatus(T("Sesi dibuka di tempat lain"))
 	case *events.TemporaryBan:
-		w.ui.OnStatus("⚠ Diblokir sementara: " + evt.String())
+		w.ui.OnStatus(T("⚠ Diblokir sementara: ") + evt.String())
 	case *events.ConnectFailure:
 		w.ui.OnStatus(fmt.Sprintf("Gagal terhubung (%v)", evt.Reason))
 	case *events.LoggedOut:
-		w.ui.OnStatus("Keluar dari perangkat")
+		w.ui.OnStatus(T("Keluar dari perangkat"))
 		go w.afterLogout()
 	case *events.Message:
 		w.onMessage(evt, true)
@@ -614,7 +614,7 @@ func (w *WA) setSyncing() {
 	defer w.syncMu.Unlock()
 	if !w.syncing.Load() {
 		w.syncing.Store(true)
-		w.ui.OnStatus("Menyinkronkan riwayat chat…")
+		w.ui.OnStatus(T("Menyinkronkan riwayat chat…"))
 	}
 	if w.syncTmr != nil {
 		w.syncTmr.Stop()
@@ -622,7 +622,7 @@ func (w *WA) setSyncing() {
 	w.syncTmr = time.AfterFunc(6*time.Second, func() {
 		w.syncing.Store(false)
 		if w.cli.IsConnected() {
-			w.ui.OnStatus("Terhubung")
+			w.ui.OnStatus(T("Terhubung"))
 		}
 		w.ui.OnChatsChanged()
 	})
@@ -791,7 +791,7 @@ func (w *WA) SetMute(chat string, mute bool, dur time.Duration) {
 	}
 	go func() {
 		if err := w.cli.SendAppState(bg, appstate.BuildMute(j, mute, dur)); err != nil {
-			w.ui.OnStatus("Mute hanya lokal (gagal sinkron ke ponsel)")
+			w.ui.OnStatus(T("Mute hanya lokal (gagal sinkron ke ponsel)"))
 		}
 	}()
 }
@@ -836,7 +836,7 @@ func (w *WA) EditText(chat, id, text string) error {
 	go func() {
 		_, err := w.cli.SendMessage(bg, cj, w.cli.BuildEdit(cj, id, &waE2E.Message{Conversation: proto.String(text)}))
 		if err != nil {
-			w.ui.OnStatus("Gagal mengirim editan: " + err.Error())
+			w.ui.OnStatus(T("Gagal mengirim editan: ") + err.Error())
 		}
 	}()
 	return nil
@@ -851,7 +851,7 @@ func (w *WA) Revoke(chat, id string) error {
 	w.st.RevokeMessage(chat, id)
 	go func() {
 		if _, err := w.cli.SendMessage(bg, cj, w.cli.BuildRevoke(cj, types.EmptyJID, id)); err != nil {
-			w.ui.OnStatus("Gagal menghapus: " + err.Error())
+			w.ui.OnStatus(T("Gagal menghapus: ") + err.Error())
 		}
 	}()
 	return nil
@@ -891,7 +891,7 @@ func (w *WA) PinMessage(chat, id string, pin bool, dur time.Duration) error {
 	}
 	go func() {
 		if _, err := w.cli.SendMessage(bg, cj, msg); err != nil {
-			w.ui.OnStatus("Sematan hanya lokal: " + err.Error())
+			w.ui.OnStatus(T("Sematan hanya lokal: ") + err.Error())
 		}
 	}()
 	return nil
@@ -906,7 +906,7 @@ func (w *WA) PinChat(chat string, pin bool) {
 	}
 	go func() {
 		if err := w.cli.SendAppState(bg, appstate.BuildPin(j, pin)); err != nil {
-			w.ui.OnStatus("Sematan obrolan hanya lokal (gagal sinkron)")
+			w.ui.OnStatus(T("Sematan obrolan hanya lokal (gagal sinkron)"))
 		}
 	}()
 }
@@ -1035,7 +1035,7 @@ func (w *WA) SendReaction(chat, id, emoji string) error {
 func (w *WA) finishSend(m *Msg, err error) {
 	if err != nil {
 		w.st.SetStatus(m.Chat, m.ID, StFailed)
-		w.ui.OnStatus("Gagal mengirim: " + err.Error())
+		w.ui.OnStatus(T("Gagal mengirim: ") + err.Error())
 		w.ui.OnReceipt([]string{m.ID}, StFailed)
 		return
 	}
@@ -1144,7 +1144,9 @@ func (w *WA) SendFileEx(chat, path, caption string, reply *Msg, forwarded bool) 
 }
 
 // SendAudio mengirim berkas audio sebagai pesan suara (ptt) atau audio biasa.
-func (w *WA) SendAudio(chat, path string, ptt bool) (*Msg, error) { return w.SendAudioEx(chat, path, ptt, nil) }
+func (w *WA) SendAudio(chat, path string, ptt bool) (*Msg, error) {
+	return w.SendAudioEx(chat, path, ptt, nil)
+}
 
 // SendAudioEx = SendAudio dengan opsi balasan.
 func (w *WA) SendAudioEx(chat, path string, ptt bool, reply *Msg) (*Msg, error) {

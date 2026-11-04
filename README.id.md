@@ -53,7 +53,7 @@ Dibuat oleh **Katon Bagaskoro**.
 
 | Profil kontak | Profil grup | Donasi di Tentang |
 |---|---|---|
-| ![Profil kontak](screenshots/v17-profil-kontak.png) | ![Profil grup](screenshots/v17-profil-grup.png) | ![About](screenshots/v17-about.png) |
+| ![Profil kontak](screenshots/v17-profil-kontak.png) | ![Profil grup](screenshots/v17-profil-grup.png) | ![About](screenshots/v18-about-donasi.png) |
 
 ## Kenapa ringan?
 
@@ -118,7 +118,9 @@ Dibuat oleh **Katon Bagaskoro**.
   **Diarsipkan** (dengan jumlah), bisa dibuka dan dikembalikan kapan pun; status tersimpan permanen
 - ✅ **Profil kontak & grup**: klik header chat untuk melihat foto profil (otomatis diunduh &
   di-cache), nomor, teks about, serta jumlah peserta + deskripsi grup; ada tombol salin nomor
-- ☕ **Dukungan**: link donasi Saweria tersedia di dialog *Tentang Obrol*
+- ✅ **Bahasa Inggris penuh**: seluruh antarmuka (login, tooltip, status, dialog stiker, dll.)
+  diterjemahkan — tidak ada lagi campuran Indonesia saat mode English
+- ☕ **Dukungan**: tautan Saweria **dan Ko-fi** di dialog *Tentang Obrol*
 - ✅ **Ikon & logo buatan sendiri**: logo "Ngobrol" (dua gelembung obrolan) dan 27 ikon garis tipis yang
   digambar khusus sebagai SVG, sehingga tajam di skala berapa pun dan warnanya ikut tema terang/gelap
 - ✅ Single-instance: membuka Obrol lagi cukup memunculkan jendela yang sudah ada

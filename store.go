@@ -6,8 +6,8 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
-	"strings"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 
@@ -538,7 +538,7 @@ func previewText(m *Msg) string {
 		t = lbl
 	}
 	if m.FromMe {
-		t = "Anda: " + t
+		t = T("Anda: ") + t
 	} else if isGroupJID(m.Chat) && m.SenderName != "" {
 		t = m.SenderName + ": " + t
 	}

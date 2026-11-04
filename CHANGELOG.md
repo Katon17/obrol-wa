@@ -4,6 +4,18 @@ All notable changes to Obrol are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.0] — 2026-11-03
+
+### Changed
+- **Cakupan Bahasa Inggris penuh**: ±90 string yang dulu lolos (halaman login/pairing,
+  petunjuk kosong, tooltip, status koneksi, menu dialog stiker, tombol dialog, deskripsi
+  bisu/arsip, dll.) kini ikut diterjemahkan; audit otomatis menjamin setiap `T()` punya
+  padanan EN. / **Full English coverage**: ~90 leftover strings (login/pairing page, empty
+  hint, tooltips, connection statuses, sticker dialog, dialog buttons, mute/pin texts…)
+  are now translated; an automated audit guarantees every `T()` key has an EN counterpart.
+- **Donasi**: dialog *Tentang Obrol* kini memuat dua tautan — Saweria dan
+  [ko-fi.com/katonbagaskoro](https://ko-fi.com/katonbagaskoro).
+
 ## [1.7.0] — 2026-11-02
 
 ### Added
@@ -105,6 +117,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   read receipts, photo/video thumbnails, documents, voice notes, locations, group chats,
   desktop notifications with sound, system tray with unread dot, autostart, single instance.
 
+[1.8.0]: https://github.com/Katon17/obrol-wa/releases/tag/v1.8.0
 [1.7.0]: https://github.com/Katon17/obrol-wa/releases/tag/v1.7.0
 [1.6.0]: https://github.com/Katon17/obrol-wa/releases/tag/v1.6.0
 [1.5.0]: https://github.com/Katon17/obrol-wa/releases/tag/v1.5.0
