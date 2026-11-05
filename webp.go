@@ -58,15 +58,15 @@ func webpEncoderAvailable() bool { return C.obrol_webp_init() != 0 }
 // encodeWebP meng-encode RGBA (non-premultiplied, stride w*4) jadi WebP lossy.
 func encodeWebP(rgba []byte, w, h int, quality float32) ([]byte, error) {
 	if len(rgba) < w*h*4 {
-		return nil, errors.New("buffer gambar tidak valid")
+		return nil, errors.New(T("buffer gambar tidak valid"))
 	}
 	var out *C.uint8_t
 	n := C.obrol_webp_encode((*C.uint8_t)(unsafe.Pointer(&rgba[0])), C.int(w), C.int(h), C.float(quality), &out)
 	if n == 0 || out == nil {
 		if !webpEncoderAvailable() {
-			return nil, errors.New("libwebp tidak ditemukan (sudo apt install libwebp7)")
+			return nil, errors.New(T("libwebp tidak ditemukan (sudo apt install libwebp7)"))
 		}
-		return nil, errors.New("encode WebP gagal")
+		return nil, errors.New(T("encode WebP gagal"))
 	}
 	defer C.obrol_webp_free(unsafe.Pointer(out))
 	return C.GoBytes(unsafe.Pointer(out), C.int(n)), nil
@@ -97,7 +97,7 @@ type webpChunk struct {
 
 func webpChunks(data []byte) ([]webpChunk, error) {
 	if len(data) < 12 || string(data[0:4]) != "RIFF" || string(data[8:12]) != "WEBP" {
-		return nil, errors.New("bukan file WebP")
+		return nil, errors.New(T("bukan file WebP"))
 	}
 	var out []webpChunk
 	p := 12
@@ -174,7 +174,7 @@ func decodeWebPFrames(data []byte, size, maxFrames int) ([]animFrame, error) {
 	}
 	cw, chh := 1+u24(ch[0].data[4:7]), 1+u24(ch[0].data[7:10])
 	if cw > 2048 || chh > 2048 {
-		return nil, errors.New("kanvas terlalu besar")
+		return nil, errors.New(T("kanvas terlalu besar"))
 	}
 	canvas := image.NewRGBA(image.Rect(0, 0, cw, chh))
 	var frames []animFrame
@@ -236,7 +236,7 @@ func decodeWebPFrames(data []byte, size, maxFrames int) ([]animFrame, error) {
 		}
 	}
 	if len(frames) == 0 {
-		return nil, errors.New("animasi kosong")
+		return nil, errors.New(T("animasi kosong"))
 	}
 	return frames, nil
 }

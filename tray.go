@@ -24,7 +24,7 @@ type StatusIcon struct {
 }
 
 func NewStatusIcon(pb *gdk.Pixbuf) *StatusIcon {
-	p := C.gtk_status_icon_new_from_pixbuf((*C.GdkPixbuf)(unsafe.Pointer(pb.Native())))
+	p := C.gtk_status_icon_new_from_pixbuf((*C.GdkPixbuf)(unsafe.Pointer(pb.NativePrivate())))
 	if p == nil {
 		return nil
 	}
@@ -32,7 +32,7 @@ func NewStatusIcon(pb *gdk.Pixbuf) *StatusIcon {
 }
 
 func (s *StatusIcon) SetFromPixbuf(pb *gdk.Pixbuf) {
-	C.gtk_status_icon_set_from_pixbuf(s.p, (*C.GdkPixbuf)(unsafe.Pointer(pb.Native())))
+	C.gtk_status_icon_set_from_pixbuf(s.p, (*C.GdkPixbuf)(unsafe.Pointer(pb.NativePrivate())))
 }
 
 func (s *StatusIcon) SetTooltipText(t string) {

@@ -175,7 +175,7 @@ func (a *App) Activate() {
 	a.header, _ = gtk.HeaderBarNew()
 	a.header.SetShowCloseButton(true)
 	a.header.SetTitle(T("Obrol"))
-	a.header.SetSubtitle("Memulai…")
+	a.header.SetSubtitle(T("Memulai…"))
 	win.SetTitlebar(a.header)
 	a.buildHeaderButtons()
 
@@ -215,8 +215,8 @@ func (a *App) Activate() {
 	glib.TimeoutAdd(60000, func() bool { a.reloadChats(); return true })
 	if a.opts.Demo {
 		a.pages.SetVisibleChildName("main")
-		a.connStatus = "Mode demo"
-		a.header.SetSubtitle("Mode demo")
+		a.connStatus = T("Mode demo")
+		a.header.SetSubtitle(T("Mode demo"))
 		a.reloadChats()
 	} else if a.opts.DemoLogin {
 		a.pages.SetVisibleChildName("login")
@@ -494,7 +494,7 @@ func addClass(w interface {
 // ------------------------------------------------------------ header
 
 func (a *App) buildHeaderButtons() {
-	newBtn := iconButton("chat-new", "Obrolan baru (Ctrl+N)", 18)
+	newBtn := iconButton("chat-new", T("Obrolan baru (Ctrl+N)"), 18)
 	newBtn.SetRelief(gtk.RELIEF_NORMAL)
 	newBtn.Connect("clicked", a.newChatDialog)
 	a.header.PackStart(newBtn)
@@ -520,15 +520,15 @@ func (a *App) buildHeaderButtons() {
 		exec.Command("xdg-open", d).Start()
 	})
 	sep()
-	check("Notifikasi desktop", a.cfg.Notify, func(v bool) { a.cfg.Notify = v; a.cfg.Save() })
-	check("Bisukan semua grup (kecuali @mention/balasan)", a.cfg.MuteGroups, func(v bool) {
+	check(T("Notifikasi desktop"), a.cfg.Notify, func(v bool) { a.cfg.Notify = v; a.cfg.Save() })
+	check(T("Bisukan semua grup (kecuali @mention/balasan)"), a.cfg.MuteGroups, func(v bool) {
 		a.cfg.MuteGroups = v
 		a.cfg.Save()
 		a.reloadChats()
 	})
-	check("Suara notifikasi", a.cfg.Sound, func(v bool) { a.cfg.Sound = v; a.cfg.Save() })
-	check("Tutup = sembunyikan ke tray", a.cfg.CloseToTray, func(v bool) { a.cfg.CloseToTray = v; a.cfg.Save() })
-	check("Jalankan saat login", autostartEnabled(), func(v bool) { setAutostart(v) })
+	check(T("Suara notifikasi"), a.cfg.Sound, func(v bool) { a.cfg.Sound = v; a.cfg.Save() })
+	check(T("Tutup = sembunyikan ke tray"), a.cfg.CloseToTray, func(v bool) { a.cfg.CloseToTray = v; a.cfg.Save() })
+	check(T("Jalankan saat login"), autostartEnabled(), func(v bool) { setAutostart(v) })
 	sep()
 	// submenu tema
 	themeItem, _ := gtk.MenuItemNewWithLabel(T("Tema"))
@@ -537,10 +537,10 @@ func (a *App) buildHeaderButtons() {
 	for _, t := range []struct{ id, label string }{{"auto", "Otomatis (ikuti sistem)"}, {"light", "Terang"}, {"dark", "Gelap"}} {
 		var it *gtk.RadioMenuItem
 		if first == nil {
-			it, _ = gtk.RadioMenuItemNewWithLabel(nil, t.label)
+			it, _ = gtk.RadioMenuItemNewWithLabel(nil, T(t.label))
 			first = it
 		} else {
-			it, _ = gtk.RadioMenuItemNewWithLabelFromWidget(first, t.label)
+			it, _ = gtk.RadioMenuItemNewWithLabelFromWidget(first, T(t.label))
 		}
 		it.SetActive(a.cfg.Theme == t.id)
 		id := t.id
@@ -561,10 +561,10 @@ func (a *App) buildHeaderButtons() {
 	for _, t := range []struct{ id, label string }{{"id", "Bahasa Indonesia"}, {"en", "English"}} {
 		var it *gtk.RadioMenuItem
 		if lfirst == nil {
-			it, _ = gtk.RadioMenuItemNewWithLabel(nil, t.label)
+			it, _ = gtk.RadioMenuItemNewWithLabel(nil, T(t.label))
 			lfirst = it
 		} else {
-			it, _ = gtk.RadioMenuItemNewWithLabelFromWidget(lfirst, t.label)
+			it, _ = gtk.RadioMenuItemNewWithLabelFromWidget(lfirst, T(t.label))
 		}
 		it.SetActive(a.cfg.Lang == t.id)
 		id := t.id
@@ -598,8 +598,8 @@ func (a *App) buildHeaderButtons() {
 
 // confirmRestart menawarkan mulai ulang setelah ganti bahasa.
 func (a *App) confirmRestart() {
-	d := gtk.MessageDialogNew(a.win, gtk.DIALOG_MODAL, gtk.MESSAGE_QUESTION, gtk.BUTTONS_NONE, T("Mulai ulang sekarang?"))
-	d.FormatSecondaryText(T("Bahasa diterapkan setelah aplikasi dimulai ulang."))
+	d := gtk.MessageDialogNew(a.win, gtk.DIALOG_MODAL, gtk.MESSAGE_QUESTION, gtk.BUTTONS_NONE, "%s", T("Mulai ulang sekarang?"))
+	d.FormatSecondaryText("%s", T("Bahasa diterapkan setelah aplikasi dimulai ulang."))
 	d.AddButton(T("Mulai ulang"), gtk.RESPONSE_YES)
 	d.AddButton(T("Nanti"), gtk.RESPONSE_NO)
 	resp := d.Run()
@@ -1397,7 +1397,7 @@ func (a *App) bubbleRow(m *Msg) *gtk.ListBoxRow {
 
 	text := m.Text
 	if m.Kind == "deleted" {
-		box, l := iconLabel("ban", "Pesan ini dihapus", 15)
+		box, l := iconLabel("ban", T("Pesan ini dihapus"), 15)
 		addClass(l, "deleted")
 		b.PackStart(box, false, false, 0)
 		text = ""
@@ -1419,7 +1419,7 @@ func (a *App) bubbleRow(m *Msg) *gtk.ListBoxRow {
 			}
 			b.PackStart(eb, false, false, 0)
 			if m.Kind == "video" || m.Kind == "gif" {
-				l, _ := gtk.LabelNew(kindLabel(m.Kind) + " — klik gambar untuk memutar")
+				l, _ := gtk.LabelNew(kindLabel(m.Kind) + T(" — klik gambar untuk memutar"))
 				addClass(l, "meta")
 				l.SetXAlign(0)
 				b.PackStart(l, false, false, 0)
@@ -1538,7 +1538,7 @@ func (a *App) bubbleRow(m *Msg) *gtk.ListBoxRow {
 func (a *App) setMeta(l *gtk.Label, ts int64, fromMe bool, st int, edited bool) {
 	t := time.Unix(ts, 0).Format("15:04")
 	if edited {
-		t = "diedit · " + t
+		t = T("diedit") + " · " + t
 	}
 	if !fromMe {
 		l.SetText(t)
@@ -1555,7 +1555,7 @@ func (a *App) setMeta(l *gtk.Label, ts int64, fromMe bool, st int, edited bool) 
 	case StRead:
 		tick = `<span foreground="#34b7f1" weight="bold">✓✓</span>`
 	case StFailed:
-		tick = `<span foreground="#e53935">⚠ gagal</span>`
+		tick = `<span foreground="#e53935">⚠ ` + T("gagal") + `</span>`
 	}
 	l.SetMarkup(t + "  " + tick)
 }
@@ -1624,12 +1624,12 @@ func (a *App) attachFile() {
 	if a.current == "" {
 		return
 	}
-	dlg, _ := gtk.FileChooserDialogNewWith2Buttons("Kirim foto / file", a.win, gtk.FILE_CHOOSER_ACTION_OPEN, T("Batal"), gtk.RESPONSE_CANCEL, T("Kirim"), gtk.RESPONSE_ACCEPT)
+	dlg, _ := gtk.FileChooserDialogNewWith2Buttons(T("Kirim foto / file"), a.win, gtk.FILE_CHOOSER_ACTION_OPEN, T("Batal"), gtk.RESPONSE_CANCEL, T("Kirim"), gtk.RESPONSE_ACCEPT)
 	ff, _ := gtk.FileFilterNew()
-	ff.SetName("Semua file")
+	ff.SetName(T("Semua file"))
 	ff.AddPattern("*")
 	fi, _ := gtk.FileFilterNew()
-	fi.SetName("Gambar (JPG, PNG)")
+	fi.SetName(T("Gambar (JPG, PNG)"))
 	fi.AddMimeType("image/jpeg")
 	fi.AddMimeType("image/png")
 	dlg.AddFilter(ff)
@@ -1701,12 +1701,12 @@ func (a *App) newChatDialog() {
 
 func (a *App) confirmLogout() {
 	d := gtk.MessageDialogNew(a.win, gtk.DIALOG_MODAL, gtk.MESSAGE_QUESTION, gtk.BUTTONS_YES_NO,
-		"Keluar dari akun WhatsApp di Obrol?")
-	d.FormatSecondaryText(T("Perangkat ini akan dilepas dari WhatsApp dan semua riwayat chat lokal dihapus."))
+		"%s", T("Keluar dari akun WhatsApp di Obrol?"))
+	d.FormatSecondaryText("%s", T("Perangkat ini akan dilepas dari WhatsApp dan semua riwayat chat lokal dihapus."))
 	resp := d.Run()
 	d.Destroy()
 	if resp == gtk.RESPONSE_YES && a.wa != nil {
-		a.header.SetSubtitle("Keluar…")
+		a.header.SetSubtitle(T("Keluar…"))
 		go a.wa.Logout()
 	}
 }
@@ -1801,7 +1801,7 @@ func (a *App) muteMenu(jid string) *gtk.Menu {
 		addI("pin", T("Sematkan obrolan"), func() { a.pinChat(jid, true) })
 	}
 	if ps := a.st.Pins(jid); len(ps) > 0 {
-		add(fmt.Sprintf("    (%d pesan tersemat di obrolan ini)", len(ps)), nil)
+		add(fmt.Sprintf(T("    (%d pesan tersemat di obrolan ini)"), len(ps)), nil)
 	}
 	sp, _ := gtk.SeparatorMenuItemNew()
 	menu.Append(sp)
@@ -1954,7 +1954,7 @@ func (a *App) OnQR(code string) {
 		a.qrSpinner.Stop()
 		a.qrSpinner.Hide()
 		a.qrRetry.Hide()
-		a.header.SetSubtitle("Pindai kode QR dengan ponsel")
+		a.header.SetSubtitle(T("Pindai kode QR dengan ponsel"))
 	})
 }
 
