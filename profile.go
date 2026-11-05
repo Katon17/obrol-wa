@@ -37,7 +37,7 @@ func (w *WA) fetchProfilePic(jid string) ([]byte, error) {
 	}
 	pi, err := w.cli.GetProfilePictureInfo(bg, j, &whatsmeow.GetProfilePictureParams{Preview: true})
 	if err != nil || pi == nil {
-		return nil, fmt.Errorf("foto tidak tersedia")
+		return nil, fmt.Errorf("%s", T("foto tidak tersedia"))
 	}
 	resp, err := http.Get(pi.URL)
 	if err != nil {
@@ -46,7 +46,7 @@ func (w *WA) fetchProfilePic(jid string) ([]byte, error) {
 	defer resp.Body.Close()
 	data, err := io.ReadAll(resp.Body)
 	if err != nil || len(data) == 0 {
-		return nil, fmt.Errorf("foto gagal diunduh")
+		return nil, fmt.Errorf("%s", T("foto gagal diunduh"))
 	}
 	os.WriteFile(profilePicPath(jid), data, 0o644)
 	return data, nil
