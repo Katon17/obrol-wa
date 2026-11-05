@@ -558,7 +558,15 @@ func (a *App) buildHeaderButtons() {
 	langItem, _ := gtk.MenuItemNewWithLabel(T("Bahasa"))
 	langMenu, _ := gtk.MenuNew()
 	var lfirst *gtk.RadioMenuItem
-	for _, t := range []struct{ id, label string }{{"id", "Bahasa Indonesia"}, {"en", "English"}} {
+	curLang := a.cfg.Lang
+	if curLang == "" {
+		curLang = "auto"
+	}
+	for _, t := range []struct{ id, label string }{
+		{"auto", "Otomatis (ikuti sistem)"},
+		{"id", "Bahasa Indonesia"},
+		{"en", "English"},
+	} {
 		var it *gtk.RadioMenuItem
 		if lfirst == nil {
 			it, _ = gtk.RadioMenuItemNewWithLabel(nil, T(t.label))
@@ -566,7 +574,7 @@ func (a *App) buildHeaderButtons() {
 		} else {
 			it, _ = gtk.RadioMenuItemNewWithLabelFromWidget(lfirst, T(t.label))
 		}
-		it.SetActive(a.cfg.Lang == t.id)
+		it.SetActive(curLang == t.id)
 		id := t.id
 		it.Connect("toggled", func() {
 			if it.GetActive() && a.cfg.Lang != id {

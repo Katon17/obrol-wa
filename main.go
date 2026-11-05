@@ -38,12 +38,12 @@ type Config struct {
 	CloseToTray bool   `json:"close_to_tray"`
 	MuteGroups  bool   `json:"mute_groups"`
 	Theme       string `json:"theme"` // auto | light | dark
-	Lang        string `json:"lang"`  // id | en
+	Lang        string `json:"lang"`  // auto | id | en
 	path        string
 }
 
 func loadConfig(dir string) *Config {
-	c := &Config{Notify: true, Sound: true, CloseToTray: true, Theme: "auto", path: filepath.Join(dir, "config.json")}
+	c := &Config{Notify: true, Sound: true, CloseToTray: true, Theme: "auto", Lang: "auto", path: filepath.Join(dir, "config.json")}
 	if b, err := os.ReadFile(c.path); err == nil {
 		json.Unmarshal(b, c)
 	}
@@ -111,12 +111,11 @@ func main() {
 	}
 	a := &App{gapp: gapp, st: st, cfg: loadConfig(dir), opts: o}
 	a.pendingCalls = map[string]pendingCall{}
-	if a.cfg.Lang == "" {
-		a.cfg.Lang = "id"
-	}
-	lang = a.cfg.Lang
-	if v := os.Getenv("OBROL_LANG"); v == "en" || v == "id" {
-		lang = v
+	lang = resolveLang(a.cfg.Lang)
+	if v := os.Getenv("OBROL_LANG"); v != "" {
+		if _, ok := normalizeLang(v); ok {
+			lang = resolveLang(v)
+		}
 	}
 	a.iconPath = filepath.Join(dir, "obrol.png")
 	os.WriteFile(a.iconPath, iconPNG, 0o644)
