@@ -34,7 +34,7 @@ func (a *App) buildComposer() gtk.IWidget {
 	a.editLbl, _ = gtk.LabelNew("")
 	a.editLbl.SetXAlign(0)
 	a.editLbl.SetEllipsize(pango.ELLIPSIZE_END)
-	x := iconButton("close", T("Batal edit (Esc)"), 16)
+	x := iconButton("close", "Batal edit (Esc)", 16)
 	x.Connect("clicked", a.cancelEdit)
 	a.editBar.PackStart(ic, false, false, 0)
 	a.editBar.PackStart(a.editLbl, true, true, 0)
@@ -66,7 +66,7 @@ func (a *App) buildComposer() gtk.IWidget {
 	comp, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 4)
 	addClass(comp, "composer")
 
-	attach := iconButton("attach", T("Kirim foto / file"), 20)
+	attach := iconButton("attach", "Kirim foto / file", 20)
 	attach.SetVAlign(gtk.ALIGN_END)
 	attach.Connect("clicked", a.attachFile)
 
@@ -105,6 +105,7 @@ func (a *App) buildComposer() gtk.IWidget {
 	box.PackStart(ov, true, true, 0)
 	a.inputBuf.Connect("changed", func() {
 		a.placeholder.SetVisible(a.inputBuf.GetCharCount() == 0)
+		a.pingTyping()
 		glib.IdleAddPriority(glib.PRIORITY_LOW, a.fitInput)
 	})
 	a.input.Connect("size-allocate", func() {
@@ -115,7 +116,7 @@ func (a *App) buildComposer() gtk.IWidget {
 	})
 	a.input.Connect("key-press-event", a.onInputKey)
 
-	send := iconButton("send", T("Kirim (Enter)"), 18)
+	send := iconButton("send", "Kirim (Enter)", 18)
 	send.SetRelief(gtk.RELIEF_NORMAL)
 	addClass(send, "sendbtn")
 	send.SetVAlign(gtk.ALIGN_END)
@@ -367,7 +368,7 @@ func (a *App) confirmFiles(files []string) {
 		names = append(names, "• "+filepath.Base(f))
 	}
 	d := gtk.MessageDialogNew(a.win, gtk.DIALOG_MODAL, gtk.MESSAGE_QUESTION, gtk.BUTTONS_OK_CANCEL,
-		T("Kirim %d file ke %s?"), len(files), a.chatTitle.GetLabel())
+		"Kirim %d file ke %s?", len(files), a.chatTitle.GetLabel())
 	d.FormatSecondaryText("%s", strings.Join(names, "\n"))
 	resp := d.Run()
 	d.Destroy()
@@ -537,7 +538,7 @@ func (a *App) fillMsgMenu(menu *gtk.Menu, chat, id string, withCopy bool) {
 			d     time.Duration
 		}{{"24 jam", 24 * time.Hour}, {"7 hari", 7 * 24 * time.Hour}, {"30 hari", 30 * 24 * time.Hour}} {
 			d := o.d
-			it, _ := gtk.MenuItemNewWithLabel(T(o.label))
+			it, _ := gtk.MenuItemNewWithLabel(o.label)
 			it.Connect("activate", func() { a.pinMessage(chat, id, true, d) })
 			sub.Append(it)
 		}
@@ -559,8 +560,8 @@ func (a *App) popupMsgMenu(ev *gdk.Event, chat, id string) {
 
 func (a *App) confirmRevoke(chat, id string) {
 	d := gtk.MessageDialogNew(a.win, gtk.DIALOG_MODAL, gtk.MESSAGE_QUESTION, gtk.BUTTONS_YES_NO,
-		"%s", T("Hapus pesan ini untuk semua orang?"))
-	d.FormatSecondaryText("%s", T("Pesan akan diganti dengan \"Pesan ini dihapus\" di semua perangkat."))
+		"Hapus pesan ini untuk semua orang?")
+	d.FormatSecondaryText(T("Pesan akan diganti dengan \"Pesan ini dihapus\" di semua perangkat."))
 	resp := d.Run()
 	d.Destroy()
 	if resp != gtk.RESPONSE_YES {
@@ -674,7 +675,7 @@ func (a *App) updatePinLabel() {
 		title = fmt.Sprintf(T("Pesan tersemat %d dari %d"), a.pinIdx%len(a.pins)+1, len(a.pins))
 	}
 	if p.Until > 0 {
-		title += T(" · sampai ") + dayLabelShort(time.Unix(p.Until, 0))
+		title += " · " + T("sampai ") + dayLabelShort(time.Unix(p.Until, 0))
 	}
 	a.pinTitle.SetText(title)
 	if m, ok := a.st.GetMessage(p.Chat, p.ID); ok {
@@ -727,7 +728,7 @@ func (a *App) scrollToRow(row *gtk.ListBoxRow) {
 
 func (a *App) pinChat(jid string, pin bool) {
 	if pin && a.st.PinnedChatCount() >= 3 {
-		a.errorDialog(T("Maksimal 3 obrolan disematkan"), T("Lepas sematan salah satu obrolan dulu (sama seperti di WhatsApp)."))
+		a.errorDialog(T("Maksimal 3 obrolan disematkan"), "Lepas sematan salah satu obrolan dulu (sama seperti di WhatsApp).")
 		return
 	}
 	if a.wa != nil {

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime/debug"
 	"strings"
 	"time"
 
@@ -14,7 +15,19 @@ import (
 	"github.com/gotk3/gotk3/gtk"
 )
 
-const version = "1.8.0"
+const version = "1.9.2"
+
+// v1.9: "kotak hitam" — bila aplikasi panic, jejak lengkap disimpan ke
+// crash.log di folder data supaya mudah dilaporkan, lalu panic diteruskan.
+func crashLog() {
+	if r := recover(); r != nil {
+		dir := dataDir()
+		_ = os.MkdirAll(dir, 0o755)
+		_ = os.WriteFile(filepath.Join(dir, "crash.log"),
+			[]byte(fmt.Sprintf("Obrol %s panic: %v\n\n%s", version, r, debug.Stack())), 0o644)
+		panic(r)
+	}
+}
 
 //go:embed assets/obrol.png
 var iconPNG []byte
@@ -65,6 +78,7 @@ func dataDir() string {
 }
 
 func main() {
+	defer crashLog()
 	var o Options
 	flag.BoolVar(&o.Hidden, "hidden", false, "mulai tersembunyi di system tray")
 	flag.BoolVar(&o.Demo, "demo", false, "mode demo dengan data contoh (tanpa koneksi)")
@@ -111,6 +125,9 @@ func main() {
 	}
 	a := &App{gapp: gapp, st: st, cfg: loadConfig(dir), opts: o}
 	a.pendingCalls = map[string]pendingCall{}
+	a.online = map[string]bool{}
+	a.lastSeen = map[string]int64{}
+	a.typing = map[string]string{}
 	if a.cfg.Lang == "" {
 		a.cfg.Lang = "id"
 	}

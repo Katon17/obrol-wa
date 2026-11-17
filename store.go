@@ -531,7 +531,7 @@ func previewText(m *Msg) string {
 	lbl := kindLabel(m.Kind)
 	switch {
 	case m.Kind == "deleted":
-		t = "🚫 " + T("Pesan ini dihapus")
+		t = "🚫 Pesan ini dihapus"
 	case lbl != "" && t != "":
 		t = lbl + " · " + t
 	case lbl != "":

@@ -4,6 +4,57 @@ All notable changes to Obrol are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.9.2] — 2026-11-17
+
+### Fixed
+- **Drag & drop tidak mengirim apa pun di 1.9.1**: perbaikan sebelumnya memakai
+  `GetText()`, yang ternyata mengembalikan NULL untuk tipe drop `text/uri-list`.
+  Kini data drop dibaca mentah berbasis panjang (`GetData`) lalu diurai sendiri —
+  bebas dari dua fungsi gotk3 yang bermasalah. / **Drag & drop sent nothing in 1.9.1**:
+  the previous fix used `GetText()`, which returns NULL for `text/uri-list` drops;
+  the raw drop data is now read by length (`GetData`) and parsed locally.
+
+## [1.9.1] — 2026-11-17
+
+### Fixed
+- **Crash saat drag & drop (SIGSEGV)**: penyebabnya regresi di pustaka gotk3 —
+  `SelectionData.GetURIs()` membaca larik pointer dengan aritmetika +1 byte sehingga
+  membaca memori tak selaras dan segfault. Obrol kini mengurai teks URI sendiri
+  (`selectionURIs`), tanpa menyentuh fungsi yang cacat itu. / **Drag & drop crash
+  (SIGSEGV)**: caused by an upstream gotk3 regression (`GetURIs` mis-parses the pointer
+  array); Obrol now parses the URI text itself.
+- **Kotak hitam crash**: bila panic terjadi, jejak lengkap disimpan ke
+  `~/.local/share/obrol/crash.log` untuk memudahkan pelaporan; panic saat memproses
+  drop juga tidak lagi mematikan aplikasi (dialog error muncul). / **Crash black box**:
+  panics are now logged to `~/.local/share/obrol/crash.log`; a panic while handling a
+  drop shows an error dialog instead of killing the app.
+
+## [1.9.0] — 2026-11-17
+
+### Added
+- **Drag & drop berkas**: jatuhkan satu atau beberapa berkas (foto, dokumen, video…) dari
+  pengelola berkas langsung ke area percakapan untuk mengirimnya. / **Drag & drop files**:
+  drop one or several files (photos, documents, videos…) from your file manager straight
+  into a conversation to send them.
+- **Paket `.deb`**: rilis kini menyediakan paket Debian/Ubuntu
+  (`obrol_1.9.0-1_amd64.deb`) — instal cukup dengan `sudo apt install ./obrol_….deb`;
+  bisa juga dibangun lokal lewat `build-deb.sh` (kontribusi @SkoZombie) dan workflow
+  rilis otomatis melampirkan `.deb` pada setiap tag. / **Debian package**: releases now
+  ship `obrol_1.9.0-1_amd64.deb` — install with a single `sudo apt install ./obrol_….deb`;
+  or build one locally via `build-deb.sh` (contributed by @SkoZombie); the release
+  workflow attaches a `.deb` to every tag automatically.
+- **Presence ala WhatsApp**: header chat kini menampilkan *online*, *terakhir dilihat
+  hari kemarin, 21.04*, serta indikator *sedang mengetik…* — di grup lengkap dengan nama
+  pengetiknya (mis. "Budi sedang mengetik…"). Aplikasi juga mengirim status "sedang
+  mengetik" ke kontak saat Anda mengetik. / **WhatsApp-style presence**: the chat header
+  now shows *online*, *last seen yesterday, 21:04*, and a *typing…* indicator — in groups
+  including the sender's name ("Budi is typing…"). The app also broadcasts your own
+  typing status to the contact while you type.
+
+### Fixed
+- String "sampai …" pada banner pesan tersemat kini ikut diterjemahkan. /
+  The "until …" suffix on the pinned-message banner is now translatable.
+
 ## [1.8.0] — 2026-11-03
 
 ### Changed
@@ -117,6 +168,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   read receipts, photo/video thumbnails, documents, voice notes, locations, group chats,
   desktop notifications with sound, system tray with unread dot, autostart, single instance.
 
+[1.9.2]: https://github.com/Katon17/obrol-wa/releases/tag/v1.9.2
+[1.9.1]: https://github.com/Katon17/obrol-wa/releases/tag/v1.9.1
+[1.9.0]: https://github.com/Katon17/obrol-wa/releases/tag/v1.9.0
 [1.8.0]: https://github.com/Katon17/obrol-wa/releases/tag/v1.8.0
 [1.7.0]: https://github.com/Katon17/obrol-wa/releases/tag/v1.7.0
 [1.6.0]: https://github.com/Katon17/obrol-wa/releases/tag/v1.6.0

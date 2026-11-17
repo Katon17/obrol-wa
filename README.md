@@ -50,6 +50,12 @@ Made by **Katon Bagaskoro**.
 |---|---|---|
 | ![Contact](screenshots/v17-profil-kontak.png) | ![Group](screenshots/v17-profil-grup.png) | ![About](screenshots/v18-about-donasi.png) |
 
+**New in 1.9 — drag & drop + presence:**
+
+| Group typing indicator | Online / last seen |
+|---|---|
+| ![Typing](screenshots/v19-mengetik.png) | ![Online](screenshots/v19-online.png) |
+
 ## Why is it so light?
 
 | | Obrol | WhatsApp Web in a browser | Electron clients |
@@ -61,6 +67,9 @@ Made by **Katon Bagaskoro**.
 
 ## Features
 
+- ✅ **Drag & drop files** straight into a conversation to send them (multiple files at once)
+- ✅ **Presence**: *online*, *last seen yesterday, 21:04* and *typing…* in the chat header —
+  in groups with the sender's name ("Budi is typing…"); your own typing state is broadcast too
 - ✅ Login with a **QR code** or an **8-character pairing code** from your phone
 - ✅ Chat list with initial avatars, message previews, timestamps and **unread badges**
 - ✅ **History sync** from the phone on first login
@@ -119,6 +128,20 @@ Made by **Katon Bagaskoro**.
 
 ## Installation (Linux Mint 21/22, x86_64)
 
+### Option A — `.deb` package (recommended)
+
+Download `obrol_1.9.2-1_amd64.deb` from [Releases](https://github.com/Katon17/obrol-wa/releases/latest), then:
+
+```bash
+sudo apt install ./obrol_1.9.2-1_amd64.deb
+```
+
+apt resolves all dependencies automatically and installs system-wide
+(`/usr/bin/obrol` + menu entry + icons). Uninstall with `sudo apt remove obrol`
+— chat data in `~/.local/share/obrol/` is kept.
+
+### Option B — tarball (per-user, no sudo)
+
 A prebuilt binary is shipped, so **you don't need Go**. Download the latest tarball from
 [Releases](https://github.com/Katon17/obrol-wa/releases/latest), then:
 
@@ -156,6 +179,20 @@ sudo apt install build-essential pkg-config libgtk-3-dev golang-go
 
 Go 1.22+ is enough; the 1.26 toolchain required by whatsmeow is downloaded automatically.
 
+To build a Debian/Ubuntu package without installing it:
+
+```bash
+sudo apt install dpkg-dev binutils  # in addition to the build dependencies above
+./build-deb.sh
+```
+
+Packages are written to `dist/`. The script reads the version from `main.go` and
+uses your repository Git name/email as the package maintainer. Override these
+with `DEB_VERSION` and `DEB_MAINTAINER` if needed; see `./build-deb.sh --help`.
+Build on the oldest Debian/Ubuntu release you intend to support, since runtime
+library requirements are detected from the build machine. The script requires
+no root privileges and does not install the package.
+
 Command-line options:
 
 | Option | Effect |
@@ -165,6 +202,45 @@ Command-line options:
 | `--debug` | log whatsmeow traffic to the terminal |
 | `--hidden` | start hidden in the system tray |
 | `--version` | print the version |
+
+## Release history
+
+Full notes per release live in [CHANGELOG.md](CHANGELOG.md).
+
+- **1.9.2**: final drag & drop fix — the raw drop payload is now read by length
+  (`GetText()` turned out to return NULL for `text/uri-list`); flash feedback when a drop
+  carries no sendable file.
+- **1.9.1**: fix for the drag & drop SIGSEGV caused by an upstream gotk3 regression
+  (`GetURIs()`); panic "black box" at `~/.local/share/obrol/crash.log` + a per-drop guard
+  that keeps the app alive.
+- **1.9.0**: drag & drop files into conversations; WhatsApp-style presence (online, last
+  seen, "*Budi is typing…*" including the sender name in groups; your own typing state is
+  broadcast too); `.deb` package on the Releases page.
+- **1.8.0**: full English coverage (~90 strings) + Ko-fi donation link in the About dialog.
+- **1.7.0**: contact & group profiles (photo, about, group info) + Saweria donation link
+- **1.6.0**: chat archive (Archived folder, kept permanently)
+- **1.5.0**: voice messages (record/send/play) + call notifications
+- **1.4.0**: message replies (quotes), emoji reactions, forwarding, and the English language option
+- **1.3.0**: full stickers (render + animated, Recent/Favorites panel, create stickers from
+  images/screenshots), original self-made SVG logo & icons
+- **1.2.0**: paste screenshots/images from the clipboard with Ctrl+V, multi-line messages with
+  Shift+Enter, edit message (right-click or ↑), delete for everyone, pin message (banner + jump),
+  pin chat, sharper preview for own photos, creator credits (Katon Bagaskoro) in About.
+- **1.1.0**: dark mode (auto/light/dark), per-chat mute synced with the phone, mute all groups
+  except @mention/reply, mute badge, temporary header status falls back to connection status.
+- **1.0.0**: first release.
+
+## Troubleshooting
+
+| Problem | Fix |
+|---|---|
+| Tray icon missing | The XFCE panel needs the **Status Tray** plugin (right-click panel → Panel → Add New Items → *Status Tray Plugin*). Without a tray, closing the window quits the app. |
+| No notification sound | `sudo apt install gnome-session-canberra` (provides `canberra-gtk-play`) |
+| Emoji shown as boxes | `sudo apt install fonts-noto-color-emoji` |
+| Want to re-login / broken session | Menu ☰ → Log out, or delete `~/.local/share/obrol/` |
+| "Session opened elsewhere" | Obrol is running on another computer with the same session |
+| App crashed on its own | Send the contents of `~/.local/share/obrol/crash.log` — the automatic black box that records panic traces |
+| Drag & drop does nothing | Make sure you run ≥ 1.9.2 (`obrol --version`), then drop files onto an open conversation |
 
 ## Project layout
 
