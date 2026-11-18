@@ -19,7 +19,7 @@ import (
 const (
 	stickerShow  = 150 // ukuran stiker di percakapan
 	stickerCell  = 68  // ukuran stiker di panel
-	stickerCache = 60  // jumlah stiker ter-decode yang disimpan di memori
+	stickerCache = 8   // jumlah stiker ter-decode yang disimpan di memori (v1.9.6: plafon ±12 MB)
 )
 
 type stickerAnim struct {
@@ -78,7 +78,19 @@ func (a *App) loadSticker(sha string, size int, animate bool, cb func(*stickerAn
 		if err == nil {
 			maxF := 1
 			if animate {
-				maxF = 150
+				// v1.9.3: anggaran memori ±4 MB per stiker animasi — tanpa batas
+				// ini satu stiker 150 frame bisa makan belasan MB dan cache penuh
+				// mencapai ratusan MB di sesi yang ramai stiker.
+				perFrame := size * size * 4
+				if perFrame > 0 {
+					maxF = (1536 * 1024) / perFrame
+				}
+				if maxF > 150 {
+					maxF = 150
+				}
+				if maxF < 8 {
+					maxF = 8
+				}
 			}
 			frames, err = decodeWebPFrames(data, size, maxF)
 		}
@@ -102,6 +114,7 @@ func (a *App) loadSticker(sha string, size int, animate bool, cb func(*stickerAn
 				if len(stickerMemKeys) > stickerCache {
 					delete(stickerMem, stickerMemKeys[0])
 					stickerMemKeys = stickerMemKeys[1:]
+					trimMem() // v1.9.5: lepas frame C stiker yang baru dieviksi + kembalikan ke OS
 				}
 			}
 			list := stickerPending[key]
@@ -768,3 +781,8 @@ func (a *App) stickerMenuItems(menu *gtk.Menu, m Msg) {
 }
 
 var _ = strings.TrimSpace
+
+// stickerCount: jumlah entri cache saat ini (untuk log diagnostik mem.log).
+func stickerCount() int {
+	return len(stickerMem) // aman: cache & ticker sama-sama di thread GTK utama
+}

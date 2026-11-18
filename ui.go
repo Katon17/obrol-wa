@@ -22,7 +22,7 @@ import (
 	qrcode "github.com/skip2/go-qrcode"
 )
 
-const pageSize = 80
+const pageSize = 30 // v1.9.7: baris hidup per halaman — keseimbangan gulir vs RAM
 
 type chatRow struct {
 	row     *gtk.ListBoxRow
@@ -959,6 +959,7 @@ func (a *App) buildChatView() gtk.IWidget {
 			a.flashStatus(T("Tidak ada berkas yang bisa dikirim"))
 		}
 	})
+	startMemTicker() // v1.9.6: trim memori berkala
 	addClass(a.msgScroll, "msgbg")
 	a.msgList, _ = gtk.ListBoxNew()
 	a.msgList.SetSelectionMode(gtk.SELECTION_NONE)
@@ -1272,6 +1273,11 @@ func (a *App) clearMessages() {
 	a.rowsByID = map[string]*gtk.ListBoxRow{}
 	a.oldestTS, a.firstDay, a.lastDay, a.firstSepRow = 0, "", "", nil
 	a.loading = false
+	// v1.9.4: pixbuf baris lama hidup di memori C dan hanya dilepas oleh
+	// finalizer saat GC Go berjalan — sedangkan GC tidak terpicu oleh alokasi C.
+	// v1.9.5: setelah GC, trim arena malloc supaya memori bekas benar-benar
+	// kembali ke OS (glibc sonst menahannya di arena).
+	trimMem()
 }
 
 func (a *App) loadOlder() bool {
@@ -1438,8 +1444,7 @@ func (a *App) bubbleRow(m *Msg) *gtk.ListBoxRow {
 		b.PackStart(a.stickerView(m), false, false, 0)
 		text = ""
 	} else if len(m.Thumb) > 0 && (m.Kind == "image" || m.Kind == "video" || m.Kind == "gif" || m.Kind == "location") {
-		if pb := pixbufFromBytes(m.Thumb); pb != nil {
-			pb = scaleToWidth(pb, 260)
+		if pb := pixbufRowThumb(m.Thumb); pb != nil {
 			img, _ := gtk.ImageNewFromPixbuf(pb)
 			addClass(img, "thumb")
 			eb, _ := gtk.EventBoxNew()
@@ -2126,6 +2131,37 @@ func (a *App) notify(m *Msg) {
 
 // ------------------------------------------------------------ helper
 
+// pixbufRowThumb mendekode thumbnail baris LANGSUNG seperlunya tampilan
+// (v1.9.7): lebar 260px & tinggi maks 320px, satu kali scale, tanpa salinan
+// ukuran penuh sempat tinggal di memori. Thumbnail tersimpan bisa 520px
+// (±0,8 MB per baris sebagai pixbuf); pada 260px cukup ±0,2 MB.
+func pixbufRowThumb(data []byte) *gdk.Pixbuf {
+	pb := pixbufFromBytes(data)
+	if pb == nil {
+		return nil
+	}
+	const maxW, maxH = 260, 320
+	w, h := pb.GetWidth(), pb.GetHeight()
+	if w == 0 {
+		return pb
+	}
+	if w > maxW {
+		h = h * maxW / w
+		w = maxW
+	}
+	if h > maxH {
+		w = w * maxH / h
+		h = maxH
+	}
+	if w == pb.GetWidth() && h == pb.GetHeight() {
+		return pb
+	}
+	if s, err := pb.ScaleSimple(w, h, gdk.INTERP_BILINEAR); err == nil && s != nil {
+		return s
+	}
+	return pb
+}
+
 func pixbufFromBytes(data []byte) *gdk.Pixbuf {
 	l, err := gdk.PixbufLoaderNew()
 	if err != nil {
@@ -2150,22 +2186,6 @@ func scalePix(pb *gdk.Pixbuf, size int) *gdk.Pixbuf {
 		return nil
 	}
 	s, err := pb.ScaleSimple(size, size, gdk.INTERP_BILINEAR)
-	if err != nil {
-		return pb
-	}
-	return s
-}
-
-func scaleToWidth(pb *gdk.Pixbuf, w int) *gdk.Pixbuf {
-	if pb.GetWidth() == 0 {
-		return pb
-	}
-	h := pb.GetHeight() * w / pb.GetWidth()
-	if h > 320 {
-		h = 320
-		w = pb.GetWidth() * h / pb.GetHeight()
-	}
-	s, err := pb.ScaleSimple(w, h, gdk.INTERP_BILINEAR)
 	if err != nil {
 		return pb
 	}

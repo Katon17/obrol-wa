@@ -265,6 +265,7 @@ Catatan lengkap per rilis ada di [CHANGELOG.md](CHANGELOG.md).
 | Muncul "Sesi dibuka di tempat lain" | Obrol sedang dijalankan di komputer lain dengan sesi yang sama |
 | Aplikasi pernah crash sendiri | Kirim isi `~/.local/share/obrol/crash.log` — "kotak hitam" otomatis yang merekam jejak panic |
 | Drag & drop tidak melakukan apa-apa | Pastikan versi ≥ 1.9.2 (`obrol --version`), lalu jatuhkan berkas ke area percakapan yang terbuka |
+| RAM membesar setelah lama dipakai | Sejak 1.9.3 cache stiker animasi dibatasi (±4 MB/stiker, 24 stiker); restart Obrol melepaskan cache yang sudah terlanjur penuh |
 
 ## Struktur kode
 

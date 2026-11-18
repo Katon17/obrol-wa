@@ -15,7 +15,7 @@ import (
 	"github.com/gotk3/gotk3/gtk"
 )
 
-const version = "1.9.2"
+const version = "1.9.7"
 
 // v1.9: "kotak hitam" — bila aplikasi panic, jejak lengkap disimpan ke
 // crash.log di folder data supaya mudah dilaporkan, lalu panic diteruskan.
@@ -79,6 +79,9 @@ func dataDir() string {
 
 func main() {
 	defer crashLog()
+	// v1.9.6: GC lebih rajin (heap tumbuh maks 1,5x, bukan 2x) supaya finalizer
+	// pixbuf GTK lebih cepat melepas memori C — RSS steady-state lebih rendah.
+	debug.SetGCPercent(50)
 	var o Options
 	flag.BoolVar(&o.Hidden, "hidden", false, "mulai tersembunyi di system tray")
 	flag.BoolVar(&o.Demo, "demo", false, "mode demo dengan data contoh (tanpa koneksi)")

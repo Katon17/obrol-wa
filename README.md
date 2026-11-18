@@ -241,6 +241,7 @@ Full notes per release live in [CHANGELOG.md](CHANGELOG.md).
 | "Session opened elsewhere" | Obrol is running on another computer with the same session |
 | App crashed on its own | Send the contents of `~/.local/share/obrol/crash.log` — the automatic black box that records panic traces |
 | Drag & drop does nothing | Make sure you run ≥ 1.9.2 (`obrol --version`), then drop files onto an open conversation |
+| RAM grows after long use | Since 1.9.3 the animated-sticker cache is capped (±4 MB/sticker, 24 stickers); restarting Obrol releases an already-full cache |
 
 ## Project layout
 

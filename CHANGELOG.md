@@ -4,6 +4,66 @@ All notable changes to Obrol are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.9.7] — 2026-11-19
+
+### Changed
+- **RSS tidak lagi menempel di puncak**: strategi arena malloc disetel saat start
+  (`M_ARENA_MAX=2`, threshold mmap/trim tetap 128 KB) sehingga memori C yang dilepas
+  (pixbuf, cache font) benar-benar kembali ke OS, bukan tertahan sebagai high-water mark. /
+  **RSS no longer sticks at its peak**: malloc arena strategy set at startup
+  (`M_ARENA_MAX=2`, fixed 128 KB mmap/trim thresholds) so freed C memory (pixbufs, font
+  caches) is returned to the OS instead of being retained as a high-water mark.
+- Thumbnail baris didekode langsung pada ukuran tampil (260px, sekali scale; sebelumnya
+  dua langkah 340→260px) dan satu halaman riwayat 30 baris. /
+  Row thumbnails decode straight at display size (260px, single scale; previously two
+  steps 340→260px) and a history page is 30 rows.
+- Log diagnostik `mem.log` (satu baris/menit: RSS, heap Go, jumlah GC, cache stiker) di
+  folder data untuk pelacakan lapangan. / Diagnostic `mem.log` (one line/min: RSS, Go heap,
+  GC count, sticker cache) in the data folder for field tracking.
+
+## [1.9.6] — 2026-11-19
+
+### Changed
+- **Mode hemat memori**: thumbnail media di baris pesan kini didekode seperlunya saja
+  (≤340px, sebelumnya ukuran tersimpan 520px ≈ 0,8 MB/baris); satu halaman riwayat 40 baris
+  (sebelumnya 80); cache stiker animasi 8 stiker × ±1,5 MB; dan trim otomatis tiap 60 detik.
+  GC juga dibuat lebih rajin (GOGC 50). Kombinasi ini menahan RSS pemakaian wajar di bawah ±100 MB pada sesi besar. /
+  **Memory-saver mode**: row thumbnails decode at display size (≤340px instead of the stored
+  520px ≈ 0.8 MB/row); history page 40 rows (was 80); sticker cache 8 × ±1.5 MB; automatic
+  trim every 60 s and a more eager GC (GOGC 50) — keeping typical RSS under ±100 MB on large sessions.
+
+## [1.9.5] — 2026-11-18
+
+### Changed
+- **RSS benar-benar turun setelah ganti chat**: setelah GC, `malloc_trim(0)` memaksa glibc
+  mengembalikan memori C yang sudah bebas ke OS (tanpa ini RSS menetap tinggi walau objek
+  sudah dilepas). Cache stiker animasi juga diperketat: 12 stiker × anggaran ±2 MB
+  (sebelumnya 24 × 4 MB). / **RSS now actually drops after switching chats**: `malloc_trim(0)`
+  returns freed C memory to the OS after GC; animated-sticker cache tightened to 12 stickers
+  × ±2 MB budget.
+
+## [1.9.4] — 2026-11-18
+
+### Fixed
+- **RAM naik terus tiap ganti chat**: pixbuf thumbnail/stiker baris pesan hidup di memori C
+  dan hanya dibebaskan finalizer saat GC Go berjalan — padahal GC tidak terpicu oleh alokasi
+  C, sehingga bekas percakapan lama menumpuk. Kini satu siklus GC dipaksa saat daftar pesan
+  dibongkar (ganti chat) dan saat cache stiker mengeviksi entri; RSS kembali turun setelah
+  pindah chat. / **RAM kept growing per chat switch**: message-row pixbufs live in C memory and
+  are only freed by finalizers when the Go GC runs — which C allocations never trigger. A GC
+  cycle is now forced when the message list is torn down and when the sticker cache evicts.
+
+## [1.9.3] — 2026-11-18
+
+### Changed
+- **RAM stiker animasi dibatasi**: dahulu satu stiker animasi bisa menyimpan sampai 150
+  frame penuh di memori dan cache menampung 60 stiker — pada sesi ramai stiker ini bisa
+  memakan ratusan MB (teramati ±636 MB). Kini ada anggaran ±4 MB per stiker (frame berlebih
+  dipotong) dan cache cukup 24 stiker; pemakaian RAM kembali wajar. / **Animated-sticker RAM
+  cap**: one animated sticker could keep up to 150 full frames in memory and the cache held
+  60 stickers — hundreds of MB on sticker-heavy sessions (observed ±636 MB). Now each sticker
+  gets a ±4 MB frame budget and the cache holds 24 stickers.
+
 ## [1.9.2] — 2026-11-17
 
 ### Fixed
@@ -168,6 +228,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   read receipts, photo/video thumbnails, documents, voice notes, locations, group chats,
   desktop notifications with sound, system tray with unread dot, autostart, single instance.
 
+[1.9.7]: https://github.com/Katon17/obrol-wa/releases/tag/v1.9.7
+[1.9.6]: https://github.com/Katon17/obrol-wa/releases/tag/v1.9.6
+[1.9.5]: https://github.com/Katon17/obrol-wa/releases/tag/v1.9.5
+[1.9.4]: https://github.com/Katon17/obrol-wa/releases/tag/v1.9.4
+[1.9.3]: https://github.com/Katon17/obrol-wa/releases/tag/v1.9.3
 [1.9.2]: https://github.com/Katon17/obrol-wa/releases/tag/v1.9.2
 [1.9.1]: https://github.com/Katon17/obrol-wa/releases/tag/v1.9.1
 [1.9.0]: https://github.com/Katon17/obrol-wa/releases/tag/v1.9.0
