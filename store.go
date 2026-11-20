@@ -48,6 +48,7 @@ type Msg struct {
 	Status     int    // 0=pending 1=terkirim 2=diterima 3=dibaca -1=gagal
 	IsRead     bool
 	Edited     bool
+	Starred    bool
 
 	// v1.4: balas, teruskan, reaksi
 	ReplyID     string // id pesan yang dibalas
@@ -160,6 +161,8 @@ CREATE INDEX IF NOT EXISTS idx_msg_id ON messages(id);
 		`ALTER TABLE messages ADD COLUMN reply_snip TEXT NOT NULL DEFAULT ''`,
 		`ALTER TABLE messages ADD COLUMN forwarded INTEGER NOT NULL DEFAULT 0`,
 		`ALTER TABLE messages ADD COLUMN reactions TEXT NOT NULL DEFAULT ''`,
+		// v1.11: pesan berbintang
+		`ALTER TABLE messages ADD COLUMN starred INTEGER NOT NULL DEFAULT 0`,
 	} {
 		db.Exec(q)
 	}
@@ -203,8 +206,13 @@ func (s *Store) SetReactions(chat, id, jsonStr string) {
 
 func isGroupJID(j string) bool { return strings.HasSuffix(j, "@g.us") }
 
-func (s *Store) ListChats() ([]Chat, error) {
-	rows, err := s.db.Query(`SELECT jid, name, last_ts, last_text, unread, muted_until, pinned, archived FROM chats WHERE last_ts > 0 ORDER BY pinned DESC, last_ts DESC`)
+func (s *Store) ListChats() ([]Chat, error) { return s.ListChatsLimit(-1) }
+
+// ListChatsLimit: daftar chat terurut dengan batas baris (v1.10.1); -1 = tanpa
+// batas. Sidebar hanya mewadahkan baris sebanyak batas agar ratusan chat
+// tidak menjadi ratusan widget permanen.
+func (s *Store) ListChatsLimit(limit int) ([]Chat, error) {
+	rows, err := s.db.Query(`SELECT jid, name, last_ts, last_text, unread, muted_until, pinned, archived FROM chats WHERE last_ts > 0 ORDER BY pinned DESC, last_ts DESC LIMIT ?`, limit)
 	if err != nil {
 		return nil, err
 	}
@@ -219,6 +227,17 @@ func (s *Store) ListChats() ([]Chat, error) {
 		out = append(out, c)
 	}
 	return out, rows.Err()
+}
+
+// CountChats: jumlah percakapan aktif (v1.10.1) untuk label «tampilkan lagi».
+func (s *Store) CountChats(archived bool) int {
+	arch := 0
+	if archived {
+		arch = 1
+	}
+	var n int
+	_ = s.db.QueryRow(`SELECT COUNT(*) FROM chats WHERE last_ts > 0 AND (archived > 0) = ?`, arch).Scan(&n)
+	return n
 }
 
 func (s *Store) GetChat(jid string) (Chat, bool) {
@@ -352,17 +371,57 @@ FROM messages WHERE chat=? AND ts < ? ORDER BY ts DESC, rowid DESC LIMIT ?`, cha
 	return out, rows.Err()
 }
 
-const msgCols = `chat,id,sender,sender_name,from_me,ts,kind,text,thumb,raw,status,is_read,edited,reply_id,reply_sender,reply_snip,forwarded,reactions`
+const msgCols = `chat,id,sender,sender_name,from_me,ts,kind,text,thumb,raw,status,is_read,edited,reply_id,reply_sender,reply_snip,forwarded,reactions,starred`
 
 type scanner interface{ Scan(dest ...any) error }
 
 func scanMsg(r scanner) (Msg, error) {
 	var m Msg
-	var fm, rd, ed, fw int
+	var fm, rd, ed, fw, st int
 	err := r.Scan(&m.Chat, &m.ID, &m.Sender, &m.SenderName, &fm, &m.TS, &m.Kind, &m.Text, &m.Thumb, &m.Raw, &m.Status, &rd, &ed,
-		&m.ReplyID, &m.ReplySender, &m.ReplySnip, &fw, &m.Reactions)
-	m.FromMe, m.IsRead, m.Edited, m.Forwarded = fm == 1, rd == 1, ed == 1, fw == 1
+		&m.ReplyID, &m.ReplySender, &m.ReplySnip, &fw, &m.Reactions, &st)
+	m.FromMe, m.IsRead, m.Edited, m.Forwarded, m.Starred = fm == 1, rd == 1, ed == 1, fw == 1, st == 1
 	return m, err
+}
+
+// SetStarred: bintangi / lepas bintang pesan (v1.11).
+func (s *Store) SetStarred(chat, id string, star bool) {
+	v := 0
+	if star {
+		v = 1
+	}
+	_, _ = s.db.Exec(`UPDATE messages SET starred=? WHERE chat=? AND id=?`, v, chat, id)
+}
+
+// ListStarred: semua pesan berbintang, terbaru dulu (v1.11).
+func (s *Store) ListStarred(limit int) ([]Msg, error) {
+	return s.queryMsgs(`SELECT `+msgCols+` FROM messages WHERE starred=1 ORDER BY ts DESC LIMIT ?`, limit)
+}
+
+// SearchMessages: cari isi pesan (v1.11); chat="" berarti semua percakapan.
+func (s *Store) SearchMessages(q, chat string, limit int) ([]Msg, error) {
+	like := "%" + q + "%"
+	if chat == "" {
+		return s.queryMsgs(`SELECT `+msgCols+` FROM messages WHERE text LIKE ? ORDER BY ts DESC LIMIT ?`, like, limit)
+	}
+	return s.queryMsgs(`SELECT `+msgCols+` FROM messages WHERE chat=? AND text LIKE ? ORDER BY ts DESC LIMIT ?`, chat, like, limit)
+}
+
+func (s *Store) queryMsgs(q string, args ...any) ([]Msg, error) {
+	rows, err := s.db.Query(q, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []Msg
+	for rows.Next() {
+		m, err := scanMsg(rows)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, m)
+	}
+	return out, rows.Err()
 }
 
 func (s *Store) GetMessage(chat, id string) (Msg, bool) {
@@ -531,7 +590,7 @@ func previewText(m *Msg) string {
 	lbl := kindLabel(m.Kind)
 	switch {
 	case m.Kind == "deleted":
-		t = "🚫 " + T("Pesan ini dihapus")
+		t = "🚫 Pesan ini dihapus"
 	case lbl != "" && t != "":
 		t = lbl + " · " + t
 	case lbl != "":

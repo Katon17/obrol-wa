@@ -10,6 +10,7 @@ import (
 	"image"
 	"image/jpeg"
 	_ "image/png"
+	"io"
 	"mime"
 	"net/http"
 	"os"
@@ -47,6 +48,8 @@ type UIHooks interface {
 	OnChatsChanged()
 	OnReceipt(ids []string, st int)
 	OnCall(jid string, video bool, phase, reason, callID string)
+	OnPresence(jid string, available bool, lastSeen time.Time)
+	OnTyping(chat, senderJID string, composing bool)
 }
 
 type WA struct {
@@ -102,6 +105,102 @@ func (w *WA) newClient() error {
 
 func (w *WA) IsPaired() bool { return w.cli.Store.ID != nil }
 
+// MyJID: JID akun sendiri tanpa perangkat (v1.12).
+func (w *WA) MyJID() string {
+	if w.cli.Store.ID == nil {
+		return ""
+	}
+	return w.cli.Store.ID.ToNonAD().String()
+}
+
+// ------------------------------------------------------------ v1.12: grup
+
+func (w *WA) GroupInfo(jid string) (*types.GroupInfo, error) {
+	j, err := types.ParseJID(jid)
+	if err != nil {
+		return nil, err
+	}
+	return w.cli.GetGroupInfo(context.Background(), j)
+}
+
+func (w *WA) GroupSetName(jid, name string) error {
+	j, err := types.ParseJID(jid)
+	if err != nil {
+		return err
+	}
+	return w.cli.SetGroupName(context.Background(), j, name)
+}
+
+func (w *WA) GroupSetDesc(jid, topic string) error {
+	j, err := types.ParseJID(jid)
+	if err != nil {
+		return err
+	}
+	return w.cli.SetGroupTopic(context.Background(), j, "", "", topic)
+}
+
+func (w *WA) GroupSetPhoto(jid string, data []byte) error {
+	j, err := types.ParseJID(jid)
+	if err != nil {
+		return err
+	}
+	_, err = w.cli.SetGroupPhoto(context.Background(), j, data)
+	return err
+}
+
+// GroupPhoto: unduh foto grup (preview) lewat URL profil (v1.12.1).
+func (w *WA) GroupPhoto(jid string) ([]byte, error) {
+	j, err := types.ParseJID(jid)
+	if err != nil {
+		return nil, err
+	}
+	info, err := w.cli.GetProfilePictureInfo(context.Background(), j, &whatsmeow.GetProfilePictureParams{Preview: true})
+	if err != nil {
+		return nil, err
+	}
+	if info == nil || info.URL == "" {
+		return nil, errNoGroupPhoto
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, info.URL, nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("HTTP %d", resp.StatusCode)
+	}
+	return io.ReadAll(io.LimitReader(resp.Body, 2<<20))
+}
+
+var errNoGroupPhoto = errors.New("foto grup tidak tersedia")
+
+func (w *WA) GroupUpdateParticipants(jid string, jids []string, add bool) error {
+	j, err := types.ParseJID(jid)
+	if err != nil {
+		return err
+	}
+	var list []types.JID
+	for _, s := range jids {
+		p, err := types.ParseJID(s)
+		if err != nil {
+			continue
+		}
+		list = append(list, p)
+	}
+	act := whatsmeow.ParticipantChangeRemove
+	if add {
+		act = whatsmeow.ParticipantChangeAdd
+	}
+	_, err = w.cli.UpdateGroupParticipants(context.Background(), j, list, act)
+	return err
+}
+
 // Start: login dengan QR bila belum dipasangkan, atau langsung terhubung.
 func (w *WA) Start() {
 	if !w.IsPaired() {
@@ -127,7 +226,7 @@ func (w *WA) startQR() {
 			return
 		}
 		if err := w.cli.Connect(); err != nil {
-			w.ui.OnStatus(T("Gagal terhubung: ") + err.Error())
+			w.ui.OnStatus("Gagal terhubung: " + err.Error())
 			w.ui.OnQRTimeout()
 			return
 		}
@@ -158,7 +257,7 @@ func (w *WA) PairPhone(phone string) (string, error) {
 		phone = "62" + phone[1:]
 	}
 	if len(phone) < 8 {
-		return "", errors.New(T("nomor tidak valid"))
+		return "", errors.New("nomor tidak valid")
 	}
 	return w.cli.PairPhone(bg, phone, true, whatsmeow.PairClientChrome, "Chrome (Linux)")
 }
@@ -201,6 +300,7 @@ func (w *WA) handle(raw any) {
 	case *events.Connected:
 		w.loggedIn.Store(true)
 		w.ui.OnLoggedIn()
+		go w.cli.SendPresence(bg, types.PresenceAvailable)
 		if !w.syncing.Load() {
 			w.ui.OnStatus(T("Terhubung"))
 		}
@@ -218,7 +318,7 @@ func (w *WA) handle(raw any) {
 	case *events.TemporaryBan:
 		w.ui.OnStatus(T("⚠ Diblokir sementara: ") + evt.String())
 	case *events.ConnectFailure:
-		w.ui.OnStatus(fmt.Sprintf(T("Gagal terhubung (%v)"), evt.Reason))
+		w.ui.OnStatus(fmt.Sprintf("Gagal terhubung (%v)", evt.Reason))
 	case *events.LoggedOut:
 		w.ui.OnStatus(T("Keluar dari perangkat"))
 		go w.afterLogout()
@@ -261,6 +361,10 @@ func (w *WA) handle(raw any) {
 		w.ui.OnCall(evt.From.String(), evt.Media == "video", "offer", "", evt.CallID)
 	case *events.CallTerminate:
 		w.ui.OnCall(evt.From.String(), false, "terminate", evt.Reason, evt.CallID)
+	case *events.Presence:
+		w.ui.OnPresence(evt.From.String(), !evt.Unavailable, evt.LastSeen)
+	case *events.ChatPresence:
+		w.ui.OnTyping(w.chatOf(evt.MessageSource).String(), evt.Sender.String(), evt.State == types.ChatPresenceComposing)
 	case *events.MarkChatAsRead:
 		if evt.Action.GetRead() {
 			w.st.MarkChatRead(w.normJID(evt.JID).String())
@@ -507,11 +611,11 @@ func extract(m *waE2E.Message) (kind, text string, thumb []byte) {
 		return "location", t, x.GetJPEGThumbnail()
 	case m.LiveLocationMessage != nil:
 		x := m.GetLiveLocationMessage()
-		return "location", fmt.Sprintf(T("Lokasi terkini\nhttps://maps.google.com/?q=%f,%f"), x.GetDegreesLatitude(), x.GetDegreesLongitude()), x.GetJPEGThumbnail()
+		return "location", fmt.Sprintf("Lokasi terkini\nhttps://maps.google.com/?q=%f,%f", x.GetDegreesLatitude(), x.GetDegreesLongitude()), x.GetJPEGThumbnail()
 	case m.ContactMessage != nil:
 		return "contact", m.GetContactMessage().GetDisplayName(), nil
 	case m.ContactsArrayMessage != nil:
-		return "contact", fmt.Sprintf(T("%d kontak"), len(m.GetContactsArrayMessage().GetContacts())), nil
+		return "contact", fmt.Sprintf("%d kontak", len(m.GetContactsArrayMessage().GetContacts())), nil
 	case m.PollCreationMessage != nil || m.PollCreationMessageV2 != nil || m.PollCreationMessageV3 != nil:
 		p := m.GetPollCreationMessage()
 		if p == nil {
@@ -688,7 +792,7 @@ func (w *WA) DisplayName(jid string, stored string) string {
 		if stored != "" {
 			return stored
 		}
-		return T("Grup")
+		return "Grup"
 	}
 	if v, ok := w.names.Load(jid); ok {
 		return v.(string)
@@ -709,7 +813,7 @@ func (w *WA) DisplayName(jid string, stored string) string {
 		name = jid
 	}
 	if j.User == w.myUser() {
-		name += T(" (Anda)")
+		name += " (Anda)"
 	}
 	w.names.Store(jid, name)
 	return name
@@ -823,10 +927,10 @@ const RevokeWindow = 60 * time.Hour // batas "hapus untuk semua orang"
 func (w *WA) EditText(chat, id, text string) error {
 	m, ok := w.st.GetMessage(chat, id)
 	if !ok || !m.FromMe {
-		return errors.New(T("pesan tidak ditemukan"))
+		return errors.New("pesan tidak ditemukan")
 	}
 	if time.Since(time.Unix(m.TS, 0)) > EditWindow {
-		return errors.New(T("Pesan hanya bisa diedit maksimal 15 menit setelah dikirim"))
+		return errors.New("pesan hanya bisa diedit maksimal 15 menit setelah dikirim")
 	}
 	cj, err := types.ParseJID(chat)
 	if err != nil {
@@ -861,7 +965,7 @@ func (w *WA) Revoke(chat, id string) error {
 func (w *WA) PinMessage(chat, id string, pin bool, dur time.Duration) error {
 	m, ok := w.st.GetMessage(chat, id)
 	if !ok {
-		return errors.New(T("pesan tidak ditemukan"))
+		return errors.New("pesan tidak ditemukan")
 	}
 	cj, err := types.ParseJID(chat)
 	if err != nil {
@@ -1019,7 +1123,7 @@ func quotedProto(m *Msg) *waE2E.Message {
 func (w *WA) SendReaction(chat, id, emoji string) error {
 	m, ok := w.st.GetMessage(chat, id)
 	if !ok {
-		return errors.New(T("pesan tidak ditemukan"))
+		return errors.New("pesan tidak ditemukan")
 	}
 	to, _ := types.ParseJID(chat)
 	key := &waCommon.MessageKey{RemoteJID: proto.String(chat), FromMe: proto.Bool(m.FromMe), ID: proto.String(id)}
@@ -1057,7 +1161,7 @@ func (w *WA) SendFileEx(chat, path, caption string, reply *Msg, forwarded bool) 
 		return nil, err
 	}
 	if len(data) > maxUpload {
-		return nil, errors.New(T("ukuran file maksimal 100 MB"))
+		return nil, errors.New("ukuran file maksimal 100 MB")
 	}
 	mt := mime.TypeByExtension(strings.ToLower(filepath.Ext(path)))
 	if mt == "" {
@@ -1155,7 +1259,7 @@ func (w *WA) SendAudioEx(chat, path string, ptt bool, reply *Msg) (*Msg, error) 
 		return nil, err
 	}
 	if len(data) > maxUpload {
-		return nil, errors.New(T("ukuran file maksimal 100 MB"))
+		return nil, errors.New("ukuran file maksimal 100 MB")
 	}
 	mt := mime.TypeByExtension(strings.ToLower(filepath.Ext(path)))
 	if mt == "" {
@@ -1222,14 +1326,14 @@ func (w *WA) ForwardMessage(dst string, src Msg) (*Msg, error) {
 		}
 		return w.sendMediaData(dst, src, data)
 	}
-	return nil, errors.New(T("jenis pesan ini tidak bisa diteruskan"))
+	return nil, errors.New("jenis pesan ini tidak bisa diteruskan")
 }
 
 // downloadMsg mengunduh media pesan dari server WhatsApp berdasarkan raw proto-nya.
 func (w *WA) downloadMsg(src Msg) ([]byte, error) {
 	var msg waE2E.Message
 	if proto.Unmarshal(src.Raw, &msg) != nil {
-		return nil, errors.New(T("media tidak tersedia"))
+		return nil, errors.New("media tidak tersedia")
 	}
 	var dl whatsmeow.DownloadableMessage
 	switch src.Kind {
@@ -1245,7 +1349,7 @@ func (w *WA) downloadMsg(src Msg) ([]byte, error) {
 		dl = msg.GetStickerMessage()
 	}
 	if dl == nil {
-		return nil, errors.New(T("media tidak tersedia"))
+		return nil, errors.New("media tidak tersedia")
 	}
 	return w.cli.Download(bg, dl)
 }
@@ -1378,7 +1482,7 @@ func makeThumbSize(data []byte, maxS, quality int) ([]byte, uint32, uint32) {
 func (w *WA) OpenMediaPath(chat, id string) (string, error) {
 	raw := w.st.GetRaw(chat, id)
 	if raw == nil {
-		return "", errors.New(T("media tidak tersedia"))
+		return "", errors.New("media tidak tersedia")
 	}
 	var m waE2E.Message
 	if err := proto.Unmarshal(raw, &m); err != nil {
@@ -1398,7 +1502,7 @@ func (w *WA) OpenMediaPath(chat, id string) (string, error) {
 	case m.StickerMessage != nil:
 		dl, mt = m.StickerMessage, m.StickerMessage.GetMimetype()
 	default:
-		return "", errors.New(T("jenis media tidak didukung"))
+		return "", errors.New("jenis media tidak didukung")
 	}
 	dir := downloadDir()
 	os.MkdirAll(dir, 0o755)
@@ -1423,7 +1527,7 @@ func (w *WA) OpenMediaPath(chat, id string) (string, error) {
 	if _, err := os.Stat(path); err != nil {
 		data, err := w.cli.Download(bg, dl)
 		if err != nil {
-			return "", fmt.Errorf(T("unduh gagal")+": %w", err)
+			return "", fmt.Errorf("unduh gagal: %w", err)
 		}
 		if err := os.WriteFile(path, data, 0o644); err != nil {
 			return "", err
@@ -1457,14 +1561,14 @@ func (w *WA) CheckNumber(phone string) (string, error) {
 		phone = "62" + phone[1:]
 	}
 	if len(phone) < 8 {
-		return "", errors.New(T("nomor tidak valid"))
+		return "", errors.New("nomor tidak valid")
 	}
 	res, err := w.cli.IsOnWhatsApp(bg, []string{"+" + phone})
 	if err != nil {
 		return "", err
 	}
 	if len(res) == 0 || !res[0].IsIn {
-		return "", errors.New(T("nomor ini tidak terdaftar di WhatsApp"))
+		return "", errors.New("nomor ini tidak terdaftar di WhatsApp")
 	}
 	return res[0].JID.ToNonAD().String(), nil
 }

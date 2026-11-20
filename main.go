@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime/debug"
+	"strconv"
 	"strings"
 	"time"
 
@@ -14,7 +16,19 @@ import (
 	"github.com/gotk3/gotk3/gtk"
 )
 
-const version = "1.8.0"
+const version = "1.12.2"
+
+// v1.9: "kotak hitam" — bila aplikasi panic, jejak lengkap disimpan ke
+// crash.log di folder data supaya mudah dilaporkan, lalu panic diteruskan.
+func crashLog() {
+	if r := recover(); r != nil {
+		dir := dataDir()
+		_ = os.MkdirAll(dir, 0o755)
+		_ = os.WriteFile(filepath.Join(dir, "crash.log"),
+			[]byte(fmt.Sprintf("Obrol %s panic: %v\n\n%s", version, r, debug.Stack())), 0o644)
+		panic(r)
+	}
+}
 
 //go:embed assets/obrol.png
 var iconPNG []byte
@@ -65,6 +79,10 @@ func dataDir() string {
 }
 
 func main() {
+	defer crashLog()
+	// v1.9.6: GC lebih rajin (heap tumbuh maks 1,5x, bukan 2x) supaya finalizer
+	// pixbuf GTK lebih cepat melepas memori C — RSS steady-state lebih rendah.
+	debug.SetGCPercent(50)
 	var o Options
 	flag.BoolVar(&o.Hidden, "hidden", false, "mulai tersembunyi di system tray")
 	flag.BoolVar(&o.Demo, "demo", false, "mode demo dengan data contoh (tanpa koneksi)")
@@ -110,12 +128,22 @@ func main() {
 		os.Exit(1)
 	}
 	a := &App{gapp: gapp, st: st, cfg: loadConfig(dir), opts: o}
+	a.chatLimit = 60 // v1.10.1: plafon baris sidebar
+	if v := os.Getenv("OBROL_CHATLIMIT"); v != "" {
+		if n, err := strconv.Atoi(v); err == nil && n > 10 {
+			a.chatLimit = n
+		}
+	}
 	a.pendingCalls = map[string]pendingCall{}
+	a.online = map[string]bool{}
+	a.lastSeen = map[string]int64{}
+	a.typing = map[string]string{}
 	lang = resolveLang(a.cfg.Lang)
 	if v := os.Getenv("OBROL_LANG"); v != "" {
 		if _, ok := normalizeLang(v); ok {
 			lang = resolveLang(v)
 		}
+	}
 	}
 	a.iconPath = filepath.Join(dir, "obrol.png")
 	os.WriteFile(a.iconPath, iconPNG, 0o644)
@@ -197,6 +225,14 @@ func seedDemo(st *Store) {
 	data[1].msgs[2].Reactions = `{"` + rina + `":"❤️","demo-me":"👍"}`
 	data[1].msgs[3].Reactions = `{"` + rina + `":"👍"}`
 	data[2].msgs[4].Forwarded = true
+
+	// v1.10.1: 300 chat tambahan — etalase & uji beban plafon sidebar.
+	for i := 0; i < 300; i++ {
+		jid := fmt.Sprintf("628555000%04d@s.whatsapp.net", i)
+		data = append(data, dm{chat: jid, name: fmt.Sprintf("Kontak Uji %d", i), msgs: []Msg{
+			{Text: "Pesan uji untuk memenuhi daftar percakapan.", TS: ts(time.Duration(48+i) * time.Hour)},
+		}})
+	}
 
 	for _, c := range data {
 		if c.chat == grp {

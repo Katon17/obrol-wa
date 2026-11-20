@@ -19,7 +19,7 @@ import (
 const (
 	stickerShow  = 150 // ukuran stiker di percakapan
 	stickerCell  = 68  // ukuran stiker di panel
-	stickerCache = 60  // jumlah stiker ter-decode yang disimpan di memori
+	stickerCache = 5   // v1.10.0: plafon ±7,5 MB — log lapangan menunjukkan cache selalu penuh 8
 )
 
 type stickerAnim struct {
@@ -78,7 +78,19 @@ func (a *App) loadSticker(sha string, size int, animate bool, cb func(*stickerAn
 		if err == nil {
 			maxF := 1
 			if animate {
-				maxF = 150
+				// v1.9.3: anggaran memori ±4 MB per stiker animasi — tanpa batas
+				// ini satu stiker 150 frame bisa makan belasan MB dan cache penuh
+				// mencapai ratusan MB di sesi yang ramai stiker.
+				perFrame := size * size * 4
+				if perFrame > 0 {
+					maxF = (1024 * 1024) / perFrame // v1.10.1: anggaran 1 MB per stiker animasi
+				}
+				if maxF > 150 {
+					maxF = 150
+				}
+				if maxF < 8 {
+					maxF = 8
+				}
 			}
 			frames, err = decodeWebPFrames(data, size, maxF)
 		}
@@ -102,6 +114,7 @@ func (a *App) loadSticker(sha string, size int, animate bool, cb func(*stickerAn
 				if len(stickerMemKeys) > stickerCache {
 					delete(stickerMem, stickerMemKeys[0])
 					stickerMemKeys = stickerMemKeys[1:]
+					trimMem() // v1.9.5: lepas frame C stiker yang baru dieviksi + kembalikan ke OS
 				}
 			}
 			list := stickerPending[key]
@@ -158,7 +171,7 @@ func (a *App) stickerView(m *Msg) gtk.IWidget {
 	}
 	ref, ok := stickerRef(m.Raw)
 	if !ok {
-		placeholder(T("Stiker"))
+		placeholder("Stiker")
 		return box
 	}
 	if ref.Lottie {
@@ -167,7 +180,7 @@ func (a *App) stickerView(m *Msg) gtk.IWidget {
 			box.PackStart(img, true, true, 0)
 			box.SetTooltipText(T("Stiker animasi Lottie (ditampilkan diam)"))
 		} else {
-			placeholder(T("Stiker animasi Lottie belum didukung"))
+			placeholder("Stiker animasi Lottie belum didukung")
 		}
 		return box
 	}
@@ -178,7 +191,7 @@ func (a *App) stickerView(m *Msg) gtk.IWidget {
 				return
 			}
 			if s == nil {
-				placeholder(T("Stiker tidak bisa ditampilkan"))
+				placeholder("Stiker tidak bisa ditampilkan")
 				return
 			}
 			box.GetChildren().Foreach(func(it interface{}) {
@@ -197,14 +210,14 @@ func (a *App) stickerView(m *Msg) gtk.IWidget {
 		a.st.AddSticker(ref.SHA, ref.Animated, m.TS)
 		show()
 	} else if a.wa != nil {
-		placeholder(T("Mengunduh stiker…"))
+		placeholder("Mengunduh stiker…")
 		a.wa.FetchSticker(m.Raw, m.TS, func(err error) {
 			glib.IdleAdd(func() bool {
 				if gen != a.msgGen {
 					return false
 				}
 				if err != nil {
-					placeholder(T("Stiker tidak tersedia lagi di server"))
+					placeholder("Stiker tidak tersedia lagi di server")
 				} else {
 					show()
 				}
@@ -212,7 +225,7 @@ func (a *App) stickerView(m *Msg) gtk.IWidget {
 			})
 		})
 	} else {
-		placeholder(T("Stiker"))
+		placeholder("Stiker")
 	}
 	return box
 }
@@ -286,13 +299,27 @@ func (a *App) buildStickerButton() gtk.IWidget {
 	v.PackStart(p.stack, true, true, 0)
 
 	p.recent, p.recentE = a.stickerGrid(p, "recent", T("Terbaru"),
-		T("Belum ada stiker.\nStiker yang kamu terima atau kirim\nakan muncul di sini."))
+		"Belum ada stiker.\nStiker yang kamu terima atau kirim\nakan muncul di sini.")
 	p.fav, p.favE = a.stickerGrid(p, "fav", T("Favorit"),
-		T("Belum ada favorit.\nKlik kanan sebuah stiker →\n«Tambah ke favorit»."))
+		"Belum ada favorit.\nKlik kanan sebuah stiker →\n«Tambah ke favorit».")
 	p.stack.AddTitled(a.stickerCreatePage(p), "create", T("Buat"))
 
 	v.ShowAll()
 	p.pop.Add(v)
+	// v1.9.8: saat panel tertutup, seluruh sel stiker dibongkar — pixbuf dan
+	// widgetnya kembali ke OS alih-alih tinggal sampai aplikasi keluar.
+	p.pop.Connect("closed", func() {
+		for fb, cells := range p.cells {
+			for _, c := range cells {
+				fb.Remove(c)
+				if w, ok := c.(*gtk.Widget); ok {
+					w.Destroy()
+				}
+			}
+			p.cells[fb] = nil
+		}
+		trimMem()
+	})
 	p.btn.Connect("toggled", func() {
 		if p.btn.GetActive() {
 			a.refreshStickerPanel()
@@ -315,7 +342,7 @@ func (a *App) stickerGrid(p *stickerPanel, name, title, empty string) (*gtk.Flow
 	fb.SetVAlign(gtk.ALIGN_START)
 	sw.Add(fb)
 	ov.Add(sw)
-	l, _ := gtk.LabelNew(T(empty))
+	l, _ := gtk.LabelNew(empty)
 	l.SetJustify(gtk.JUSTIFY_CENTER)
 	addClass(l, "emptyhint")
 	l.SetNoShowAll(true)
@@ -413,11 +440,11 @@ func (a *App) stickerCreatePage(p *stickerPanel) gtk.IWidget {
 		b.Connect("clicked", fn)
 		return b
 	}
-	file := mk("image", T("Pilih gambar…"), func() {
+	file := mk("image", "Pilih gambar…", func() {
 		p.pop.Popdown()
 		a.stickerFromFile()
 	})
-	paste := mk("paste", T("Tempel dari clipboard"), func() {
+	paste := mk("paste", "Tempel dari clipboard", func() {
 		p.pop.Popdown()
 		a.stickerFromClipboard()
 	})
@@ -436,9 +463,9 @@ func (a *App) stickerCreatePage(p *stickerPanel) gtk.IWidget {
 }
 
 func (a *App) stickerFromFile() {
-	fc, _ := gtk.FileChooserNativeDialogNew(T("Pilih gambar untuk stiker"), a.win, gtk.FILE_CHOOSER_ACTION_OPEN, T("Pilih"), T("Batal"))
+	fc, _ := gtk.FileChooserNativeDialogNew("Pilih gambar untuk stiker", a.win, gtk.FILE_CHOOSER_ACTION_OPEN, "Pilih", "Batal")
 	flt, _ := gtk.FileFilterNew()
-	flt.SetName(T("Gambar"))
+	flt.SetName("Gambar")
 	flt.AddPixbufFormats()
 	fc.AddFilter(flt)
 	if gtk.ResponseType(fc.Run()) != gtk.RESPONSE_ACCEPT {
@@ -471,7 +498,7 @@ func (a *App) stickerFromClipboard() {
 			}
 		}
 	}
-	a.errorDialog(T("Clipboard tidak berisi gambar"), T("Salin gambar atau ambil screenshot (PrtSc) dulu, lalu coba lagi."))
+	a.errorDialog(T("Clipboard tidak berisi gambar"), "Salin gambar atau ambil screenshot (PrtSc) dulu, lalu coba lagi.")
 }
 
 // ------------------------------------------------------------ pembuat stiker
@@ -482,7 +509,7 @@ type stickerOpts struct{ crop, round, outline bool }
 func makeStickerRGBA(src *gdk.Pixbuf, o stickerOpts) ([]byte, error) {
 	if !src.GetHasAlpha() {
 		if src = src.AddAlpha(false, 0, 0, 0); src == nil {
-			return nil, fmt.Errorf("%s", T("gambar tidak valid"))
+			return nil, fmt.Errorf("gambar tidak valid")
 		}
 	}
 	const S = stickerSize
@@ -714,7 +741,7 @@ func (a *App) createStickerDialog(src *gdk.Pixbuf) {
 		}
 		cur = rgba
 		img.SetFromPixbuf(previewPixbuf(rgba, stickerSize, 256, a.dark))
-		info.SetText(fmt.Sprintf(T("512 × 512 px · WebP\nsumber %d × %d px"), src.GetWidth(), src.GetHeight()))
+		info.SetText(fmt.Sprintf("512 × 512 px · WebP\nsumber %d × %d px", src.GetWidth(), src.GetHeight()))
 	}
 	fit.Connect("toggled", update)
 	round.Connect("toggled", update)
@@ -768,3 +795,8 @@ func (a *App) stickerMenuItems(menu *gtk.Menu, m Msg) {
 }
 
 var _ = strings.TrimSpace
+
+// stickerCount: jumlah entri cache saat ini (untuk log diagnostik mem.log).
+func stickerCount() int {
+	return len(stickerMem) // aman: cache & ticker sama-sama di thread GTK utama
+}
