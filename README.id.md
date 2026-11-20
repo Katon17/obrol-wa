@@ -61,13 +61,22 @@ Dibuat oleh **Katon Bagaskoro**.
 |---|---|
 | ![Mengetik](screenshots/v19-mengetik.png) | ![Online](screenshots/v19-online.png) |
 
+**Baru di 1.10–1.12 — gelombang irit & manajemen:**
+
+- 🪶 **Diet RAM**: puncak ~636 MB → **<100 MB bahkan setelah pemakaian berat**
+  (muat berbasis SQL, cache berplafon, memori dikembalikan ke OS)
+- 🔎 **Cari pesan** (Ctrl+F) lintas semua percakapan + halaman **Berbintang** untuk pesan
+  yang kamu klik kanan → *Bintangi*
+- 🧑‍🤝‍ **Info & manajemen grup**: daftar peserta berhalaman dengan badge admin, ganti
+  subjek, foto & deskripsi grup, tambah/hapus anggota — semua native
+
 ## Kenapa ringan?
 
 | | Obrol | WhatsApp Web di browser | Klien Electron |
 |---|---|---|---|
 | Teknologi | GTK3 + Go (1 binary) | Tab Chrome/Firefox | Chromium terbungkus |
 | Ukuran | ±19 MB | – | 150–250 MB |
-| RAM | ±100 MB (diukur) | 300–600 MB | 300–500 MB |
+| RAM | ±73–99 MB (diukur) | 300–600 MB | 300–500 MB |
 | Proses | 1 | Banyak | Banyak |
 
 ## Fitur
@@ -95,6 +104,10 @@ Dibuat oleh **Katon Bagaskoro**.
   menampilkan pesan yang disematkan; klik banner untuk lompat ke pesannya (kalau ada beberapa, diklik bergiliran)
 - ✅ **Sematkan obrolan** di urutan teratas daftar chat (maksimal 3), tersinkron dengan ponsel
 - ✅ Chat **grup** dengan nama pengirim berwarna
+- ✅ **Cari pesan** (Ctrl+F) di semua percakapan; hasil klik langsung lompat ke pesannya
+- ✅ **Bintangi pesan** dan buka lagi lewat halaman Berbintang
+- ✅ **Info & manajemen grup**: peserta (berhalaman, badge admin), ganti subjek, foto &
+  deskripsi grup, tambah/hapus anggota
 - ✅ Pesan yang **dihapus** atau **diedit** orang lain ikut ter-update
 - ✅ Lokasi (dengan link Google Maps), kontak, dan polling ditampilkan sebagai teks
 - ✅ **Notifikasi desktop**; klik notifikasi untuk langsung membuka chat-nya. Ada suara notifikasi juga
@@ -141,10 +154,10 @@ Dibuat oleh **Katon Bagaskoro**.
 
 ### Opsi A — paket `.deb` (disarankan)
 
-Unduh `obrol_1.9.2-1_amd64.deb` dari [Releases](https://github.com/Katon17/obrol-wa/releases/latest), lalu:
+Unduh `obrol_1.12.2-1_amd64.deb` dari [Releases](https://github.com/Katon17/obrol-wa/releases/latest), lalu:
 
 ```bash
-sudo apt install ./obrol_1.9.2-1_amd64.deb
+sudo apt install ./obrol_1.12.2-1_amd64.deb
 ```
 
 apt otomatis membereskan semua dependensi dan memasang sistem-wide
@@ -230,6 +243,13 @@ Opsi baris perintah:
 
 Catatan lengkap per rilis ada di [CHANGELOG.md](CHANGELOG.md).
 
+- **1.12.2**: stabilisasi pustaka whatsmeow; percobaan fitur Status/Story ditarik
+  (perangkat tertaut tidak menerima riwayat status dari protokol)
+- **1.12.0–1.12.1**: halaman info & manajemen grup (peserta, subjek, foto, deskripsi,
+  tambah/hapus anggota)
+- **1.11.0–1.11.1**: cari pesan + halaman Berbintang; auto-load riwayat saat scroll ke atas
+  tanpa baris sidebar yang mengganggu
+- **1.10.0–1.10.1**: diet RAM — RSS tetap di bawah 100 MB bahkan setelah sesi berat
 - **1.9.2**: perbaikan final drag & drop — data drop dibaca mentah berbasis panjang
   (ternyata `GetText()` mengembalikan NULL untuk tipe `text/uri-list`); keterangan kilat
   bila drop tidak berisi berkas yang bisa dikirim.

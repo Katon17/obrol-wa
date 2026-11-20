@@ -56,13 +56,22 @@ Made by **Katon Bagaskoro**.
 |---|---|
 | ![Typing](screenshots/v19-mengetik.png) | ![Online](screenshots/v19-online.png) |
 
+**New in 1.10–1.12 — the leanness & management wave:**
+
+- 🪶 **RAM diet**: peak usage went from ~636 MB to **under 100 MB even after heavy use**
+  (SQL-first loading, capped caches, memory handed back to the OS)
+- 🔎 **Message search** (Ctrl+F) across all conversations, plus a **Starred** page for
+  messages you right-click → *Star*
+- 🧑‍🤝‍🧑 **Group info & management**: paged participant list with admin badges, rename the
+  group, change its photo & description, add or remove members — all native
+
 ## Why is it so light?
 
 | | Obrol | WhatsApp Web in a browser | Electron clients |
 |---|---|---|---|
 | Technology | GTK3 + Go (single binary) | Chrome/Firefox tab | wrapped Chromium |
 | Size | ±19 MB | – | 150–250 MB |
-| RAM | ±60–105 MB (measured) | 300–600 MB | 300–500 MB |
+| RAM | ±73–99 MB (measured) | 300–600 MB | 300–500 MB |
 | Processes | 1 | many | many |
 
 ## Features
@@ -109,6 +118,10 @@ Made by **Katon Bagaskoro**.
 - ✅ **Pin messages** for 24 h / 7 days / 30 days with a banner above the conversation
 - ✅ **Pin up to 3 chats** to the top of the list, synced with the phone
 - ✅ **Group chats** with colored sender names
+- ✅ **Search messages** (Ctrl+F) in every conversation; results jump straight to the message
+- ✅ **Star messages** and revisit them in a dedicated Starred page
+- ✅ **Group info & management**: participants (paged, admin badges), rename, group photo &
+  description, add/remove members
 - ✅ Messages deleted/edited by others update live
 - ✅ Locations (with Google Maps link), contacts and polls shown as text
 - ✅ **Desktop notifications** (click opens the chat) with optional sound
@@ -130,10 +143,10 @@ Made by **Katon Bagaskoro**.
 
 ### Option A — `.deb` package (recommended)
 
-Download `obrol_1.9.2-1_amd64.deb` from [Releases](https://github.com/Katon17/obrol-wa/releases/latest), then:
+Download `obrol_1.12.2-1_amd64.deb` from [Releases](https://github.com/Katon17/obrol-wa/releases/latest), then:
 
 ```bash
-sudo apt install ./obrol_1.9.2-1_amd64.deb
+sudo apt install ./obrol_1.12.2-1_amd64.deb
 ```
 
 apt resolves all dependencies automatically and installs system-wide
@@ -207,6 +220,13 @@ Command-line options:
 
 Full notes per release live in [CHANGELOG.md](CHANGELOG.md).
 
+- **1.12.2**: whatsmeow library stabilisation; the Status/Story experiment was withdrawn
+  (linked devices receive no status history from the protocol)
+- **1.12.0–1.12.1**: group info & management page (participants, subject, photo, description,
+  add/remove members)
+- **1.11.0–1.11.1**: message search + Starred page; silent scroll-to-top auto-load for older
+  history (no sidebar row)
+- **1.10.0–1.10.1**: the memory diet — RSS stays below 100 MB even after heavy sessions
 - **1.9.2**: final drag & drop fix — the raw drop payload is now read by length
   (`GetText()` turned out to return NULL for `text/uri-list`); flash feedback when a drop
   carries no sendable file.
