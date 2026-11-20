@@ -4,6 +4,139 @@ All notable changes to Obrol are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.12.2] — 2026-11-20
+
+### Changed
+- Perpustakaan whatsmeow diperbarui ke revisi 2026-11-16 (penanganan stanza
+  status & stabilitas koneksi), tanpa perubahan perilaku aplikasi. /
+  whatsmeow updated to the 2026-11-16 revision (status-stanza handling &
+  connection stability) with no behaviour change in the app.
+
+### Removed
+- Percobaan fitur Status/Story ditarik kembali: perangkat tertaut
+  (non-primér) tidak menerima riwayat status yang sudah lewat maupun
+  gelontoran offline, sehingga halaman Status tidak dapat diisi secara
+  andal. Lebih baik tidak ada daripada setengah jalan. /
+  The Status/Story attempt is withdrawn: linked (non-primary) devices
+  receive neither past status history nor an offline flush, so the Status
+  page could not be filled reliably. Better absent than half-working.
+
+## [1.12.1] — 2026-11-20
+
+### Fixed
+- **Deskripsi grup sangat panjang** tidak lagi mendorong daftar peserta keluar layar:
+  deskripsi kini dikurung guliran setinggi ±4 baris (dan disembunyikan bila kosong). /
+  Very long group descriptions no longer push the participant list off-screen: the
+  description is capped in a ±4-line scroll area (hidden when empty).
+
+### Added
+- **Foto grup tampil di halaman info** (diunduh preview via URL profil, dilepas lagi
+  saat halaman ditutup). / **Group photo shown on the info page** (preview downloaded
+  via profile URL, released again on leave).
+
+### Changed
+- Kepala halaman info lebih padat (kembali | foto 84px | judul ter-elipsize) dan aksi
+  manajemen kini tombol **berlabel** (Subjek · Foto · Deskripsi · Tambah peserta) yang
+  lega diklik, bukan ikon mungil. / Compact info header (back | 84px photo | ellipsized
+  title) and management actions are now roomy **labeled buttons** instead of tiny icons.
+
+## [1.12.0] — 2026-11-20
+
+### Added
+- **Info & manajemen grup**: klik header grup membuka halaman info — daftar peserta
+  (dimuat per 50 via gulir, dibongkar saat keluar), ganti subjek/foto/deskripsi grup,
+  tambah peserta (validasi nomor), dan klik kanan peserta → «Keluarkan dari grup»
+  bagi admin. / **Group info & management**: clicking a group header opens the info
+  page — participant list (paginated 50 via scroll, torn down on leave), change group
+  subject/photo/description, add participants (number validation), and right-click a
+  participant → "Remove from group" for admins.
+
+## [1.11.1] — 2026-11-20
+
+### Changed
+- Baris «Tampilkan percakapan lain (N lagi)» dihapus: batch sidebar berikutnya (+60)
+  kini dimuat otomatis saat guliran menyentuh dasar daftar — tidak ada lagi baris
+  menetap yang mengganggu di daftar chat. / The "Show more chats (N more)" row is gone:
+  the next sidebar batch (+60) now loads automatically when scrolling reaches the
+  bottom — no more permanent row cluttering the chat list.
+
+## [1.11.0] — 2026-11-20
+
+### Added
+- **Pencarian pesan**: baris «Cari pesan: …» muncul di sidebar saat kolom cari terisi
+  (hasil global lintas chat), dan **Ctrl+Shift+F** membuka baris cari-di-chat untuk
+  menyaring percakapan yang sedang terbuka (Esc kembali). /
+  **Message search**: a "Search messages: …" row appears in the sidebar while the filter
+  box has text (global cross-chat results), and **Ctrl+Shift+F** opens an in-chat find bar
+  (Esc returns).
+- **Pesan berbintang**: klik kanan pesan → «Bintangi pesan» (★ muncul di meta pesan);
+  menu utama → «Pesan berbintang» membuka daftarnya. / **Starred messages**: right-click a
+  message → "Star message" (★ shown in message meta); main menu → "Starred messages" opens
+  the list.
+- Ikon baru `search.svg` sesuai gaya garis tipis. / New thin-stroke `search.svg` icon.
+
+### Changed
+- Halaman hasil & berbintang dibangun malas dan **dibongkar saat ditinggalkan**
+  (baris chat tersembunyi ikut dilepas) sehingga fitur baru tidak menambah RSS menetap. /
+  Results & starred pages are built lazily and **torn down on leave** (hidden chat rows are
+  released too) so the new features add no permanent RSS.
+
+## [1.10.1] — 2026-11-20
+
+### Changed
+- **Plafon sidebar 60 percakapan** (+ baris «Tampilkan percakapan lain (N lagi)»):
+  ratusan chat tidak lagi menjadi ratusan widget permanen — potongan terbesar
+  baseline RSS selama ini. Chat yang sedang terbuka selalu punya baris.
+  / **Sidebar capped at 60 chats** (+ a "Show more chats (N more)" row): hundreds of
+  chats no longer mean hundreds of permanent widgets — the largest baseline RSS
+  chunk all along. The open chat always keeps its row.
+- Anggaran stiker animasi 1,5 MB → 1 MB per stiker (cache 5 → plafon ±5 MB). /
+  Animated-sticker budget 1.5 MB → 1 MB per sticker (cache 5 → ±5 MB cap).
+- Mode demo kini menyertakan 300 chat uji untuk memperlihatkan plafon sidebar. /
+  Demo mode now seeds 300 test chats to showcase the sidebar cap.
+
+## [1.10.0] — 2026-11-20
+
+### Changed
+- **Kalibrasi akhir berbasis log lapangan**: cache stiker animasi 8 → 5 (log menunjukkan
+  cache selalu penuh; plafon baru ±7,5 MB), halaman riwayat 30 → 24 baris dengan plafon
+  baris hidup 72, dan pemilih emoji kini **berhalaman 64 sel** (+ tombol «⋯») sehingga
+  menggulir kategori tidak memetakan ratusan glyph font emoji berwarna ke RSS sekaligus.
+  / **Final log-driven calibration**: sticker cache 8 → 5 (field logs showed it always
+  full; new cap ±7.5 MB), history page 30 → 24 rows with a 72 live-row cap, and the emoji
+  picker is now **paginated at 64 cells** (+ «⋯» button) so browsing a category no longer
+  maps hundreds of color-emoji glyphs into RSS at once.
+
+## [1.9.9] — 2026-11-20
+
+### Changed
+- Threshold mmap/trim malloc diturunkan 128 KB → 64 KB: permukaan glyph font emoji
+  berwarna kini ikut jalur mmap dan langsung kembali ke OS, mengurangi fragmentasi
+  arena setelah sesi berat. / malloc mmap/trim thresholds lowered 128 KB → 64 KB so
+  color-emoji glyph surfaces take the mmap path and return straight to the OS,
+  cutting arena fragmentation after heavy sessions.
+- mem.log kini ikut mencatat `rows=` (jumlah baris pesan hidup) untuk diagnostik
+  sesi berat. / mem.log now also records `rows=` (live message-row count) for
+  heavy-session diagnostics.
+
+## [1.9.8] — 2026-11-19
+
+### Changed
+- **Pemilih emoji baru milik obrol** menggantikan pemilih bawaan GTK: kategori dimuat
+  malas dan semua sel dihancurkan saat popover tertutup. Pemilih GTK membangun ribu-an
+  widget emoji permanen + cache glyph font emoji berwarna saat digulir — penyumbang
+  besar lonjakan RSS pemakaian berat. /
+  **New built-in emoji picker** replaces the GTK chooser: categories load lazily and all
+  cells are destroyed when the popover closes. The GTK chooser built thousands of
+  permanent emoji widgets plus a color-emoji glyph cache while scrolling — a major
+  contributor to heavy-use RSS spikes.
+- **Panel stiker dibongkar saat tertutup**: sel, pixbuf, dan memori C-nya dikembalikan ke
+  OS; dibangun ulang murah saat dibuka lagi. / **Sticker panel tears down on close**:
+  cells, pixbufs and their C memory return to the OS; cheaply rebuilt on reopen.
+- **Plafon 120 baris hidup per chat**: gulir mendalam tidak menumpuk halaman tanpa batas;
+  pemuatan dijeda dengan pemberitahuan status. / **120 live-row cap per chat**: deep
+  scrolling no longer stacks pages unbounded; loading pauses with a status notice.
+
 ## [1.9.7] — 2026-11-19
 
 ### Changed
@@ -228,6 +361,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   read receipts, photo/video thumbnails, documents, voice notes, locations, group chats,
   desktop notifications with sound, system tray with unread dot, autostart, single instance.
 
+[1.12.2]: https://github.com/Katon17/obrol-wa/releases/tag/v1.12.2
+[1.12.1]: https://github.com/Katon17/obrol-wa/releases/tag/v1.12.1
+[1.12.0]: https://github.com/Katon17/obrol-wa/releases/tag/v1.12.0
+[1.11.1]: https://github.com/Katon17/obrol-wa/releases/tag/v1.11.1
+[1.11.0]: https://github.com/Katon17/obrol-wa/releases/tag/v1.11.0
+[1.10.1]: https://github.com/Katon17/obrol-wa/releases/tag/v1.10.1
+[1.10.0]: https://github.com/Katon17/obrol-wa/releases/tag/v1.10.0
+[1.9.9]: https://github.com/Katon17/obrol-wa/releases/tag/v1.9.9
+[1.9.8]: https://github.com/Katon17/obrol-wa/releases/tag/v1.9.8
 [1.9.7]: https://github.com/Katon17/obrol-wa/releases/tag/v1.9.7
 [1.9.6]: https://github.com/Katon17/obrol-wa/releases/tag/v1.9.6
 [1.9.5]: https://github.com/Katon17/obrol-wa/releases/tag/v1.9.5

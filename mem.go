@@ -31,8 +31,12 @@ import (
 // free(); arena dibatasi 2 supaya trim thread utama mencakup hampir semua.
 func init() {
 	C.mallopt(C.M_ARENA_MAX, 2)
-	C.mallopt(C.M_MMAP_THRESHOLD, 128*1024)
-	C.mallopt(C.M_TRIM_THRESHOLD, 128*1024)
+	// v1.9.9: 64 KB (dari 128 KB) — permukaan glyph font emoji berwarna
+	// (±20–70 KB) ikut jalur mmap sehingga langsung kembali ke OS saat
+	// dilepas, alih-alih menjadi fragmentasi tengah arena yang tak bisa
+	// dipangkas malloc_trim.
+	C.mallopt(C.M_MMAP_THRESHOLD, 64*1024)
+	C.mallopt(C.M_TRIM_THRESHOLD, 64*1024)
 }
 
 // trimMem: satu siklus GC (menjalankan finalizer pixbuf) lalu trim arena malloc
@@ -52,13 +56,20 @@ func startMemTicker() {
 	})
 }
 
+// memRowProbe diisi ui.go dengan penghitung baris pesan hidup (v1.9.9).
+var memRowProbe func() int
+
 // logMem: satu baris diagnostik per menit ke mem.log di folder data —
 // bukti lapangan pemakaian RAM (RSS vs heap Go vs cache stiker).
 func logMem() {
 	var ms runtime.MemStats
 	runtime.ReadMemStats(&ms)
-	line := fmt.Sprintf("%s rss=%dKB heap=%dKB sys=%dKB gc=%d stickers=%d\n",
-		time.Now().Format("15:04:05"), vmRSSKB(), ms.HeapAlloc/1024, ms.Sys/1024, ms.NumGC, stickerCount())
+	rows := 0
+	if memRowProbe != nil {
+		rows = memRowProbe()
+	}
+	line := fmt.Sprintf("%s rss=%dKB heap=%dKB sys=%dKB gc=%d stickers=%d rows=%d\n",
+		time.Now().Format("15:04:05"), vmRSSKB(), ms.HeapAlloc/1024, ms.Sys/1024, ms.NumGC, stickerCount(), rows)
 	dir := appDir
 	if dir == "" {
 		dir = dataDir()

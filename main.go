@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime/debug"
+	"strconv"
 	"strings"
 	"time"
 
@@ -15,7 +16,7 @@ import (
 	"github.com/gotk3/gotk3/gtk"
 )
 
-const version = "1.9.7"
+const version = "1.12.2"
 
 // v1.9: "kotak hitam" — bila aplikasi panic, jejak lengkap disimpan ke
 // crash.log di folder data supaya mudah dilaporkan, lalu panic diteruskan.
@@ -127,6 +128,12 @@ func main() {
 		os.Exit(1)
 	}
 	a := &App{gapp: gapp, st: st, cfg: loadConfig(dir), opts: o}
+	a.chatLimit = 60 // v1.10.1: plafon baris sidebar
+	if v := os.Getenv("OBROL_CHATLIMIT"); v != "" {
+		if n, err := strconv.Atoi(v); err == nil && n > 10 {
+			a.chatLimit = n
+		}
+	}
 	a.pendingCalls = map[string]pendingCall{}
 	a.online = map[string]bool{}
 	a.lastSeen = map[string]int64{}
@@ -218,6 +225,14 @@ func seedDemo(st *Store) {
 	data[1].msgs[2].Reactions = `{"` + rina + `":"❤️","demo-me":"👍"}`
 	data[1].msgs[3].Reactions = `{"` + rina + `":"👍"}`
 	data[2].msgs[4].Forwarded = true
+
+	// v1.10.1: 300 chat tambahan — etalase & uji beban plafon sidebar.
+	for i := 0; i < 300; i++ {
+		jid := fmt.Sprintf("628555000%04d@s.whatsapp.net", i)
+		data = append(data, dm{chat: jid, name: fmt.Sprintf("Kontak Uji %d", i), msgs: []Msg{
+			{Text: "Pesan uji untuk memenuhi daftar percakapan.", TS: ts(time.Duration(48+i) * time.Hour)},
+		}})
+	}
 
 	for _, c := range data {
 		if c.chat == grp {

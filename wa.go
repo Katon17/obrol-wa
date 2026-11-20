@@ -10,6 +10,7 @@ import (
 	"image"
 	"image/jpeg"
 	_ "image/png"
+	"io"
 	"mime"
 	"net/http"
 	"os"
@@ -103,6 +104,102 @@ func (w *WA) newClient() error {
 }
 
 func (w *WA) IsPaired() bool { return w.cli.Store.ID != nil }
+
+// MyJID: JID akun sendiri tanpa perangkat (v1.12).
+func (w *WA) MyJID() string {
+	if w.cli.Store.ID == nil {
+		return ""
+	}
+	return w.cli.Store.ID.ToNonAD().String()
+}
+
+// ------------------------------------------------------------ v1.12: grup
+
+func (w *WA) GroupInfo(jid string) (*types.GroupInfo, error) {
+	j, err := types.ParseJID(jid)
+	if err != nil {
+		return nil, err
+	}
+	return w.cli.GetGroupInfo(context.Background(), j)
+}
+
+func (w *WA) GroupSetName(jid, name string) error {
+	j, err := types.ParseJID(jid)
+	if err != nil {
+		return err
+	}
+	return w.cli.SetGroupName(context.Background(), j, name)
+}
+
+func (w *WA) GroupSetDesc(jid, topic string) error {
+	j, err := types.ParseJID(jid)
+	if err != nil {
+		return err
+	}
+	return w.cli.SetGroupTopic(context.Background(), j, "", "", topic)
+}
+
+func (w *WA) GroupSetPhoto(jid string, data []byte) error {
+	j, err := types.ParseJID(jid)
+	if err != nil {
+		return err
+	}
+	_, err = w.cli.SetGroupPhoto(context.Background(), j, data)
+	return err
+}
+
+// GroupPhoto: unduh foto grup (preview) lewat URL profil (v1.12.1).
+func (w *WA) GroupPhoto(jid string) ([]byte, error) {
+	j, err := types.ParseJID(jid)
+	if err != nil {
+		return nil, err
+	}
+	info, err := w.cli.GetProfilePictureInfo(context.Background(), j, &whatsmeow.GetProfilePictureParams{Preview: true})
+	if err != nil {
+		return nil, err
+	}
+	if info == nil || info.URL == "" {
+		return nil, errNoGroupPhoto
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, info.URL, nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("HTTP %d", resp.StatusCode)
+	}
+	return io.ReadAll(io.LimitReader(resp.Body, 2<<20))
+}
+
+var errNoGroupPhoto = errors.New("foto grup tidak tersedia")
+
+func (w *WA) GroupUpdateParticipants(jid string, jids []string, add bool) error {
+	j, err := types.ParseJID(jid)
+	if err != nil {
+		return err
+	}
+	var list []types.JID
+	for _, s := range jids {
+		p, err := types.ParseJID(s)
+		if err != nil {
+			continue
+		}
+		list = append(list, p)
+	}
+	act := whatsmeow.ParticipantChangeRemove
+	if add {
+		act = whatsmeow.ParticipantChangeAdd
+	}
+	_, err = w.cli.UpdateGroupParticipants(context.Background(), j, list, act)
+	return err
+}
 
 // Start: login dengan QR bila belum dipasangkan, atau langsung terhubung.
 func (w *WA) Start() {

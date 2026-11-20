@@ -73,8 +73,11 @@ func (a *App) buildComposer() gtk.IWidget {
 	emoji := iconButton("emoji", "Emoji (Ctrl+.)", 20)
 	emoji.SetVAlign(gtk.ALIGN_END)
 	emoji.Connect("clicked", func() {
+		// v1.9.8: pemilih emoji ringan milik obrol — pemilih bawaan GTK
+		// membangun ribu-an widget + cache glyph font emoji berwarna yang
+		// tinggal selamanya dan menyumbang puluhan MB RSS.
 		a.input.GrabFocus()
-		a.input.Emit("insert-emoji", glib.TYPE_NONE)
+		a.showEmoji(emoji)
 	})
 
 	mic := iconButton("mic", T("Rekam pesan suara"), 20)
@@ -318,7 +321,7 @@ func (a *App) confirmImage(pb *gdk.Pixbuf, path string) {
 	cap, _ := gtk.EntryNew()
 	cap.SetPlaceholderText(T("Tambahkan keterangan… (opsional)"))
 	cap.SetActivatesDefault(true)
-	cap.SetProperty("show-emoji-icon", true)
+	cap.SetProperty("show-emoji-icon", false) // v1.9.8: hindari pemilih emoji GTK
 	area.PackStart(img, false, false, 0)
 	area.PackStart(info, false, false, 0)
 	area.PackStart(cap, false, false, 0)
@@ -508,6 +511,11 @@ func (a *App) fillMsgMenu(menu *gtk.Menu, chat, id string, withCopy bool) {
 	rit.SetSubmenu(subR)
 	menu.Append(rit)
 	add("forward", T("Teruskan…"), func() { a.forwardDialog(m) })
+	if m.Starred {
+		add("star-fill", T("Hapus bintang"), func() { a.toggleStar(chat, id, false) })
+	} else {
+		add("star", T("Bintangi pesan"), func() { a.toggleStar(chat, id, true) })
+	}
 	sepR, _ := gtk.SeparatorMenuItemNew()
 	menu.Append(sepR)
 	if m.Kind == "sticker" {

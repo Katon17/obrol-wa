@@ -123,6 +123,11 @@ func (a *App) showProfile(jid string) {
 	if jid == "" {
 		return
 	}
+	if isGroupJID(jid) {
+		// v1.12: grup membuka halaman info & manajemen, bukan dialog profil.
+		a.openGroupInfo(jid)
+		return
+	}
 	c, _ := a.st.GetChat(jid)
 	name := a.displayName(c)
 	isGrp := isGroupJID(jid)

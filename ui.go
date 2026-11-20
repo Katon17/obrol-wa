@@ -22,7 +22,7 @@ import (
 	qrcode "github.com/skip2/go-qrcode"
 )
 
-const pageSize = 30 // v1.9.7: baris hidup per halaman — keseimbangan gulir vs RAM
+const pageSize = 24 // v1.10.0: baris hidup per halaman — keseimbangan gulir vs RAM
 
 type chatRow struct {
 	row     *gtk.ListBoxRow
@@ -38,19 +38,25 @@ type chatRow struct {
 }
 
 type metaRef struct {
-	label  *gtk.Label
-	ts     int64
-	status int
-	edited bool
+	label   *gtk.Label
+	ts      int64
+	status  int
+	edited  bool
+	starred bool
 }
 
 type App struct {
-	gapp *gtk.Application
-	win  *gtk.ApplicationWindow
-	wa   *WA
-	st   *Store
-	cfg  *Config
-	opts Options
+	emojiPop  *gtk.Popover // v1.9.8: pemilih emoji ringan milik obrol
+	emojiFlow *gtk.FlowBox
+	emojiOff  int         // v1.10.0: offset halaman kategori emoji aktif
+	emojiMore *gtk.Widget // tombol «⋯» muat halaman berikut
+	capHit    bool        // v1.9.8: jeda pemuatan riwayat saat baris hidup mencapai plafon
+	gapp      *gtk.Application
+	win       *gtk.ApplicationWindow
+	wa        *WA
+	st        *Store
+	cfg       *Config
+	opts      Options
 
 	header *gtk.HeaderBar
 	pages  *gtk.Stack
@@ -102,8 +108,34 @@ type App struct {
 	// v1.6: arsip chat
 	showArchived bool
 	archRow      *gtk.ListBoxRow
-	archLbl      *gtk.Label
-	backRow      *gtk.ListBoxRow
+	chatLimit    int  // v1.10.1: plafon baris sidebar
+	expanding    bool // v1.11.1: sedang memuat batch sidebar berikutnya
+	// v1.11: pencarian pesan & bintang
+	searchMode bool
+	findBar    *gtk.Box
+	findEntry  *gtk.Entry
+	findLbl    *gtk.Label
+	smsgRow    *gtk.EventBox
+	smsgLbl    *gtk.Label
+	starList   *gtk.ListBox
+	starTitle  *gtk.Label
+	// v1.12: halaman info grup
+	giList   *gtk.ListBox
+	giTitle  *gtk.Label
+	giAvBox  *gtk.EventBox
+	giDescSW *gtk.ScrolledWindow
+	stList   *gtk.ListBox // v1.13: halaman Status
+	giSub    *gtk.Label
+	giDesc   *gtk.Label
+	giJID    string
+	giAll    []giParticipant
+	giOff    int
+	giAdmin  bool
+	giName   string
+	resList  *gtk.ListBox
+	resTitle *gtk.Label
+	archLbl  *gtk.Label
+	backRow  *gtk.ListBoxRow
 
 	// pesan tersemat
 	pinBar   *gtk.EventBox
@@ -273,6 +305,10 @@ func (a *App) onKey(_ *gtk.ApplicationWindow, ev *gdk.Event) bool {
 	k := gdk.EventKeyNewFromEvent(ev)
 	ctrl := k.State()&uint(gdk.CONTROL_MASK) != 0
 	switch {
+	case ctrl && k.State()&uint(gdk.SHIFT_MASK) != 0 && (k.KeyVal() == gdk.KEY_f || k.KeyVal() == gdk.KEY_F):
+		// v1.11: dengan Shift, keysym tiba sebagai 'F' kapital.
+		a.openFindBar()
+		return true
 	case ctrl && (k.KeyVal() == gdk.KEY_f || k.KeyVal() == gdk.KEY_k):
 		a.search.GrabFocus()
 		return true
@@ -284,6 +320,10 @@ func (a *App) onKey(_ *gtk.ApplicationWindow, ev *gdk.Event) bool {
 		return true
 	case ctrl && k.KeyVal() == gdk.KEY_w:
 		a.win.Close()
+		return true
+	case k.KeyVal() == gdk.KEY_Escape && a.searchMode:
+		// v1.11: Esc menutup cari-di-chat lebih dulu, sebelum menutup obrolan.
+		a.closeFind()
 		return true
 	case k.KeyVal() == gdk.KEY_Escape && a.replyTo != nil:
 		a.cancelReply()
@@ -565,6 +605,9 @@ func (a *App) buildHeaderButtons() {
 	}
 	themeItem.SetSubmenu(themeMenu)
 	menu.Append(themeItem)
+	starItem, _ := gtk.MenuItemNewWithLabel(T("Pesan berbintang"))
+	starItem.Connect("activate", func() { a.openStarred() })
+	menu.Append(starItem)
 	langItem, _ := gtk.MenuItemNewWithLabel(T("Bahasa"))
 	langMenu, _ := gtk.MenuNew()
 	var lfirst *gtk.RadioMenuItem
@@ -751,6 +794,7 @@ func (a *App) buildMain() gtk.IWidget {
 	a.search.Connect("search-changed", func() {
 		a.filter = strings.ToLower(strings.TrimSpace(a.search.GetChars(0, -1)))
 		a.chatList.InvalidateFilter()
+		a.updateSearchMsgRow()
 	})
 	a.search.Connect("activate", func() {
 		// Enter di kolom cari → buka hasil pertama yang terlihat
@@ -767,6 +811,30 @@ func (a *App) buildMain() gtk.IWidget {
 		}
 	})
 	left.PackStart(a.search, false, false, 0)
+
+	// v1.11: baris «cari pesan» muncul saat kolom isi sidebar terisi.
+	a.smsgRow, _ = gtk.EventBoxNew()
+	a.smsgRow.SetNoShowAll(true)
+	shb, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 6)
+	shb.SetMarginStart(12)
+	shb.SetMarginEnd(12)
+	shb.SetMarginTop(4)
+	shb.SetMarginBottom(4)
+	sic := newIcon("search", 14)
+	sic.Show()
+	shb.PackStart(sic, false, false, 0)
+	a.smsgLbl, _ = gtk.LabelNew("")
+	a.smsgLbl.SetXAlign(0)
+	addClass(a.smsgLbl, "meta")
+	a.smsgLbl.Show()
+	shb.PackStart(a.smsgLbl, true, true, 0)
+	shb.Show()
+	a.smsgRow.Add(shb)
+	left.PackStart(a.smsgRow, false, false, 0)
+	a.smsgRow.Connect("button-press-event", func() bool {
+		a.openResults(a.search.GetChars(0, -1))
+		return true
+	})
 
 	sw, _ := gtk.ScrolledWindowNew(nil, nil)
 	sw.SetPolicy(gtk.POLICY_NEVER, gtk.POLICY_AUTOMATIC)
@@ -833,6 +901,7 @@ func (a *App) buildMain() gtk.IWidget {
 		m.PopupAtPointer(ev)
 		return true
 	})
+
 	// baris khusus arsip (v1.6)
 	a.archRow, _ = gtk.ListBoxRowNew()
 	a.archRow.SetName("!arch")
@@ -866,6 +935,25 @@ func (a *App) buildMain() gtk.IWidget {
 	a.chatList.Add(a.backRow)
 
 	sw.Add(a.chatList)
+	// v1.11.1: plafon sidebar tanpa baris apa pun —_batch berikutnya (+60)
+	// dimuat otomatis saat guliran menyentuh dasar daftar.
+	sadj := sw.GetVAdjustment()
+	sadj.Connect("value-changed", func() {
+		if a.expanding {
+			return
+		}
+		if sadj.GetValue()+sadj.GetPageSize() >= sadj.GetUpper()-8 {
+			if a.st.CountChats(a.showArchived) > len(a.rows) {
+				a.expanding = true
+				a.chatLimit += 60
+				a.reloadChats()
+				glib.IdleAdd(func() bool {
+					a.expanding = false
+					return false
+				})
+			}
+		}
+	})
 	left.PackStart(sw, true, true, 0)
 	paned.Pack1(left, false, false)
 
@@ -885,6 +973,13 @@ func (a *App) buildMain() gtk.IWidget {
 	empty.PackStart(eh, false, false, 0)
 	a.chatStack.AddNamed(emptyBg, "empty")
 	a.chatStack.AddNamed(a.buildChatView(), "chat")
+	sp, sl, stl := a.buildListPageBase()
+	a.starList, a.starTitle = sl, stl
+	a.chatStack.AddNamed(sp, "starred")
+	rp, rl, rtl := a.buildListPageBase()
+	a.resList, a.resTitle = rl, rtl
+	a.chatStack.AddNamed(rp, "results")
+	a.chatStack.AddNamed(a.buildGroupPage(), "groupinfo")
 	paned.Pack2(a.chatStack, true, false)
 	return paned
 }
@@ -959,6 +1054,14 @@ func (a *App) buildChatView() gtk.IWidget {
 			a.flashStatus(T("Tidak ada berkas yang bisa dikirim"))
 		}
 	})
+	memRowProbe = func() int {
+		n := 0
+		if cl := a.msgList.GetChildren(); cl != nil {
+			n = int(cl.Length())
+			cl.Free()
+		}
+		return n
+	}
 	startMemTicker() // v1.9.6: trim memori berkala
 	addClass(a.msgScroll, "msgbg")
 	a.msgList, _ = gtk.ListBoxNew()
@@ -981,6 +1084,33 @@ func (a *App) buildChatView() gtk.IWidget {
 			glib.IdleAdd(a.loadOlder)
 		}
 	})
+	// v1.11: baris cari-di-chat (Ctrl+Shift+F)
+	a.findBar, _ = gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 6)
+	a.findBar.SetNoShowAll(true)
+	a.findBar.SetMarginStart(8)
+	a.findBar.SetMarginEnd(8)
+	a.findBar.SetMarginTop(4)
+	fic := newIcon("search", 14)
+	fic.Show()
+	a.findBar.PackStart(fic, false, false, 0)
+	a.findEntry, _ = gtk.EntryNew()
+	a.findEntry.SetPlaceholderText(T("Cari di percakapan ini… (Ctrl+Shift+F)"))
+	a.findBar.PackStart(a.findEntry, true, true, 0)
+	a.findLbl, _ = gtk.LabelNew("")
+	addClass(a.findLbl, "meta")
+	a.findLbl.Show()
+	a.findBar.PackStart(a.findLbl, false, false, 0)
+	fc, _ := gtk.ButtonNew()
+	fc.SetRelief(gtk.RELIEF_NONE)
+	addClass(fc, "iconbtn")
+	fc.Add(newIcon("close", 14))
+	fc.SetTooltipText(T("Tutup (Esc)"))
+	fc.Connect("clicked", func() { a.closeFind() })
+	fc.Show()
+	a.findBar.PackStart(fc, false, false, 0)
+	a.findEntry.Show()
+	a.findEntry.Connect("activate", func() { a.runFind() })
+	v.PackStart(a.findBar, false, false, 0)
 	v.PackStart(a.msgScroll, true, true, 0)
 
 	v.PackStart(a.buildComposer(), false, false, 0)
@@ -1025,7 +1155,7 @@ func (a *App) displayName(c Chat) string {
 }
 
 func (a *App) reloadChats() {
-	chats, err := a.st.ListChats()
+	chats, err := a.st.ListChatsLimit(a.chatLimit)
 	if err != nil {
 		return
 	}
@@ -1044,12 +1174,23 @@ func (a *App) reloadChats() {
 		}
 		a.updateChatRow(r, c)
 	}
+	// v1.10.1: chat yang sedang terbuka wajib punya baris walau di luar plafon.
+	if a.current != "" && !seen[a.current] {
+		if c, ok := a.st.GetChat(a.current); ok && (c.Archived > 0) == a.showArchived {
+			r := a.newChatRow(c)
+			a.rows[c.JID] = r
+			a.chatList.Add(r.row)
+			r.row.ShowAll()
+			a.updateChatRow(r, c)
+		}
+	}
 	for jid, r := range a.rows {
-		if !seen[jid] {
+		if !seen[jid] && jid != a.current {
 			r.row.Destroy()
 			delete(a.rows, jid)
 		}
 	}
+
 	a.selecting = true
 	a.chatList.InvalidateSort()
 	if r, ok := a.rows[a.current]; ok {
@@ -1184,6 +1325,10 @@ func (a *App) openChat(jid string) {
 	if jid == "" {
 		return
 	}
+	a.searchMode = false
+	if a.findBar != nil {
+		a.findBar.Hide()
+	}
 	if a.editID != "" && a.editChat != jid {
 		a.cancelEdit()
 	}
@@ -1216,6 +1361,7 @@ func (a *App) openChat(jid string) {
 	a.selecting = false
 
 	a.clearMessages()
+	a.capHit = false
 	msgs, _ := a.st.LoadMessages(jid, 0, pageSize)
 	a.noMore = len(msgs) < pageSize
 	a.stickBottom = true
@@ -1282,7 +1428,21 @@ func (a *App) clearMessages() {
 
 func (a *App) loadOlder() bool {
 	defer func() { a.loading = false }()
-	if a.current == "" || a.noMore || a.oldestTS == 0 {
+	if a.current == "" || a.noMore || a.oldestTS == 0 || a.searchMode {
+		return false
+	}
+	// v1.9.8 (v1.10.0: 72): plafon baris hidup — gulir mendalam di grup
+	// raksasa tidak lagi menumpuk ratusan widget+pixbuf tanpa batas.
+	n := 0
+	if cl := a.msgList.GetChildren(); cl != nil {
+		n = int(cl.Length())
+		cl.Free()
+	}
+	if n >= 72 {
+		if !a.capHit {
+			a.capHit = true
+			a.flashStatus(T("Riwayat sangat panjang — pemuatan halaman dijeda demi hemat RAM."))
+		}
 		return false
 	}
 	msgs, _ := a.st.LoadMessages(a.current, a.oldestTS, pageSize)
@@ -1552,10 +1712,10 @@ func (a *App) bubbleRow(m *Msg) *gtk.ListBoxRow {
 	meta, _ := gtk.LabelNew("")
 	addClass(meta, "meta")
 	meta.SetHAlign(gtk.ALIGN_END)
-	a.setMeta(meta, m.TS, m.FromMe, m.Status, m.Edited)
+	a.setMeta(meta, m.TS, m.FromMe, m.Status, m.Edited, m.Starred)
 	b.PackStart(meta, false, false, 0)
 	if m.FromMe {
-		a.metas[m.ID] = &metaRef{label: meta, ts: m.TS, status: m.Status, edited: m.Edited}
+		a.metas[m.ID] = &metaRef{label: meta, ts: m.TS, status: m.Status, edited: m.Edited, starred: m.Starred}
 	}
 	// klik kanan di area bubble → menu pesan
 	eb, _ := gtk.EventBoxNew()
@@ -1572,13 +1732,21 @@ func (a *App) bubbleRow(m *Msg) *gtk.ListBoxRow {
 	return row
 }
 
-func (a *App) setMeta(l *gtk.Label, ts int64, fromMe bool, st int, edited bool) {
+func (a *App) setMeta(l *gtk.Label, ts int64, fromMe bool, st int, edited bool, starred bool) {
 	t := time.Unix(ts, 0).Format("15:04")
+	star := ""
+	if starred {
+		star = `<span foreground="#e8b93c">★ </span>`
+	}
 	if edited {
 		t = "diedit · " + t
 	}
 	if !fromMe {
-		l.SetText(t)
+		if starred {
+			l.SetMarkup(star + t)
+		} else {
+			l.SetText(t)
+		}
 		return
 	}
 	tick := ""
@@ -1594,7 +1762,7 @@ func (a *App) setMeta(l *gtk.Label, ts int64, fromMe bool, st int, edited bool) 
 	case StFailed:
 		tick = `<span foreground="#e53935">⚠ gagal</span>`
 	}
-	l.SetMarkup(t + "  " + tick)
+	l.SetMarkup(star + t + "  " + tick)
 }
 
 func (a *App) openMedia(chat, id string) {
@@ -2085,7 +2253,7 @@ func (a *App) OnReceipt(ids []string, st int) {
 		for _, id := range ids {
 			if r, ok := a.metas[id]; ok && (st > r.status || st == StFailed) {
 				r.status = st
-				a.setMeta(r.label, r.ts, true, st, r.edited)
+				a.setMeta(r.label, r.ts, true, st, r.edited, r.starred)
 			}
 		}
 	})

@@ -19,7 +19,7 @@ import (
 const (
 	stickerShow  = 150 // ukuran stiker di percakapan
 	stickerCell  = 68  // ukuran stiker di panel
-	stickerCache = 8   // jumlah stiker ter-decode yang disimpan di memori (v1.9.6: plafon ±12 MB)
+	stickerCache = 5   // v1.10.0: plafon ±7,5 MB — log lapangan menunjukkan cache selalu penuh 8
 )
 
 type stickerAnim struct {
@@ -83,7 +83,7 @@ func (a *App) loadSticker(sha string, size int, animate bool, cb func(*stickerAn
 				// mencapai ratusan MB di sesi yang ramai stiker.
 				perFrame := size * size * 4
 				if perFrame > 0 {
-					maxF = (1536 * 1024) / perFrame
+					maxF = (1024 * 1024) / perFrame // v1.10.1: anggaran 1 MB per stiker animasi
 				}
 				if maxF > 150 {
 					maxF = 150
@@ -306,6 +306,20 @@ func (a *App) buildStickerButton() gtk.IWidget {
 
 	v.ShowAll()
 	p.pop.Add(v)
+	// v1.9.8: saat panel tertutup, seluruh sel stiker dibongkar — pixbuf dan
+	// widgetnya kembali ke OS alih-alih tinggal sampai aplikasi keluar.
+	p.pop.Connect("closed", func() {
+		for fb, cells := range p.cells {
+			for _, c := range cells {
+				fb.Remove(c)
+				if w, ok := c.(*gtk.Widget); ok {
+					w.Destroy()
+				}
+			}
+			p.cells[fb] = nil
+		}
+		trimMem()
+	})
 	p.btn.Connect("toggled", func() {
 		if p.btn.GetActive() {
 			a.refreshStickerPanel()
