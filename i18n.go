@@ -34,6 +34,15 @@ var enStrings = map[string]string{
 	"Hapus bintang":    "Unstar",
 	"Pesan dibintangi": "Message starred",
 	"Bintang dilepas":  "Star removed",
+	// v1.13
+	"Pilih pesan…":            "Select messages…",
+	"%d dipilih":              "%d selected",
+	"Bintang":                 "Star",
+	"Hapus…":                  "Delete…",
+	"Hapus untuk saya":        "Delete for me",
+	"Hapus %d pesan?":         "Delete %d messages?",
+	"Hapus untuk semua orang": "Delete for everyone",
+	"Teruskan %d pesan":       "Forward %d messages",
 	// v1.12
 	"Memuat info grup…":               "Loading group info…",
 	"Gagal memuat info grup: %s":      "Failed to load group info: %s",

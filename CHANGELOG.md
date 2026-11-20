@@ -4,6 +4,31 @@ All notable changes to Obrol are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.13.0] — 2026-11-21
+
+### Added
+- **Pilih beberapa pesan**: klik kanan pesan → «Pilih pesan…» memasuki mode seleksi
+  (bulatan ceklist di samping bubble); klik pesan untuk centang/lepas, Esc atau ✕ untuk
+  keluar. Baris aksi massal: Teruskan, Bintang/lepas, Salin teks, dan Hapus (untuk saya
+  atau untuk semua orang bila memenuhi syarat). /
+  **Multi-select messages**: right-click → "Select messages…" enters selection mode
+  (check circles beside bubbles); click messages to toggle, Esc or ✕ to leave. Bulk
+  action bar: Forward, Star/unstar, Copy text, Delete (for me, or for everyone when
+  eligible).
+
+## [1.12.3] — 2026-11-20
+
+### Added
+- **Bahasa otomatis mengikuti sistem** (menu Bahasa → «Otomatis (ikuti sistem)»),
+ merge PR #7 kontribusi **baduhai** — terima kasih! /
+  **Automatic system language** (Language menu → "Automatic (follow system)"),
+  merged PR #7 contributed by **baduhai** — thank you!
+
+### Fixed
+- Lima panggilan dialog PesanFormat kini memakai format konstan sehingga `go vet`
+  (dan `go test`) bersih. / Five message-dialog calls now use constant format
+  strings, keeping `go vet` (and `go test`) clean.
+
 ## [1.12.2] — 2026-11-20
 
 ### Changed
@@ -361,6 +386,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   read receipts, photo/video thumbnails, documents, voice notes, locations, group chats,
   desktop notifications with sound, system tray with unread dot, autostart, single instance.
 
+[1.13.0]: https://github.com/Katon17/obrol-wa/releases/tag/v1.13.0
 [1.12.2]: https://github.com/Katon17/obrol-wa/releases/tag/v1.12.2
 [1.12.1]: https://github.com/Katon17/obrol-wa/releases/tag/v1.12.1
 [1.12.0]: https://github.com/Katon17/obrol-wa/releases/tag/v1.12.0

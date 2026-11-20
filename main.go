@@ -16,7 +16,7 @@ import (
 	"github.com/gotk3/gotk3/gtk"
 )
 
-const version = "1.12.2"
+const version = "1.13.0"
 
 // v1.9: "kotak hitam" — bila aplikasi panic, jejak lengkap disimpan ke
 // crash.log di folder data supaya mudah dilaporkan, lalu panic diteruskan.
@@ -143,7 +143,6 @@ func main() {
 		if _, ok := normalizeLang(v); ok {
 			lang = resolveLang(v)
 		}
-	}
 	}
 	a.iconPath = filepath.Join(dir, "obrol.png")
 	os.WriteFile(a.iconPath, iconPNG, 0o644)

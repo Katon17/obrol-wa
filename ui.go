@@ -113,6 +113,11 @@ type App struct {
 	// v1.11: pencarian pesan & bintang
 	searchMode bool
 	findBar    *gtk.Box
+	selMode    bool             // v1.13: mode pilih pesan
+	sel        map[string]bool  // v1.13: id pesan tercentang
+	selW       map[string]*selW // v1.13: widget ceklist per pesan
+	selBar     *gtk.Box
+	selLbl     *gtk.Label
 	findEntry  *gtk.Entry
 	findLbl    *gtk.Label
 	smsgRow    *gtk.EventBox
@@ -321,6 +326,10 @@ func (a *App) onKey(_ *gtk.ApplicationWindow, ev *gdk.Event) bool {
 	case ctrl && k.KeyVal() == gdk.KEY_w:
 		a.win.Close()
 		return true
+	case k.KeyVal() == gdk.KEY_Escape && a.selMode:
+		// v1.13: Esc keluar mode pilih pesan lebih dulu.
+		a.exitSelect()
+		return true
 	case k.KeyVal() == gdk.KEY_Escape && a.searchMode:
 		// v1.11: Esc menutup cari-di-chat lebih dulu, sebelum menutup obrolan.
 		a.closeFind()
@@ -406,6 +415,8 @@ button.react.mine { border-color: #00a884; background-color: rgba(0,168,132,0.30
 
 const lightCSS = `
 .msgbg { background-color: #efeae2; }
+.selbar { background-color: rgba(0,168,132,0.12); border: 1px solid rgba(0,168,132,0.4); border-radius: 8px; }
+.selcount { font-weight: bold; }
 .bubble { box-shadow: 0 1px 0.5px rgba(0,0,0,0.13); }
 .bubble.in  { background-color: #ffffff; }
 .bubble.sticker.in, .bubble.sticker.out { background-color: transparent; box-shadow: none; padding: 0; }
@@ -659,8 +670,8 @@ func (a *App) buildHeaderButtons() {
 
 // confirmRestart menawarkan mulai ulang setelah ganti bahasa.
 func (a *App) confirmRestart() {
-	d := gtk.MessageDialogNew(a.win, gtk.DIALOG_MODAL, gtk.MESSAGE_QUESTION, gtk.BUTTONS_NONE, T("Mulai ulang sekarang?"))
-	d.FormatSecondaryText(T("Bahasa diterapkan setelah aplikasi dimulai ulang."))
+	d := gtk.MessageDialogNew(a.win, gtk.DIALOG_MODAL, gtk.MESSAGE_QUESTION, gtk.BUTTONS_NONE, "%s", T("Mulai ulang sekarang?"))
+	d.FormatSecondaryText("%s", T("Bahasa diterapkan setelah aplikasi dimulai ulang."))
 	d.AddButton(T("Mulai ulang"), gtk.RESPONSE_YES)
 	d.AddButton(T("Nanti"), gtk.RESPONSE_NO)
 	resp := d.Run()
@@ -1119,6 +1130,8 @@ func (a *App) buildChatView() gtk.IWidget {
 	a.findEntry.Show()
 	a.findEntry.Connect("activate", func() { a.runFind() })
 	v.PackStart(a.findBar, false, false, 0)
+	a.selBar = a.buildSelBar() // v1.13
+	v.PackStart(a.selBar, false, false, 0)
 	v.PackStart(a.msgScroll, true, true, 0)
 
 	v.PackStart(a.buildComposer(), false, false, 0)
@@ -1417,6 +1430,8 @@ func (a *App) markCurrentRead() {
 }
 
 func (a *App) clearMessages() {
+	a.exitSelect() // v1.13: ganti percakapan/refill = keluar mode seleksi
+	a.selW = map[string]*selW{}
 	a.msgGen++ // hentikan animasi stiker dari percakapan sebelumnya
 	a.msgList.GetChildren().Foreach(func(item interface{}) {
 		if w, ok := item.(*gtk.Widget); ok {
@@ -1671,6 +1686,7 @@ func (a *App) bubbleRow(m *Msg) *gtk.ListBoxRow {
 		b.PackStart(l, false, false, 0)
 	}
 
+	var textLbl *gtk.Label // v1.13: riferensi label teks utk mode seleksi
 	if text != "" {
 		l, _ := gtk.LabelNew("")
 		l.SetMarkup(linkify(text))
@@ -1680,13 +1696,9 @@ func (a *App) bubbleRow(m *Msg) *gtk.ListBoxRow {
 		l.SetMaxWidthChars(60)
 		l.SetSelectable(true)
 		l.SetCanFocus(false)
-		// klik kanan pada teks: menu bawaan (Salin/Pilih semua) + aksi pesan
-		l.Connect("populate-popup", func(_ *gtk.Label, menu *gtk.Menu) {
-			sep, _ := gtk.SeparatorMenuItemNew()
-			menu.Append(sep)
-			a.fillMsgMenu(menu, chatID, msgID, false)
-			menu.ShowAll()
-		})
+		// v1.13: menu konteks cukup satu (milik kita) — suppress bawaan label.
+		l.Connect("popup-menu", func() bool { return true })
+		textLbl = l
 		b.PackStart(l, false, false, 0)
 	}
 
@@ -1730,13 +1742,36 @@ func (a *App) bubbleRow(m *Msg) *gtk.ListBoxRow {
 	eb.SetHAlign(b.GetHAlign())
 	eb.Add(b)
 	eb.Connect("button-press-event", func(_ *gtk.EventBox, ev *gdk.Event) bool {
-		if gdk.EventButtonNewFromEvent(ev).Button() == gdk.BUTTON_SECONDARY {
+		if a.selMode { // v1.13: klik apa pun = centang/lepas
+			a.toggleSel(msgID)
+			return true
+		}
+		return false
+	})
+	eb.Connect("button-release-event", func(_ *gtk.EventBox, ev *gdk.Event) bool {
+		if !a.selMode && gdk.EventButtonNewFromEvent(ev).Button() == gdk.BUTTON_SECONDARY {
 			a.popupMsgMenu(ev, chatID, msgID)
 			return true
 		}
 		return false
 	})
-	row.Add(eb)
+	// v1.13: bulatan ceklist di kiri bubble, hanya tampak di mode seleksi
+	outer, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 4)
+	chkBox, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 0)
+	chkBox.SetNoShowAll(true)
+	chkBox.SetMarginStart(6)
+	icOff := newIcon("sel-circle", 18)
+	icOn := newIcon("sel-check", 18)
+	chkBox.PackStart(icOff, false, false, 0)
+	chkBox.PackStart(icOn, false, false, 0)
+	icOn.Hide()
+	outer.PackStart(chkBox, false, false, 0)
+	outer.PackStart(eb, true, true, 0)
+	row.Add(outer)
+	if a.selW == nil {
+		a.selW = map[string]*selW{}
+	}
+	a.selW[msgID] = &selW{id: msgID, box: chkBox, off: icOff, on: icOn, lbl: textLbl}
 	return row
 }
 
@@ -1915,7 +1950,7 @@ func (a *App) newChatDialog() {
 func (a *App) confirmLogout() {
 	d := gtk.MessageDialogNew(a.win, gtk.DIALOG_MODAL, gtk.MESSAGE_QUESTION, gtk.BUTTONS_YES_NO,
 		"Keluar dari akun WhatsApp di Obrol?")
-	d.FormatSecondaryText(T("Perangkat ini akan dilepas dari WhatsApp dan semua riwayat chat lokal dihapus."))
+	d.FormatSecondaryText("%s", T("Perangkat ini akan dilepas dari WhatsApp dan semua riwayat chat lokal dihapus."))
 	resp := d.Run()
 	d.Destroy()
 	if resp == gtk.RESPONSE_YES && a.wa != nil {

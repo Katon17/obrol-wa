@@ -499,6 +499,7 @@ func (a *App) fillMsgMenu(menu *gtk.Menu, chat, id string, withCopy bool) {
 		add("ban", T("Pesan sudah dihapus"), nil)
 		return
 	}
+	add("sel-circle", T("Pilih pesan…"), func() { a.enterSelect(id) })
 	add("reply", T("Balas"), func() { a.startReply(chat, id) })
 	rit := menuItem("react", T("Reaksi"), func() {})
 	subR, _ := gtk.MenuNew()
@@ -510,7 +511,7 @@ func (a *App) fillMsgMenu(menu *gtk.Menu, chat, id string, withCopy bool) {
 	}
 	rit.SetSubmenu(subR)
 	menu.Append(rit)
-	add("forward", T("Teruskan…"), func() { a.forwardDialog(m) })
+	add("forward", T("Teruskan…"), func() { a.forwardDialog([]Msg{m}) })
 	if m.Starred {
 		add("star-fill", T("Hapus bintang"), func() { a.toggleStar(chat, id, false) })
 	} else {
@@ -552,9 +553,14 @@ func (a *App) fillMsgMenu(menu *gtk.Menu, chat, id string, withCopy bool) {
 		}
 		pin.SetSubmenu(sub)
 	}
+	sepD, _ := gtk.SeparatorMenuItemNew()
+	menu.Append(sepD)
+	// v1.13: hapus satuan untuk saya tanpa perlu mode seleksi.
+	add("trash", T("Hapus untuk saya"), func() {
+		a.st.DeleteMessages(chat, []string{id})
+		a.OnMessageChanged(chat)
+	})
 	if m.FromMe && (a.wa == nil || time.Since(time.Unix(m.TS, 0)) <= RevokeWindow) {
-		sep, _ := gtk.SeparatorMenuItemNew()
-		menu.Append(sep)
 		add("trash", T("Hapus untuk semua orang…"), func() { a.confirmRevoke(chat, id) })
 	}
 }
@@ -569,7 +575,7 @@ func (a *App) popupMsgMenu(ev *gdk.Event, chat, id string) {
 func (a *App) confirmRevoke(chat, id string) {
 	d := gtk.MessageDialogNew(a.win, gtk.DIALOG_MODAL, gtk.MESSAGE_QUESTION, gtk.BUTTONS_YES_NO,
 		"Hapus pesan ini untuk semua orang?")
-	d.FormatSecondaryText(T("Pesan akan diganti dengan \"Pesan ini dihapus\" di semua perangkat."))
+	d.FormatSecondaryText("%s", T("Pesan akan diganti dengan \"Pesan ini dihapus\" di semua perangkat."))
 	resp := d.Run()
 	d.Destroy()
 	if resp != gtk.RESPONSE_YES {
@@ -909,8 +915,12 @@ func (a *App) toggleReaction(chat, id, emoji string, mine bool) {
 }
 
 // forwardDialog: dialog pilihan obrolan tujuan terusan.
-func (a *App) forwardDialog(src Msg) {
-	dlg, _ := gtk.DialogNewWithButtons(T("Teruskan pesan"), a.win, gtk.DIALOG_MODAL,
+func (a *App) forwardDialog(srcs []Msg) {
+	title := T("Teruskan pesan")
+	if len(srcs) > 1 {
+		title = fmt.Sprintf(T("Teruskan %d pesan"), len(srcs))
+	}
+	dlg, _ := gtk.DialogNewWithButtons(title, a.win, gtk.DIALOG_MODAL,
 		[]interface{}{T("Batal"), gtk.RESPONSE_CANCEL})
 	dlg.SetDefaultSize(380, 440)
 	content, _ := dlg.GetContentArea()
@@ -984,7 +994,9 @@ func (a *App) forwardDialog(src Msg) {
 	resp := dlg.Run()
 	dlg.Destroy()
 	if resp == gtk.RESPONSE_ACCEPT && picked != "" {
-		a.doForward(picked, src)
+		for _, s := range srcs {
+			a.doForward(picked, s)
+		}
 	}
 }
 

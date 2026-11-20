@@ -384,6 +384,20 @@ func scanMsg(r scanner) (Msg, error) {
 	return m, err
 }
 
+// DeleteMessages: hapus massal pesan satu chat untuk saya (v1.13).
+func (s *Store) DeleteMessages(chat string, ids []string) {
+	if len(ids) == 0 {
+		return
+	}
+	ph := strings.TrimSuffix(strings.Repeat("?,", len(ids)), ",")
+	args := make([]interface{}, 0, len(ids)+1)
+	args = append(args, chat)
+	for _, id := range ids {
+		args = append(args, id)
+	}
+	_, _ = s.db.Exec(`DELETE FROM messages WHERE chat=? AND id IN (`+ph+`)`, args...)
+}
+
 // SetStarred: bintangi / lepas bintang pesan (v1.11).
 func (s *Store) SetStarred(chat, id string, star bool) {
 	v := 0

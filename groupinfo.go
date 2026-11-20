@@ -536,7 +536,7 @@ func (a *App) giAddDialog() {
 
 func (a *App) giRemove(pj, name string) {
 	d := gtk.MessageDialogNew(a.win, gtk.DIALOG_MODAL, gtk.MESSAGE_QUESTION, gtk.BUTTONS_YES_NO,
-		fmt.Sprintf(T("Keluarkan %s dari grup?"), name))
+		"%s", fmt.Sprintf(T("Keluarkan %s dari grup?"), name))
 	resp := d.Run()
 	d.Destroy()
 	if resp != gtk.RESPONSE_YES {
