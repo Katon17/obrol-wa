@@ -70,6 +70,15 @@ Dibuat oleh **Katon Bagaskoro**.
 - 🧑‍🤝‍ **Info & manajemen grup**: daftar peserta berhalaman dengan badge admin, ganti
   subjek, foto & deskripsi grup, tambah/hapus anggota — semua native
 
+**Baru di 1.12.3–1.13 — bahasa & seleksi:**
+
+- 🌐 **Bahasa otomatis**: menu Bahasa mendapat *Otomatis (ikuti sistem)* yang mengikuti
+  locale desktop (kontribusi **baduhai**, PR #7)
+- ✅ **Pilih beberapa pesan**: klik kanan → *Pilih pesan…* menampilkan bulatan ceklist di
+  samping bubble; centang beberapa lalu **Teruskan**, **Bintang**, **Salin teks**, atau
+  **Hapus** massal (untuk saya / untuk semua orang bila memenuhi syarat); Esc keluar
+- 🗑 **Hapus untuk saya** per pesan langsung dari menu pesan — tanpa mode seleksi
+
 ## Kenapa ringan?
 
 | | Obrol | WhatsApp Web di browser | Klien Electron |
@@ -108,6 +117,10 @@ Dibuat oleh **Katon Bagaskoro**.
 - ✅ **Bintangi pesan** dan buka lagi lewat halaman Berbintang
 - ✅ **Info & manajemen grup**: peserta (berhalaman, badge admin), ganti subjek, foto &
   deskripsi grup, tambah/hapus anggota
+- ✅ **Pilih beberapa pesan** (klik kanan → *Pilih pesan…*): centang bubble lalu teruskan,
+  bintang, salin, atau hapus massal; Esc keluar
+- ✅ **Hapus untuk saya** per pesan tanpa masuk mode seleksi
+- ✅ **Bahasa UI otomatis** mengikuti locale sistem, bisa ditimpa lewat menu Bahasa
 - ✅ Pesan yang **dihapus** atau **diedit** orang lain ikut ter-update
 - ✅ Lokasi (dengan link Google Maps), kontak, dan polling ditampilkan sebagai teks
 - ✅ **Notifikasi desktop**; klik notifikasi untuk langsung membuka chat-nya. Ada suara notifikasi juga
@@ -243,6 +256,10 @@ Opsi baris perintah:
 
 Catatan lengkap per rilis ada di [CHANGELOG.md](CHANGELOG.md).
 
+- **1.13.0**: pilih beberapa pesan dengan aksi massal; *hapus untuk saya* satuan; menu
+  pesan dibuka saat lepas klik (tanpa aksi tak sengaja)
+- **1.12.3**: bahasa otomatis mengikuti sistem (PR #7 oleh baduhai); perbaikan
+  format-string `go vet`
 - **1.12.2**: stabilisasi pustaka whatsmeow; percobaan fitur Status/Story ditarik
   (perangkat tertaut tidak menerima riwayat status dari protokol)
 - **1.12.0–1.12.1**: halaman info & manajemen grup (peserta, subjek, foto, deskripsi,

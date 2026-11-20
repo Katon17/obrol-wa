@@ -65,6 +65,16 @@ Made by **Katon Bagaskoro**.
 - 🧑‍🤝‍🧑 **Group info & management**: paged participant list with admin badges, rename the
   group, change its photo & description, add or remove members — all native
 
+**New in 1.12.3–1.13 — language & selection:**
+
+- 🌐 **Automatic language**: the Language menu gains *Automatic (follow system)*,
+  tracking your desktop locale (contributed by **baduhai**, PR #7)
+- ✅ **Multi-select messages**: right-click → *Select messages…* puts check circles
+  beside bubbles; tick several and bulk-**Forward**, **Star**, **Copy text** or
+  **Delete** (for me, or for everyone when eligible); Esc leaves the mode
+- 🗑 **Delete for me** on a single message, straight from the message menu — no
+  selection mode needed
+
 ## Why is it so light?
 
 | | Obrol | WhatsApp Web in a browser | Electron clients |
@@ -122,6 +132,10 @@ Made by **Katon Bagaskoro**.
 - ✅ **Star messages** and revisit them in a dedicated Starred page
 - ✅ **Group info & management**: participants (paged, admin badges), rename, group photo &
   description, add/remove members
+- ✅ **Multi-select messages** (right-click → *Select messages…*): tick bubbles and bulk-forward,
+  star, copy or delete them; Esc exits
+- ✅ **Delete for me** per message without entering selection mode
+- ✅ **Automatic UI language** following the system locale, overridable in the Language menu
 - ✅ Messages deleted/edited by others update live
 - ✅ Locations (with Google Maps link), contacts and polls shown as text
 - ✅ **Desktop notifications** (click opens the chat) with optional sound
@@ -220,6 +234,9 @@ Command-line options:
 
 Full notes per release live in [CHANGELOG.md](CHANGELOG.md).
 
+- **1.13.0**: multi-select messages with bulk actions; single-message *delete for me*;
+  message menu now opens on button-release (no accidental activation)
+- **1.12.3**: automatic system language (PR #7 by baduhai); `go vet` format-string fixes
 - **1.12.2**: whatsmeow library stabilisation; the Status/Story experiment was withdrawn
   (linked devices receive no status history from the protocol)
 - **1.12.0–1.12.1**: group info & management page (participants, subject, photo, description,
