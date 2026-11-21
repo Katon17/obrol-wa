@@ -160,6 +160,19 @@ Dibuat oleh **Katon Bagaskoro**.
   digambar khusus sebagai SVG, sehingga tajam di skala berapa pun dan warnanya ikut tema terang/gelap
 - ✅ Single-instance: membuka Obrol lagi cukup memunculkan jendela yang sudah ada
 
+## Pintasan keyboard
+
+| Tombol | Aksi |
+|---|---|
+| `Ctrl+F` / `Ctrl+K` | fokus ke pencarian chat |
+| `Ctrl+Shift+F` | cari di dalam percakapan yang terbuka |
+| `Ctrl+N` | obrolan baru ke nomor telepon |
+| `Ctrl+V` | tempel gambar/screenshot ke kolom pesan |
+| `Enter` / `Shift+Enter` | kirim / baris baru |
+| `↑` (kolom kosong) | edit lagi pesan terkirim terakhirmu |
+| `Esc` | keluar mode seleksi / cari-di-chat / balas / edit, lalu tutup percakapan |
+| `Ctrl+W` / `Ctrl+Q` | sembunyikan jendela ke tray / keluar |
+
 **Pintasan:** `Enter` kirim · `Shift+Enter` baris baru · `Ctrl+V` tempel gambar/teks · `↑` edit pesan terakhir ·
 `Ctrl+F` cari · `Ctrl+N` obrolan baru · `Esc` batal edit / tutup obrolan · `Ctrl+W` sembunyikan · `Ctrl+Q` keluar
 

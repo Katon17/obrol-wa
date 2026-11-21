@@ -137,6 +137,19 @@ Made by **Katon Bagaskoro**.
 - ✅ **Delete for me** per message without entering selection mode
 - ✅ **Automatic UI language** following the system locale, overridable in the Language menu
 - ✅ Messages deleted/edited by others update live
+
+## Keyboard shortcuts
+
+| Keys | Action |
+|---|---|
+| `Ctrl+F` / `Ctrl+K` | focus the chat search |
+| `Ctrl+Shift+F` | search inside the open conversation |
+| `Ctrl+N` | new chat by phone number |
+| `Ctrl+V` | paste an image or screenshot into the composer |
+| `Enter` / `Shift+Enter` | send / newline |
+| `↑` (empty composer) | re-edit your last sent message |
+| `Esc` | leave multi-select / in-chat search / reply / edit, then close the conversation |
+| `Ctrl+W` / `Ctrl+Q` | hide window to tray / quit |
 - ✅ Locations (with Google Maps link), contacts and polls shown as text
 - ✅ **Desktop notifications** (click opens the chat) with optional sound
 - ✅ WhatsApp-style **dark mode**: *Automatic* follows the XFCE theme, or force *Light*/*Dark*
