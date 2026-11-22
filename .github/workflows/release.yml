@@ -26,6 +26,11 @@ jobs:
       - name: Build
         run: GOAMD64=v1 go build -trimpath -ldflags="-s -w" -o obrol .
 
+      - name: Guard — binary must be x86-64-baseline
+        run: |
+          isa="$(readelf -nW obrol | sed -n 's/.*x86 ISA needed: *//p')"
+          [ "$isa" = "x86-64-baseline" ] || { echo "::error::Release binary needs '$isa', must be x86-64-baseline"; exit 1; }
+
       - name: Build Debian package
         run: DEB_MAINTAINER="Katon Bagaskoro <cimong2356@gmail.com>" ./build-deb.sh
 

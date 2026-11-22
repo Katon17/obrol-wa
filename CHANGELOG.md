@@ -4,6 +4,20 @@ All notable changes to Obrol are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.13.1] — 2026-11-22
+
+### Fixed
+- **Aset rilis menuntut x86-64-v3**: binary yang dibangun CI menolak CPU pra-AVX2
+  (mis. Intel Sandy Bridge) dengan pesan glibc «CPU ISA level is lower than
+  required». Build kini mengunci `GOAMD64=v1` di `build.sh`, `build-deb.sh`, dan
+  workflow rilis; workflow juga gagal otomatis bila binary bukan
+  x86-64-baseline. /
+  **Release assets demanded x86-64-v3**: CI-built binaries refused pre-AVX2 CPUs
+  (e.g. Intel Sandy Bridge) with glibc's «CPU ISA level is lower than required».
+  Builds now pin `GOAMD64=v1` in `build.sh`, `build-deb.sh` and the release
+  workflow; the workflow also fails automatically unless the binary is
+  x86-64-baseline.
+
 ## [1.13.0] — 2026-11-21
 
 ### Added
