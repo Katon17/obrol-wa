@@ -16,7 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (e.g. Intel Sandy Bridge) with glibc's «CPU ISA level is lower than required».
   Builds now pin `GOAMD64=v1` in `build.sh`, `build-deb.sh` and the release
   workflow; the workflow also fails automatically unless the binary is
-  x86-64-baseline.
+  x86-64-baseline, and the release job is pinned to ubuntu-22.04 because glibc
+  crt objects of newer runner images carry v2/v3 ISA notes that the linker
+  merges into every cgo binary.
 
 ## [1.13.0] — 2026-11-21
 

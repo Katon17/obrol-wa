@@ -10,7 +10,11 @@ permissions:
 jobs:
   release:
     name: Build & publish release tarball + .deb
-    runs-on: ubuntu-latest
+    # Pinned on purpose: glibc crt objects of newer runner images carry higher
+    # x86-64 ISA notes (v2/v3) that the linker merges into every cgo binary,
+    # making old CPUs refuse to start it (see 1.13.1). The guard step below
+    # catches any future migration that reintroduces this.
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
 
