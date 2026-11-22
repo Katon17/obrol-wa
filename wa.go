@@ -804,6 +804,8 @@ func (w *WA) DisplayName(jid string, stored string) string {
 		if name == "" {
 			if j.Server == types.DefaultUserServer {
 				name = "+" + j.User
+			} else if u := w.pnUser(jid); u != j.User {
+				name = "+" + u // v1.13.1: LID — tampilkan nomor hasil pemetaan
 			} else {
 				name = j.User
 			}
@@ -817,6 +819,21 @@ func (w *WA) DisplayName(jid string, stored string) string {
 	}
 	w.names.Store(jid, name)
 	return name
+}
+
+// pnUser: bagian user bernomor telepon untuk tampilan; memetakan LID→PN bila
+// jid ber-server LID dan pemetaannya ada di store (v1.13.1, issue #8).
+func (w *WA) pnUser(jid string) string {
+	j, err := types.ParseJID(jid)
+	if err != nil {
+		return strings.SplitN(jid, "@", 2)[0]
+	}
+	if j.Server == types.HiddenUserServer || j.Server == types.HostedLIDServer {
+		if pn, err := w.cli.Store.LIDs.GetPNForLID(bg, j); err == nil && !pn.IsEmpty() {
+			return pn.User
+		}
+	}
+	return j.User
 }
 
 func (w *WA) myUser() string {
@@ -1570,7 +1587,15 @@ func (w *WA) CheckNumber(phone string) (string, error) {
 	if len(res) == 0 || !res[0].IsIn {
 		return "", errors.New("nomor ini tidak terdaftar di WhatsApp")
 	}
-	return res[0].JID.ToNonAD().String(), nil
+	// v1.13.1: usync kini memakai addressing mode "lid", sehingga JID kanonik
+	// yang kembali bisa berupa LID (digit acak @lid), bukan nomor telepon.
+	// Untuk identitas chat & tampilan nomor, pakai PN bila tersedia — kalau
+	// tidak, header/daftar chat menampilkan digit LID sebagai "nomor" (issue #8).
+	out := res[0].JID
+	if pn := res[0].PhoneNumber; !pn.IsEmpty() && pn.Server == types.DefaultUserServer {
+		out = pn
+	}
+	return out.ToNonAD().String(), nil
 }
 
 func digitsOnly(s string) string {

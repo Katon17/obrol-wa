@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.13.1] — 2026-11-22
 
 ### Fixed
+- **Nomor salah & foto ganda (issue #8)**: «Obrolan baru» lewat nomor menyimpan
+  chat dengan kunci LID (digit acak `@lid`) karena usync kini memakai addressing
+  mode lid — akibatnya header/daftar menampilkan digit LID sebagai nomor.
+  CheckNumber kini memakai JID nomor telepon (PN) bila tersedia, dan tampilan
+  (header, subtitle, dialog profil, salin nomor) memetakan LID→PN untuk chat
+  lama yang terlanjur berkunci LID. Dialog profil juga tidak lagi menumpuk dua
+  foto saat cache lokal dan unduhan async keduanya siap. /
+  **Wrong number & duplicate photo (issue #8)**: "New chat" by number stored
+  chats under a LID key (random `@lid` digits) because usync now uses lid
+  addressing — headers/lists then showed LID digits as the phone number.
+  CheckNumber now uses the phone-number (PN) JID when available, and all
+  display paths (header, subtitle, profile dialog, copy number) map LID→PN for
+  older chats already keyed by LID. The profile dialog also no longer stacks
+  two photos when the local cache and the async download both arrive.
+
+### Fixed
 - **Aset rilis menuntut x86-64-v3**: binary yang dibangun CI menolak CPU pra-AVX2
   (mis. Intel Sandy Bridge) dengan pesan glibc «CPU ISA level is lower than
   required». Build kini mengunci `GOAMD64=v1` di `build.sh`, `build-deb.sh`, dan

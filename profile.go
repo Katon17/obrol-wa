@@ -85,8 +85,13 @@ func (w *WA) fetchGroup(jid string) (topic string, members int) {
 	return gi.Topic, n
 }
 
-func prettyPhone(jid string) string {
+// displayPhone: nomor internasional untuk ditampilkan; memetakan LID→PN bila
+// chat tersimpan dengan kunci LID (v1.13.1, issue #8).
+func (a *App) displayPhone(jid string) string {
 	u := strings.SplitN(jid, "@", 2)[0]
+	if a.wa != nil {
+		u = a.wa.pnUser(jid)
+	}
 	if !strings.HasPrefix(u, "+") {
 		u = "+" + u
 	}
@@ -165,7 +170,7 @@ func (a *App) showProfile(jid string) {
 	if isGrp {
 		subLbl.SetText(T("Grup"))
 	} else {
-		subLbl.SetText(prettyPhone(jid))
+		subLbl.SetText(a.displayPhone(jid))
 	}
 	area.PackStart(subLbl, false, false, 0)
 
@@ -196,7 +201,7 @@ func (a *App) showProfile(jid string) {
 		cp, _ := gtk.ButtonNewWithLabel(T("Salin nomor"))
 		cp.Connect("clicked", func() {
 			if cb, err := gtk.ClipboardGet(gdk.SELECTION_CLIPBOARD); err == nil {
-				cb.SetText(prettyPhone(jid))
+				cb.SetText(a.displayPhone(jid))
 				a.flashStatus(T("Nomor disalin"))
 			}
 		})
@@ -209,6 +214,7 @@ func (a *App) showProfile(jid string) {
 	area.ShowAll()
 
 	var kill func() = func() { initLbl.Destroy() }
+	var curImg *gtk.Image
 	setPic := func(data []byte) {
 		pb := pixbufFromBytes(data)
 		if pb == nil {
@@ -220,6 +226,12 @@ func (a *App) showProfile(jid string) {
 			kill()
 			kill = nil
 		}
+		// v1.13.1: ganti foto lama, jangan tumpuk (issue #8: dua foto saat
+		// cache lokal + unduhan async keduanya memanggil setPic).
+		if curImg != nil {
+			curImg.Destroy()
+		}
+		curImg = img
 		holder.PackStart(img, false, false, 0)
 		img.Show()
 	}

@@ -90,11 +90,10 @@ func (a *App) refreshSub(c Chat, jid string) {
 		return
 	}
 	user := strings.SplitN(jid, "@", 2)[0]
-	if strings.HasSuffix(jid, "@s.whatsapp.net") {
-		a.chatSub.SetText(formatPhone(user))
-	} else {
-		a.chatSub.SetText(user)
+	if a.wa != nil {
+		user = a.wa.pnUser(jid) // v1.13.1: petakan LID→PN agar subtitle bukan digit LID
 	}
+	a.chatSub.SetText(formatPhone(user))
 }
 
 // pingTyping: beri tahu kontak bahwa kita sedang mengetik (throttle 2 dtk,
