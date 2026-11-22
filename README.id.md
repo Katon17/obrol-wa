@@ -77,10 +77,15 @@ Dibuat oleh **Katon Bagaskoro**.
 - ✅ **Pilih beberapa pesan**: klik kanan → *Pilih pesan…* menampilkan bulatan ceklist di
   samping bubble; centang beberapa lalu **Teruskan**, **Bintang**, **Salin teks**, atau
   **Hapus** massal (untuk saya / untuk semua orang bila memenuhi syarat); Esc keluar
+- 🗑 **Hapus untuk saya** per pesan langsung dari menu pesan — tanpa mode seleksi
+
+**Baru di 1.14 — jangkau orang yang belum kamu simpan:**
+
 - 💬 **Balas secara pribadi**: klik kanan pesan di grup → *Balas secara pribadi* membuka
   chat 1-on-1 dengan pengirimnya; aksi yang sama ada di menu klik-kanan daftar anggota
-  grup — berfungsi juga untuk nomor yang belum disimpan
-- 🗑 **Hapus untuk saya** per pesan langsung dari menu pesan — tanpa mode seleksi
+  grup — nomornya tidak perlu tersimpan di kontak
+
+![Balas secara pribadi](screenshots/balas-privasi.png)
 
 ## Kenapa ringan?
 
@@ -122,7 +127,7 @@ Dibuat oleh **Katon Bagaskoro**.
   deskripsi grup, tambah/hapus anggota
 - ✅ **Pilih beberapa pesan** (klik kanan → *Pilih pesan…*): centang bubble lalu teruskan,
   bintang, salin, atau hapus massal; Esc keluar
-- 💬 **Balas secara pribadi** dari menu pesan grup atau daftar anggota (termasuk nomor yang belum disimpan)
+- ✅ **Balas secara pribadi** dari menu pesan grup atau daftar anggota (termasuk nomor yang belum disimpan)
 - ✅ **Hapus untuk saya** per pesan tanpa masuk mode seleksi
 - ✅ **Bahasa UI otomatis** mengikuti locale sistem, bisa ditimpa lewat menu Bahasa
 - ✅ Pesan yang **dihapus** atau **diedit** orang lain ikut ter-update

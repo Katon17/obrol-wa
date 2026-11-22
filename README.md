@@ -72,11 +72,16 @@ Made by **Katon Bagaskoro**.
 - ✅ **Multi-select messages**: right-click → *Select messages…* puts check circles
   beside bubbles; tick several and bulk-**Forward**, **Star**, **Copy text** or
   **Delete** (for me, or for everyone when eligible); Esc leaves the mode
-- 💬 **Message privately**: right-click a group message → *Message privately* opens a
-  1-on-1 chat with its sender; same action from the group member list — works even
-  for numbers you never saved
 - 🗑 **Delete for me** on a single message, straight from the message menu — no
   selection mode needed
+
+**New in 1.14 — reach people you never saved:**
+
+- 💬 **Message privately**: right-click a group message → *Message privately* opens a
+  1-on-1 chat with its sender; the same action sits in the right-click menu of the
+  group member list — their number never has to be in your contacts
+
+![Message privately](screenshots/message-privately.png)
 
 ## Why is it so light?
 
@@ -137,7 +142,7 @@ Made by **Katon Bagaskoro**.
   description, add/remove members
 - ✅ **Multi-select messages** (right-click → *Select messages…*): tick bubbles and bulk-forward,
   star, copy or delete them; Esc exits
-- 💬 **Message privately** from a group message menu or the member list (unsaved numbers included)
+- ✅ **Message privately** from a group message menu or the member list (unsaved numbers included)
 - ✅ **Delete for me** per message without entering selection mode
 - ✅ **Automatic UI language** following the system locale, overridable in the Language menu
 - ✅ Messages deleted/edited by others update live
