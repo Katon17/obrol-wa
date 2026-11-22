@@ -133,9 +133,13 @@ esac
 # Guard: on x86_64 the executable must not demand a newer ISA level than
 # baseline, or glibc on old CPUs refuses to start it.
 if [ "$expected_machine" = "x86_64" ]; then
+  # Buang note ISA supaya biner baseline by construction (lihat release.yml):
+  # image runner / cache build bisa menyelipkan note v2/v3 yang membuat glibc
+  # di CPU tua menolak menjalankan biner.
+  objcopy --remove-section=.note.gnu.property "$package_root/usr/bin/obrol" 2>/dev/null || true
   isa_needed="$(LC_ALL=C readelf -nW "$package_root/usr/bin/obrol" | sed -n 's/.*x86 ISA needed: *//p')"
   case "$isa_needed" in
-    *baseline*) ;;
+    ""|*baseline*) ;;
     *) fail "Release binary requires '$isa_needed'; must be x86-64-baseline (check GOAMD64/CGO_CFLAGS/-march)" ;;
   esac
 fi

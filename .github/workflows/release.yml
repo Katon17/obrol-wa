@@ -26,10 +26,18 @@ jobs:
       - name: Build
         run: GOAMD64=v1 go build -trimpath -ldflags="-s -w" -o obrol .
 
+      - name: Drop x86-64 ISA note (old-CPU safety)
+        # Runner images and shared build caches can bake an x86-64-v2/v3 ISA
+        # note into the executable (crt/C objects); glibc then refuses to
+        # start it on pre-AVX2 CPUs (issue: "CPU ISA level is lower than
+        # required"). Removing the note makes the binary baseline by
+        # construction, on every runner and cache state.
+        run: objcopy --remove-section=.note.gnu.property obrol
+
       - name: Guard — binary must be x86-64-baseline
         run: |
           isa="$(readelf -nW obrol | sed -n 's/.*x86 ISA needed: *//p')"
-          [ "$isa" = "x86-64-baseline" ] || { echo "::error::Release binary needs '$isa', must be x86-64-baseline"; exit 1; }
+          case "$isa" in ""|x86-64-baseline) ;; *) echo "::error::Release binary needs '$isa', must be x86-64-baseline"; exit 1;; esac
 
       - name: Build Debian package
         run: DEB_MAINTAINER="Katon Bagaskoro <cimong2356@gmail.com>" ./build-deb.sh

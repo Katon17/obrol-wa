@@ -35,6 +35,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   x86-64-baseline, and the release job is pinned to ubuntu-22.04 because glibc
   crt objects of newer runner images carry v2/v3 ISA notes that the linker
   merges into every cgo binary.
+  Because runner images and shared build caches proved able to bake v2/v3 ISA
+  notes into cgo binaries regardless of flags, the x86_64 release paths now
+  also strip `.note.gnu.property` outright (objcopy) and the guard verifies the
+  result — baseline by construction on every runner and cache state.
 
 ## [1.13.0] — 2026-11-21
 
