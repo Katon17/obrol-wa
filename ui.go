@@ -1342,6 +1342,23 @@ func (a *App) updateUnread() {
 
 // ------------------------------------------------------------ percakapan
 
+// openPrivateChat (v1.14.0): buka chat 1-on-1 dengan pengirim pesan grup atau
+// anggota grup — termasuk nomor yang belum disimpan di kontak. Dipakai oleh
+// menu konteks pesan grup dan menu klik-kanan daftar anggota.
+func (a *App) openPrivateChat(jid string) {
+	if jid == "" || isGroupJID(jid) {
+		return
+	}
+	if a.wa != nil {
+		if a.wa.IsPaired() && jid == a.wa.MyJID() {
+			return
+		}
+		jid = a.wa.pnJID(jid)
+	}
+	a.st.EnsureChat(jid, "")
+	a.openChat(jid)
+}
+
 func (a *App) openChat(jid string) {
 	if jid == "" {
 		return

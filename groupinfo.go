@@ -281,11 +281,18 @@ func (a *App) appendGiRows() {
 			if gdk.EventButtonNewFromEvent(ev).Button() != gdk.BUTTON_SECONDARY {
 				return false
 			}
-			if !a.giAdmin || p.me {
+			if p.me {
 				return false
 			}
+			// v1.14.0: menu anggota untuk semua orang (bukan hanya admin) —
+			// "Balas secara pribadi" membuka chat 1-on-1 dengan anggota ini.
 			menu, _ := gtk.MenuNew()
-			menu.Append(menuItem("ban", T("Keluarkan dari grup"), func() { a.giRemove(p.jid, p.name) }))
+			menu.Append(menuItem("user", T("Balas secara pribadi"), func() { a.openPrivateChat(p.jid) }))
+			if a.giAdmin {
+				s, _ := gtk.SeparatorMenuItemNew()
+				menu.Append(s)
+				menu.Append(menuItem("ban", T("Keluarkan dari grup"), func() { a.giRemove(p.jid, p.name) }))
+			}
 			menu.ShowAll()
 			menu.PopupAtPointer(ev)
 			return true

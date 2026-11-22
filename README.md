@@ -72,6 +72,9 @@ Made by **Katon Bagaskoro**.
 - ✅ **Multi-select messages**: right-click → *Select messages…* puts check circles
   beside bubbles; tick several and bulk-**Forward**, **Star**, **Copy text** or
   **Delete** (for me, or for everyone when eligible); Esc leaves the mode
+- 💬 **Message privately**: right-click a group message → *Message privately* opens a
+  1-on-1 chat with its sender; same action from the group member list — works even
+  for numbers you never saved
 - 🗑 **Delete for me** on a single message, straight from the message menu — no
   selection mode needed
 
@@ -134,6 +137,7 @@ Made by **Katon Bagaskoro**.
   description, add/remove members
 - ✅ **Multi-select messages** (right-click → *Select messages…*): tick bubbles and bulk-forward,
   star, copy or delete them; Esc exits
+- 💬 **Message privately** from a group message menu or the member list (unsaved numbers included)
 - ✅ **Delete for me** per message without entering selection mode
 - ✅ **Automatic UI language** following the system locale, overridable in the Language menu
 - ✅ Messages deleted/edited by others update live
@@ -178,10 +182,10 @@ Made by **Katon Bagaskoro**.
 
 ### Option A — `.deb` package (recommended)
 
-Download `obrol_1.13.2-1_amd64.deb` from [Releases](https://github.com/Katon17/obrol-wa/releases/latest), then:
+Download `obrol_1.14.0-1_amd64.deb` from [Releases](https://github.com/Katon17/obrol-wa/releases/latest), then:
 
 ```bash
-sudo apt install ./obrol_1.13.2-1_amd64.deb
+sudo apt install ./obrol_1.14.0-1_amd64.deb
 ```
 
 apt resolves all dependencies automatically and installs system-wide
@@ -194,7 +198,7 @@ A prebuilt binary is shipped, so **you don't need Go**. Download the latest tarb
 [Releases](https://github.com/Katon17/obrol-wa/releases/latest), then:
 
 ```bash
-tar xzf obrol-1.13.2-linux-x86_64.tar.gz
+tar xzf obrol-1.14.0-linux-x86_64.tar.gz
 cd obrol
 bash install.sh
 ```
@@ -259,6 +263,8 @@ Command-line options:
 
 Full notes per release live in [CHANGELOG.md](CHANGELOG.md).
 
+- **1.14.0**: *Message privately* from the group message menu and member list;
+  composer placeholder shortened
 - **1.13.0**: multi-select messages with bulk actions; single-message *delete for me*;
   message menu now opens on button-release (no accidental activation)
 - **1.12.3**: automatic system language (PR #7 by baduhai); `go vet` format-string fixes

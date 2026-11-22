@@ -77,6 +77,9 @@ Dibuat oleh **Katon Bagaskoro**.
 - ✅ **Pilih beberapa pesan**: klik kanan → *Pilih pesan…* menampilkan bulatan ceklist di
   samping bubble; centang beberapa lalu **Teruskan**, **Bintang**, **Salin teks**, atau
   **Hapus** massal (untuk saya / untuk semua orang bila memenuhi syarat); Esc keluar
+- 💬 **Balas secara pribadi**: klik kanan pesan di grup → *Balas secara pribadi* membuka
+  chat 1-on-1 dengan pengirimnya; aksi yang sama ada di menu klik-kanan daftar anggota
+  grup — berfungsi juga untuk nomor yang belum disimpan
 - 🗑 **Hapus untuk saya** per pesan langsung dari menu pesan — tanpa mode seleksi
 
 ## Kenapa ringan?
@@ -119,6 +122,7 @@ Dibuat oleh **Katon Bagaskoro**.
   deskripsi grup, tambah/hapus anggota
 - ✅ **Pilih beberapa pesan** (klik kanan → *Pilih pesan…*): centang bubble lalu teruskan,
   bintang, salin, atau hapus massal; Esc keluar
+- 💬 **Balas secara pribadi** dari menu pesan grup atau daftar anggota (termasuk nomor yang belum disimpan)
 - ✅ **Hapus untuk saya** per pesan tanpa masuk mode seleksi
 - ✅ **Bahasa UI otomatis** mengikuti locale sistem, bisa ditimpa lewat menu Bahasa
 - ✅ Pesan yang **dihapus** atau **diedit** orang lain ikut ter-update
@@ -188,10 +192,10 @@ Dibuat oleh **Katon Bagaskoro**.
 
 ### Opsi A — paket `.deb` (disarankan)
 
-Unduh `obrol_1.13.2-1_amd64.deb` dari [Releases](https://github.com/Katon17/obrol-wa/releases/latest), lalu:
+Unduh `obrol_1.14.0-1_amd64.deb` dari [Releases](https://github.com/Katon17/obrol-wa/releases/latest), lalu:
 
 ```bash
-sudo apt install ./obrol_1.13.2-1_amd64.deb
+sudo apt install ./obrol_1.14.0-1_amd64.deb
 ```
 
 apt otomatis membereskan semua dependensi dan memasang sistem-wide
@@ -204,7 +208,7 @@ Binary sudah jadi, jadi **tidak perlu install Go**. Unduh tarball terbaru dari
 halaman [Releases](https://github.com/Katon17/obrol-wa/releases/latest), lalu:
 
 ```bash
-tar xzf obrol-1.13.2-linux-x86_64.tar.gz
+tar xzf obrol-1.14.0-linux-x86_64.tar.gz
 cd obrol
 bash install.sh
 ```
@@ -281,6 +285,8 @@ Opsi baris perintah:
 
 Catatan lengkap per rilis ada di [CHANGELOG.md](CHANGELOG.md).
 
+- **1.14.0**: *Balas secara pribadi* dari menu pesan grup dan daftar anggota; placeholder
+  kolom ketik dipersingkat
 - **1.13.0**: pilih beberapa pesan dengan aksi massal; *hapus untuk saya* satuan; menu
   pesan dibuka saat lepas klik (tanpa aksi tak sengaja)
 - **1.12.3**: bahasa otomatis mengikuti sistem (PR #7 oleh baduhai); perbaikan

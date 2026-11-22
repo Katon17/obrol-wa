@@ -97,7 +97,7 @@ func (a *App) buildComposer() gtk.IWidget {
 	a.input.SetAcceptsTab(false)
 	a.inputBuf, _ = a.input.GetBuffer()
 	sw.Add(a.input)
-	a.placeholder, _ = gtk.LabelNew(T("Ketik pesan…   Enter kirim · Shift+Enter baris baru · Ctrl+V tempel gambar"))
+	a.placeholder, _ = gtk.LabelNew(T("Ketik pesan"))
 	addClass(a.placeholder, "placeholder")
 	a.placeholder.SetHAlign(gtk.ALIGN_START)
 	a.placeholder.SetVAlign(gtk.ALIGN_START)
@@ -501,6 +501,10 @@ func (a *App) fillMsgMenu(menu *gtk.Menu, chat, id string, withCopy bool) {
 	}
 	add("sel-circle", T("Pilih pesan…"), func() { a.enterSelect(id) })
 	add("reply", T("Balas"), func() { a.startReply(chat, id) })
+	// v1.14.0: DM pengirim pesan grup (juga untuk nomor yang belum disimpan).
+	if isGroupJID(chat) && !m.FromMe && m.Sender != "" {
+		add("user", T("Balas secara pribadi"), func() { a.openPrivateChat(m.Sender) })
+	}
 	rit := menuItem("react", T("Reaksi"), func() {})
 	subR, _ := gtk.MenuNew()
 	for _, e := range []string{"👍", "❤️", "😂", "😮", "😢", "🙏"} {

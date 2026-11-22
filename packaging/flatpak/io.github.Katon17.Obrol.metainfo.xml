@@ -24,11 +24,11 @@
   <launchable type="desktop-id">io.github.Katon17.Obrol.desktop</launchable>
   <screenshots>
     <screenshot type="default">
-      <image>https://raw.githubusercontent.com/Katon17/obrol-wa/v1.13.2/screenshots/beranda.png</image>
+      <image>https://raw.githubusercontent.com/Katon17/obrol-wa/v1.14.0/screenshots/beranda.png</image>
       <caption>Main window with chat list and conversation</caption>
     </screenshot>
     <screenshot>
-      <image>https://raw.githubusercontent.com/Katon17/obrol-wa/v1.13.2/screenshots/login.png</image>
+      <image>https://raw.githubusercontent.com/Katon17/obrol-wa/v1.14.0/screenshots/login.png</image>
       <caption>QR login, like linking WhatsApp Web</caption>
     </screenshot>
   </screenshots>
@@ -36,6 +36,7 @@
     <content_attribute id="social-chat">intense</content_attribute>
   </content_rating>
   <releases>
+    <release version="1.14.0" date="2026-11-23"/>
     <release version="1.13.2" date="2026-11-23"/>
     <release version="1.13.1" date="2026-11-22"/>
     <release version="1.13.0" date="2026-11-21"/>

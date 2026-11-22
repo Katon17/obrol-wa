@@ -836,6 +836,22 @@ func (w *WA) pnUser(jid string) string {
 	return j.User
 }
 
+// pnJID (v1.14.0): JID siap-chat untuk "balas secara pribadi" — petakan
+// LID→PN bila pemetaannya ada (agar bergabung ke baris chat PN yang sudah
+// ada), sonst biarkan JID asli (termasuk @lid) karena keduanya bisa dikirimi.
+func (w *WA) pnJID(jid string) string {
+	j, err := types.ParseJID(jid)
+	if err != nil {
+		return jid
+	}
+	if j.Server == types.HiddenUserServer || j.Server == types.HostedLIDServer {
+		if pn, err := w.cli.Store.LIDs.GetPNForLID(bg, j); err == nil && !pn.IsEmpty() {
+			return pn.String()
+		}
+	}
+	return jid
+}
+
 func (w *WA) myUser() string {
 	if w.cli.Store.ID == nil {
 		return ""

@@ -4,6 +4,22 @@ All notable changes to Obrol are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.14.0] — 2026-11-23
+
+### Added
+- **Balas secara pribadi**: klik kanan pesan di grup → *Balas secara pribadi* membuka
+  chat 1-on-1 dengan pengirimnya; aksi yang sama tersedia di menu klik-kanan daftar
+  anggota grup — berfungsi juga untuk nomor yang belum disimpan di kontak. /
+  **Message privately**: right-click a group message → *Message privately* opens a
+  1-on-1 chat with its sender; the same action is available from the right-click
+  menu of the group member list — also works for numbers not saved in contacts.
+
+### Changed
+- Placeholder kolom ketik dipersingkat menjadi "Ketik pesan" / "Type a message";
+  petunjuk Enter/Shift+Enter/Ctrl+V dihapus karena terlalu panjang. /
+  Composer placeholder shortened to "Ketik pesan" / "Type a message"; the
+  Enter/Shift+Enter/Ctrl+V hints were removed as too long.
+
 ## [1.13.2] — 2026-11-23
 
 ### Added
