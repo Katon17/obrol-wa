@@ -162,7 +162,7 @@ type App struct {
 	restoreDist float64
 
 	// tray
-	tray      *StatusIcon
+	tray      trayIface
 	pixNormal *gdk.Pixbuf
 	pixUnread *gdk.Pixbuf
 	iconPath  string
@@ -2142,7 +2142,7 @@ func (a *App) reopenKeepScroll(chat string) {
 // ------------------------------------------------------------ tray
 
 func (a *App) setupTray() {
-	t := NewStatusIcon(a.pixNormal)
+	t := newTray(a.pixNormal)
 	if t == nil {
 		return
 	}

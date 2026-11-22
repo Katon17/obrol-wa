@@ -4,6 +4,28 @@ All notable changes to Obrol are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.13.2] — 2026-11-23
+
+### Added
+- **Tray StatusNotifierItem (SNI)**: ikon baki kini mendaftar lewat DBus
+  (org.kde.StatusNotifierItem) sehingga hidup di GNOME modern dan di dalam
+  sandbox Flatpak; panel tua berbasis XEmbed tetap dilayani lewat fallback
+  GtkStatusIcon. /
+  **StatusNotifierItem (SNI) tray**: the tray icon now registers over DBus
+  (org.kde.StatusNotifierItem) so it works on modern GNOME and inside the
+  Flatpak sandbox; legacy XEmbed panels keep working through the GtkStatusIcon
+  fallback.
+- **Kemasan Flatpak**: manifest Flathub-siap di `packaging/flatpak/`
+  (io.github.Katon17.Obrol, runtime freedesktop 24.08, libwebp dibangun sebagai
+  module karena pembuat stiker mem-dlopen libwebp.so.7, finish-args untuk
+  unduhan media & SNI) + metainfo AppStream; pengiriman ke Flathub dipimpin
+  kontributor (issue #5). /
+  **Flatpak packaging**: Flathub-ready manifest under `packaging/flatpak/`
+  (io.github.Katon17.Obrol, freedesktop runtime 24.08, libwebp built as a
+  module because the sticker creator dlopens libwebp.so.7, finish-args for
+  media downloads & SNI) + AppStream metainfo; the Flathub submission is
+  contributor-led (issue #5).
+
 ## [1.13.1] — 2026-11-22
 
 ### Fixed

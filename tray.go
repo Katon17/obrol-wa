@@ -18,6 +18,25 @@ import (
 	"github.com/gotk3/gotk3/glib"
 )
 
+// trayIface: kontrak bersama wrapper XEmbed (StatusIcon) dan SNI (sni.go).
+// v1.13.2: SNI dicoba lebih dulu (GNOME modern & sandbox Flatpak), jatuh
+// kembali ke XEmbed bila watcher SNI tidak ada (panel tua).
+type trayIface interface {
+	SetFromPixbuf(pb *gdk.Pixbuf)
+	SetTooltipText(t string)
+	SetTitle(t string)
+	SetVisible(v bool)
+	IsEmbedded() bool
+	Connect(signal string, f interface{})
+}
+
+func newTray(pb *gdk.Pixbuf) trayIface {
+	if t := newSNI(pb); t != nil {
+		return t
+	}
+	return NewStatusIcon(pb)
+}
+
 type StatusIcon struct {
 	p   *C.GtkStatusIcon
 	obj *glib.Object

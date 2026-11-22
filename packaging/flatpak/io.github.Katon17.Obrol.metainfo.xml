@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.Katon17.Obrol</id>
+  <name>Obrol</name>
+  <summary>Native, lightweight WhatsApp client for Linux (GTK3 + Go)</summary>
+  <summary xml:lang="id">Klien WhatsApp native &amp; super ringan untuk Linux (GTK3 + Go)</summary>
+  <developer_name>Katon Bagaskoro</developer_name>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <description>
+    <p>Obrol is a truly native WhatsApp client: no Electron, no browser tab — a small GTK3
+    application in Go that links as a companion device via the WhatsApp multi-device
+    protocol (whatsmeow), with end-to-end encryption intact and a local SQLite archive.</p>
+    <p>Features: chat list with pin/archive/mute, multi-select with bulk actions, stickers
+    (animated WebP decode + sticker creator from any image or screenshot), group management,
+    reactions, replies, edits, pins, presence (online/last seen/typing), desktop
+    notifications, tray icon (StatusNotifierItem), and an Indonesian-first interface with
+    automatic system-language detection.</p>
+    <p xml:lang="id">Obrol adalah klien WhatsApp yang benar-benar native: tanpa Electron,
+    tanpa tab browser — aplikasi GTK3 kecil berbahasa Go yang menaut sebagai perangkat
+    pendamping lewat protokol multi-perangkat WhatsApp (whatsmeow), dengan enkripsi
+    end-to-end tetap utuh dan arsip SQLite lokal.</p>
+  </description>
+  <launchable type="desktop-id">io.github.Katon17.Obrol.desktop</launchable>
+  <screenshots>
+    <screenshot type="default">
+      <image>https://raw.githubusercontent.com/Katon17/obrol-wa/v1.13.2/screenshots/beranda.png</image>
+      <caption>Main window with chat list and conversation</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://raw.githubusercontent.com/Katon17/obrol-wa/v1.13.2/screenshots/login.png</image>
+      <caption>QR login, like linking WhatsApp Web</caption>
+    </screenshot>
+  </screenshots>
+  <content_rating type="oars-1.1">
+    <content_attribute id="social-chat">intense</content_attribute>
+  </content_rating>
+  <releases>
+    <release version="1.13.2" date="2026-11-23"/>
+    <release version="1.13.1" date="2026-11-22"/>
+    <release version="1.13.0" date="2026-11-21"/>
+  </releases>
+  <url type="homepage">https://github.com/Katon17/obrol-wa</url>
+  <url type="bugtracker">https://github.com/Katon17/obrol-wa/issues</url>
+</component>

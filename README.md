@@ -178,10 +178,10 @@ Made by **Katon Bagaskoro**.
 
 ### Option A — `.deb` package (recommended)
 
-Download `obrol_1.13.1-1_amd64.deb` from [Releases](https://github.com/Katon17/obrol-wa/releases/latest), then:
+Download `obrol_1.13.2-1_amd64.deb` from [Releases](https://github.com/Katon17/obrol-wa/releases/latest), then:
 
 ```bash
-sudo apt install ./obrol_1.13.1-1_amd64.deb
+sudo apt install ./obrol_1.13.2-1_amd64.deb
 ```
 
 apt resolves all dependencies automatically and installs system-wide
@@ -194,7 +194,7 @@ A prebuilt binary is shipped, so **you don't need Go**. Download the latest tarb
 [Releases](https://github.com/Katon17/obrol-wa/releases/latest), then:
 
 ```bash
-tar xzf obrol-1.13.1-linux-x86_64.tar.gz
+tar xzf obrol-1.13.2-linux-x86_64.tar.gz
 cd obrol
 bash install.sh
 ```
@@ -205,6 +205,10 @@ The install is per-user (no sudo needed):
 - Binary: `~/.local/bin/obrol`
 - Menu entry: `~/.local/share/applications/obrol.desktop`
 - Data (login session + chat history): `~/.local/share/obrol/`
+
+> **Flatpak:** a Flathub-ready manifest lives in `packaging/flatpak/`
+> (submission in progress, issue #5). Until it lands on Flathub, the `.deb`
+> and tarball remain the recommended install paths.
 
 Uninstall:
 

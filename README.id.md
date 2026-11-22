@@ -188,10 +188,10 @@ Dibuat oleh **Katon Bagaskoro**.
 
 ### Opsi A — paket `.deb` (disarankan)
 
-Unduh `obrol_1.13.1-1_amd64.deb` dari [Releases](https://github.com/Katon17/obrol-wa/releases/latest), lalu:
+Unduh `obrol_1.13.2-1_amd64.deb` dari [Releases](https://github.com/Katon17/obrol-wa/releases/latest), lalu:
 
 ```bash
-sudo apt install ./obrol_1.13.1-1_amd64.deb
+sudo apt install ./obrol_1.13.2-1_amd64.deb
 ```
 
 apt otomatis membereskan semua dependensi dan memasang sistem-wide
@@ -204,7 +204,7 @@ Binary sudah jadi, jadi **tidak perlu install Go**. Unduh tarball terbaru dari
 halaman [Releases](https://github.com/Katon17/obrol-wa/releases/latest), lalu:
 
 ```bash
-tar xzf obrol-1.13.1-linux-x86_64.tar.gz
+tar xzf obrol-1.13.2-linux-x86_64.tar.gz
 cd obrol
 bash install.sh
 ```
@@ -215,6 +215,10 @@ Instalasinya per-user (tanpa sudo):
 - Binary: `~/.local/bin/obrol`
 - Menu: `~/.local/share/applications/obrol.desktop`
 - Data (sesi login + riwayat chat): `~/.local/share/obrol/`
+
+> **Flatpak:** manifest siap-Flathub ada di `packaging/flatpak/` (pengiriman
+> sedang diproses, issue #5). Sampai tayang di Flathub, `.deb` dan tarball
+> tetap jalur instalasi yang disarankan.
 
 Menghapus aplikasi:
 

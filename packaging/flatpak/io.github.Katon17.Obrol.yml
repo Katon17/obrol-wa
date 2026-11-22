@@ -1,0 +1,61 @@
+app-id: io.github.Katon17.Obrol
+runtime: org.freedesktop.Platform
+runtime-version: "24.08"
+sdk: org.freedesktop.Sdk
+command: obrol
+
+finish-args:
+  - --share=network
+  - --socket=fallback-x11
+  - --socket=wayland
+  - --device=dri
+  # media/stiker disimpan ke ~/Downloads/Obrol
+  - --filesystem=xdg-download/Obrol:create
+  - --talk-name=org.freedesktop.Notifications
+  - --talk-name=org.kde.StatusNotifierWatcher
+  - --own-name=io.github.Katon17.Obrol.SNI
+
+modules:
+  # Cache module Go (dihasilkan oleh gen-deps.sh — JANGAN diedit manual).
+  - go-deps-module.yaml
+
+  # libwebp: pembuat stiker mem-dlopen libwebp.so.7/.so.6/.so saat runtime;
+  # runtime freedesktop tidak menjamin soname itu ada, jadi kita bangun sendiri.
+  - name: libwebp
+    buildsystem: cmake
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DBUILD_SHARED_LIBS=ON
+    sources:
+      - type: archive
+        url: https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-1.4.0.tar.gz
+        sha256: 61f873ec69e3be1b99535634340ea5b70a27a80597018542000080358285c7a6
+
+  - name: obrol
+    buildsystem: simple
+    build-options:
+      env:
+        GOPATH: /app/gopath
+        GOFLAGS: -mod=mod
+        GOPROXY: "off"
+        GOSUMDB: "off"
+        CGO_ENABLED: "1"
+        GOAMD64: v1
+        CGO_CFLAGS: -O2 -Wno-deprecated-declarations
+    build-commands:
+      - go build -trimpath -ldflags="-s -w" -o /app/bin/obrol .
+      # baseline by construction (lihat komentar di .github/workflows/release.yml)
+      - objcopy --remove-section=.note.gnu.property /app/bin/obrol || true
+      - install -Dm644 obrol.desktop /app/share/applications/io.github.Katon17.Obrol.desktop
+      - install -Dm644 assets/obrol.svg /app/share/icons/hicolor/scalable/apps/io.github.Katon17.Obrol.svg
+      - install -Dm644 assets/obrol.png /app/share/icons/hicolor/256x256/apps/io.github.Katon17.Obrol.png
+      - install -Dm644 packaging/flatpak/io.github.Katon17.Obrol.metainfo.xml
+        /app/share/metainfo/io.github.Katon17.Obrol.metainfo.xml
+    sources:
+      - type: git
+        url: https://github.com/Katon17/obrol-wa.git
+        tag: v1.13.2
+        commit: ISI-DENGAN-SHA-TAG-SEBELUM-SUBMIT
+
+cleanup:
+  - /gopath

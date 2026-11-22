@@ -1,0 +1,510 @@
+# DIHASILKAN OLEH gen-deps.sh — jangan diedit manual.
+name: obrol-go-deps
+buildsystem: simple
+build-commands:
+  - mkdir -p /app/gopath && cp -a gopath/. /app/gopath/
+sources:
+      - type: file
+        url: https://proxy.golang.org/filippo.io/edwards25519/@v/v1.2.0.mod
+        sha256: 7492c767dc361b86e96933ca1790d492c2f7c368c3ec0e00e1050eddad7baa7d
+        dest: gopath/pkg/mod/cache/download/filippo.io/edwards25519/@v
+      - type: file
+        url: https://proxy.golang.org/filippo.io/edwards25519/@v/v1.2.0.info
+        sha256: 73c137b2997bc44d976e01eb56251e5191e92cb22457550ecc3427b95191fc14
+        dest: gopath/pkg/mod/cache/download/filippo.io/edwards25519/@v
+      - type: file
+        url: https://proxy.golang.org/filippo.io/edwards25519/@v/v1.2.0.zip
+        sha256: 98f2d3ca9b88daa031b0fb2fb521b7ea386af1fed61b6f445a20bef7fa381c17
+        dest: gopath/pkg/mod/cache/download/filippo.io/edwards25519/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/!d!a!t!a-!d!o!g/go-sqlmock/@v/v1.5.2.mod
+        sha256: bbda15045dcb1013a5318dfe5a3021e467971da6daf3a2a09399885442fbe53a
+        dest: gopath/pkg/mod/cache/download/github.com/!d!a!t!a-!d!o!g/go-sqlmock/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/!d!a!t!a-!d!o!g/go-sqlmock/@v/v1.5.2.info
+        sha256: 9998c321add372087afa4b7527354bd17eefc2cab256e741c11e813229966726
+        dest: gopath/pkg/mod/cache/download/github.com/!d!a!t!a-!d!o!g/go-sqlmock/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/!d!a!t!a-!d!o!g/go-sqlmock/@v/v1.5.2.zip
+        sha256: 90fe926f15f778bd06cee8b68a33c2b7f4a28fcdf0ff40888ff30d37b4b52202
+        dest: gopath/pkg/mod/cache/download/github.com/!d!a!t!a-!d!o!g/go-sqlmock/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/agnivade/levenshtein/@v/v1.2.1.mod
+        sha256: 906aeda3683a94012746e557441b778a4c35c9742565fb63979cbbeef1c252b8
+        dest: gopath/pkg/mod/cache/download/github.com/agnivade/levenshtein/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/agnivade/levenshtein/@v/v1.2.1.info
+        sha256: ebbd084b7e687872fcb0b67b4f3750a162c05041361c37b0e8db34156c0c8aea
+        dest: gopath/pkg/mod/cache/download/github.com/agnivade/levenshtein/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/agnivade/levenshtein/@v/v1.2.1.zip
+        sha256: 26bdb12f38a5ca1c45a666e8dea1c409189a383443fa14f4ff04f75af7022534
+        dest: gopath/pkg/mod/cache/download/github.com/agnivade/levenshtein/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/andreyvit/diff/@v/v0.0.0-20170406064948-c7f18ee00883.mod
+        sha256: 879be5498c39a57e4e344d3975351d8f859383f4b6c93eaa4c4e91bdd75ee3f5
+        dest: gopath/pkg/mod/cache/download/github.com/andreyvit/diff/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/andreyvit/diff/@v/v0.0.0-20170406064948-c7f18ee00883.info
+        sha256: 62cab783cc6562998104f5bd0d3b5f9c3aa38f1f9e387f242aab6b6eec70d0f1
+        dest: gopath/pkg/mod/cache/download/github.com/andreyvit/diff/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/andreyvit/diff/@v/v0.0.0-20170406064948-c7f18ee00883.zip
+        sha256: d39614ff930006640ec15865bca0bb6bf8e1ed145bccf30bab08b88c1d90f670
+        dest: gopath/pkg/mod/cache/download/github.com/andreyvit/diff/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/beeper/argo-go/@v/v1.1.2.mod
+        sha256: 2e9d450ad2e5771734948168def13bd281e2006a7a4c2c98bb5ca868f235ecbd
+        dest: gopath/pkg/mod/cache/download/github.com/beeper/argo-go/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/beeper/argo-go/@v/v1.1.2.info
+        sha256: 763391132a2ac65c0838d5e928a98f1e18e03c3f4aa4d0023815be2fcd3be935
+        dest: gopath/pkg/mod/cache/download/github.com/beeper/argo-go/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/beeper/argo-go/@v/v1.1.2.zip
+        sha256: 173138aa3a4c9d4a9e6358b1040fdf76b34a90403027fbba67bc7a2b2370e9a3
+        dest: gopath/pkg/mod/cache/download/github.com/beeper/argo-go/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/coder/websocket/@v/v1.8.15.mod
+        sha256: 0cab443e389cef98e63828bd7ce82224bf192732a18795581314766eb14ea275
+        dest: gopath/pkg/mod/cache/download/github.com/coder/websocket/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/coder/websocket/@v/v1.8.15.info
+        sha256: ea771df7db01fd05cfa2763c01367e85ae8f94e47e533f2ba7efd5228c23a8ac
+        dest: gopath/pkg/mod/cache/download/github.com/coder/websocket/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/coder/websocket/@v/v1.8.15.zip
+        sha256: 4f1d890bc5131f335737bbb6241e3958758c8774b3e6d1c905f713f604af6209
+        dest: gopath/pkg/mod/cache/download/github.com/coder/websocket/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/coreos/go-systemd/v22/@v/v22.7.0.mod
+        sha256: 502642c96e9d9996d696fcb269ac99aa9f5ab9f3a4d98b21931230af69967140
+        dest: gopath/pkg/mod/cache/download/github.com/coreos/go-systemd/v22/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/coreos/go-systemd/v22/@v/v22.7.0.info
+        sha256: 4976f5ae1f80f31f122d2e2aa9ac20e763ae687513821b2dd99008f739d27a7d
+        dest: gopath/pkg/mod/cache/download/github.com/coreos/go-systemd/v22/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/coreos/go-systemd/v22/@v/v22.7.0.zip
+        sha256: 25c78b5dae5afa61291a8559328007cc77e60dd6747454af5c83423c26cfdfba
+        dest: gopath/pkg/mod/cache/download/github.com/coreos/go-systemd/v22/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/davecgh/go-spew/@v/v1.1.1.mod
+        sha256: bcb29393251237b79a17b6c19bf29134f43e8f438c3198988fcd461a1cdf05cc
+        dest: gopath/pkg/mod/cache/download/github.com/davecgh/go-spew/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/davecgh/go-spew/@v/v1.1.1.info
+        sha256: 73de263267a4545708302d807be60fdb649c5c7b981d25302a638145fba0ec47
+        dest: gopath/pkg/mod/cache/download/github.com/davecgh/go-spew/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/davecgh/go-spew/@v/v1.1.1.zip
+        sha256: 6b44a843951f371b7010c754ecc3cabefe815d5ced1c5b9409fb2d697e8a890d
+        dest: gopath/pkg/mod/cache/download/github.com/davecgh/go-spew/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/elliotchance/orderedmap/v3/@v/v3.1.0.mod
+        sha256: fe1e4c5079f424345628b467ecc1ca396b0295eea9064e51c26f4fdc6c737a3f
+        dest: gopath/pkg/mod/cache/download/github.com/elliotchance/orderedmap/v3/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/elliotchance/orderedmap/v3/@v/v3.1.0.info
+        sha256: 84d85fc9dcbea1be7275ed625834f21857ade5073d7a2c12c871811ad27bbd3c
+        dest: gopath/pkg/mod/cache/download/github.com/elliotchance/orderedmap/v3/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/elliotchance/orderedmap/v3/@v/v3.1.0.zip
+        sha256: 418fbe9f980398cb04428635bbe9e471580b4b0d2281d6e5fbdda2deb6ac06e6
+        dest: gopath/pkg/mod/cache/download/github.com/elliotchance/orderedmap/v3/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/golang/protobuf/@v/v1.5.0.mod
+        sha256: 738cbb1de96b67a6238ac3b8081cd8b1bfb0daebcf6c9bbe8cbdb6d73baecd19
+        dest: gopath/pkg/mod/cache/download/github.com/golang/protobuf/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/golang/protobuf/@v/v1.5.0.info
+        sha256: 15205f6d0caee9fe1b002ca1438678752a0b42c8c8bdba5d2993d0532a8d3e1a
+        dest: gopath/pkg/mod/cache/download/github.com/golang/protobuf/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/golang/protobuf/@v/v1.5.0.zip
+        sha256: deb3b2ac476a7f74685091fa60c59d50110c7e1d333ea78281422d8441f2411d
+        dest: gopath/pkg/mod/cache/download/github.com/golang/protobuf/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/google/go-cmp/@v/v0.7.0.mod
+        sha256: 31c874a1d2a18e62b0550f823ce7a575c8dec7f8fd9d4fa1959bb12d7f7c0f14
+        dest: gopath/pkg/mod/cache/download/github.com/google/go-cmp/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/google/go-cmp/@v/v0.7.0.info
+        sha256: 635bbe64cceaad0e5bbd897a78cac24ca184ea8c91394443cc30ee35be33f649
+        dest: gopath/pkg/mod/cache/download/github.com/google/go-cmp/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/google/go-cmp/@v/v0.7.0.zip
+        sha256: 64a9ce046f2c320e3783fba0d1f4a15f8a18f0b009b67bf27f7630919db3f539
+        dest: gopath/pkg/mod/cache/download/github.com/google/go-cmp/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/google/uuid/@v/v1.6.0.mod
+        sha256: 73da47b6338b00a082fd451aa35a3273d3adc09b8e9bba98dab01091e402af6e
+        dest: gopath/pkg/mod/cache/download/github.com/google/uuid/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/google/uuid/@v/v1.6.0.info
+        sha256: 3703c19d7d948a8bc5354b7e515d5297d3c5a8316958bcdd69eec2a7629513d7
+        dest: gopath/pkg/mod/cache/download/github.com/google/uuid/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/google/uuid/@v/v1.6.0.zip
+        sha256: d0f02f377217f42702e259684e06441edbf5140dddcc34ba9bea56038b38a6ed
+        dest: gopath/pkg/mod/cache/download/github.com/google/uuid/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/gotk3/gotk3/@v/v0.6.5-0.20251124190141-e7a9e823ca35.mod
+        sha256: 0a196b0abd4f5cca525bee9e466676d7fcc62b217b8e619ceee91906c5595471
+        dest: gopath/pkg/mod/cache/download/github.com/gotk3/gotk3/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/gotk3/gotk3/@v/v0.6.5-0.20251124190141-e7a9e823ca35.info
+        sha256: 4c1cf881936cb22d8f040b2f1e8cd72612a602d664c165c810fab376d858318e
+        dest: gopath/pkg/mod/cache/download/github.com/gotk3/gotk3/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/gotk3/gotk3/@v/v0.6.5-0.20251124190141-e7a9e823ca35.zip
+        sha256: 48cbe44b9033026750a6c3ab6fca88f7598c92fb44d011056e47d62729416906
+        dest: gopath/pkg/mod/cache/download/github.com/gotk3/gotk3/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/mattn/go-colorable/@v/v0.1.14.mod
+        sha256: c199aee551968c8290b917524e0b232a862790a4831b0ed4cb43687e8c08aa18
+        dest: gopath/pkg/mod/cache/download/github.com/mattn/go-colorable/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/mattn/go-colorable/@v/v0.1.14.info
+        sha256: 1f9b4d9140f74b73fff3bf72305d1ba8d5d2133a3644e7105dc6e56e4460a301
+        dest: gopath/pkg/mod/cache/download/github.com/mattn/go-colorable/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/mattn/go-colorable/@v/v0.1.14.zip
+        sha256: 5e0e7925a070bb5bd11b4097e1a7b608167f0217ee83901b44c135f6e5e85c78
+        dest: gopath/pkg/mod/cache/download/github.com/mattn/go-colorable/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/mattn/go-isatty/@v/v0.0.20.mod
+        sha256: 1eeabef1b4d98db73c6c2073289163649bc9a044552aca86b9d592fe84eaa1c8
+        dest: gopath/pkg/mod/cache/download/github.com/mattn/go-isatty/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/mattn/go-isatty/@v/v0.0.20.info
+        sha256: 20f35d641a047c9e189499356a7ddfaea7b5909d1b32e7c7311002bb55487c32
+        dest: gopath/pkg/mod/cache/download/github.com/mattn/go-isatty/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/mattn/go-isatty/@v/v0.0.20.zip
+        sha256: f2d5f89ca451577e17464b9bb596dc0d0ecececb5eaa63622c41b57cd0b7b8cc
+        dest: gopath/pkg/mod/cache/download/github.com/mattn/go-isatty/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/mattn/go-sqlite3/@v/v1.14.52.mod
+        sha256: 4c08597e14c92d9ed25f1bd14a2242198f0e3011964e798018abceb2ccbe82bf
+        dest: gopath/pkg/mod/cache/download/github.com/mattn/go-sqlite3/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/mattn/go-sqlite3/@v/v1.14.52.info
+        sha256: cf48e858683b7a3860ca07a9084ccd43471be03200d9faf0be0a91de94de5377
+        dest: gopath/pkg/mod/cache/download/github.com/mattn/go-sqlite3/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/mattn/go-sqlite3/@v/v1.14.52.zip
+        sha256: ebd1fef8e9434fbdc2c94e35b9991df62d472c00170f57fc4f75daa69f658a1b
+        dest: gopath/pkg/mod/cache/download/github.com/mattn/go-sqlite3/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/petermattis/goid/@v/v0.0.0-20260918085751-abfca077860b.mod
+        sha256: 7a9463cb866b7b5560996d7d0ce2491c0fcd8c1edae80ad5f159b54223ca9e1d
+        dest: gopath/pkg/mod/cache/download/github.com/petermattis/goid/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/petermattis/goid/@v/v0.0.0-20260918085751-abfca077860b.info
+        sha256: 0c5182e006710ad4d2c9ff8308a9ec9fd7a4a90efe52784cc78f54c3d1660f61
+        dest: gopath/pkg/mod/cache/download/github.com/petermattis/goid/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/petermattis/goid/@v/v0.0.0-20260918085751-abfca077860b.zip
+        sha256: 990b657ec13e973d5e14aa18c93e7cc009415a6efbbfb66ea5e16c1154df28d8
+        dest: gopath/pkg/mod/cache/download/github.com/petermattis/goid/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/pkg/errors/@v/v0.9.1.mod
+        sha256: df28c6a823f181d76179697177c0c5943c6ffb38f3c10b2dc53be360ee7d4589
+        dest: gopath/pkg/mod/cache/download/github.com/pkg/errors/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/pkg/errors/@v/v0.9.1.info
+        sha256: 5d8c58c4cf06efa07ac322b254ced1c5a61a2515113f54f7b63c324a144c1280
+        dest: gopath/pkg/mod/cache/download/github.com/pkg/errors/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/pkg/errors/@v/v0.9.1.zip
+        sha256: d4c36b8bcd0616290a3913215e0f53b931bd6e00670596f2960df1b44af2bd07
+        dest: gopath/pkg/mod/cache/download/github.com/pkg/errors/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/pmezard/go-difflib/@v/v1.0.0.mod
+        sha256: 74b2e766eb215377864d587badf57e95521f692d2a7860b3c7759093f9c9bec2
+        dest: gopath/pkg/mod/cache/download/github.com/pmezard/go-difflib/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/pmezard/go-difflib/@v/v1.0.0.info
+        sha256: 97cbb0239d80e5221efd1f0aa645d120272bd3ee7975bd654f07a8ed0c2c2adc
+        dest: gopath/pkg/mod/cache/download/github.com/pmezard/go-difflib/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/pmezard/go-difflib/@v/v1.0.0.zip
+        sha256: de04cecc1a4b8d53e4357051026794bcbc54f2e6a260cfac508ce69d5d6457a0
+        dest: gopath/pkg/mod/cache/download/github.com/pmezard/go-difflib/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/rs/xid/@v/v1.6.0.mod
+        sha256: 2ebd8a4c48bf66680d0fba5ca0d9ea1ec134396497802c75f3b39683e6e662ef
+        dest: gopath/pkg/mod/cache/download/github.com/rs/xid/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/rs/xid/@v/v1.6.0.info
+        sha256: 5fbf553a7c918ce5139da754ce071e8b6cd289fe8385ced3136fb2d28f879449
+        dest: gopath/pkg/mod/cache/download/github.com/rs/xid/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/rs/xid/@v/v1.6.0.zip
+        sha256: 395b1caa8a7e835e4721291e629dac4f6608db3918d6fe1eb2ed5e7561b62eb2
+        dest: gopath/pkg/mod/cache/download/github.com/rs/xid/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/rs/zerolog/@v/v1.35.1.mod
+        sha256: 5b53a8134965f077ed8ced9b5e277592b1ce8bba52ff346d3ee070369468bcf6
+        dest: gopath/pkg/mod/cache/download/github.com/rs/zerolog/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/rs/zerolog/@v/v1.35.1.info
+        sha256: ec751150a302f7e7d289f5fe2f761b920b407f09d0a57e9d14fe5ce9db86ffbf
+        dest: gopath/pkg/mod/cache/download/github.com/rs/zerolog/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/rs/zerolog/@v/v1.35.1.zip
+        sha256: 91ae94de887e861afc3c9aff30a0ec3b7563c1d330fe2f619dd16b1b51684d2f
+        dest: gopath/pkg/mod/cache/download/github.com/rs/zerolog/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/sergi/go-diff/@v/v1.3.1.mod
+        sha256: d0d5157e1c0396fdd42bd849a87542a5c34e55d81efa9c25177edf0884d65784
+        dest: gopath/pkg/mod/cache/download/github.com/sergi/go-diff/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/sergi/go-diff/@v/v1.3.1.info
+        sha256: b1bd6f40f6358814cd910aa993788d1fe9881f0ed0e0bfbbab1ef3a3025bc88d
+        dest: gopath/pkg/mod/cache/download/github.com/sergi/go-diff/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/sergi/go-diff/@v/v1.3.1.zip
+        sha256: b7a2378f17322fd5f08cf69f5bf1a3ba2bcb84704960ba23230305f6dfec4f98
+        dest: gopath/pkg/mod/cache/download/github.com/sergi/go-diff/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/skip2/go-qrcode/@v/v0.0.0-20200617195104-da1b6568686e.mod
+        sha256: e519dc3b42ebec4eabb3da439929e811c27785026e4df25226e8fdc015f7ff0e
+        dest: gopath/pkg/mod/cache/download/github.com/skip2/go-qrcode/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/skip2/go-qrcode/@v/v0.0.0-20200617195104-da1b6568686e.info
+        sha256: c4981279108e2cae14cc42efa2ce82617623880786a4649cd4255ebdcd42e094
+        dest: gopath/pkg/mod/cache/download/github.com/skip2/go-qrcode/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/skip2/go-qrcode/@v/v0.0.0-20200617195104-da1b6568686e.zip
+        sha256: 3fc1c4d11c79001d1cc2df0de87493b324b9af141cc59ae8c212612dd2c90e90
+        dest: gopath/pkg/mod/cache/download/github.com/skip2/go-qrcode/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/stretchr/testify/@v/v1.12.0.mod
+        sha256: ddba881221554296b1d38ba315e88bd45e9403b74f7019a93fcb68c490b1d1b4
+        dest: gopath/pkg/mod/cache/download/github.com/stretchr/testify/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/stretchr/testify/@v/v1.12.0.info
+        sha256: 8ae284eee04dc6ae479a22023b866c84f26ac23ad114f93772e6dac61dcc0851
+        dest: gopath/pkg/mod/cache/download/github.com/stretchr/testify/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/stretchr/testify/@v/v1.12.0.zip
+        sha256: f0c60295b42ab8de3ddde4b5030899380ac477fb0503f444e3159d12b5332d8f
+        dest: gopath/pkg/mod/cache/download/github.com/stretchr/testify/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/vektah/gqlparser/v2/@v/v2.5.27.mod
+        sha256: faffd2e58dc0f1ab58d5b95709dd8b48bf3d9857ef1d218d05c50f6870cd505f
+        dest: gopath/pkg/mod/cache/download/github.com/vektah/gqlparser/v2/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/vektah/gqlparser/v2/@v/v2.5.27.info
+        sha256: 7e46a7c09426ff1f439198360801f84c457542e2b5afb9a84cf493c008e67a12
+        dest: gopath/pkg/mod/cache/download/github.com/vektah/gqlparser/v2/@v
+      - type: file
+        url: https://proxy.golang.org/github.com/vektah/gqlparser/v2/@v/v2.5.27.zip
+        sha256: e08e0cf6a1f7a67c40fe6bfe6ae918a7163a43359498b238301e9a7ea967e720
+        dest: gopath/pkg/mod/cache/download/github.com/vektah/gqlparser/v2/@v
+      - type: file
+        url: https://proxy.golang.org/go.mau.fi/libsignal/@v/v0.2.2.mod
+        sha256: 5db1f627fec2215035f9e1f25950f9251268d612319952dd77df9ccd6720329e
+        dest: gopath/pkg/mod/cache/download/go.mau.fi/libsignal/@v
+      - type: file
+        url: https://proxy.golang.org/go.mau.fi/libsignal/@v/v0.2.2.info
+        sha256: d9921bce80b410743a4d68dbbc7f6feb75c473db43ca5af5a6e4065dea389edb
+        dest: gopath/pkg/mod/cache/download/go.mau.fi/libsignal/@v
+      - type: file
+        url: https://proxy.golang.org/go.mau.fi/libsignal/@v/v0.2.2.zip
+        sha256: 12b60a71250f3996749acb2ba454a34d360801ef314d3e32c7dbb4da240a807b
+        dest: gopath/pkg/mod/cache/download/go.mau.fi/libsignal/@v
+      - type: file
+        url: https://proxy.golang.org/go.mau.fi/util/@v/v0.11.0.mod
+        sha256: f9d45241e186d73f8a80ee49bab473f13ee06ca0326e2497c61313772df7d559
+        dest: gopath/pkg/mod/cache/download/go.mau.fi/util/@v
+      - type: file
+        url: https://proxy.golang.org/go.mau.fi/util/@v/v0.11.0.info
+        sha256: 0f432a4d175a7e864d02f99875eacf5443f535edd48c4a394a9502e6676a21ae
+        dest: gopath/pkg/mod/cache/download/go.mau.fi/util/@v
+      - type: file
+        url: https://proxy.golang.org/go.mau.fi/util/@v/v0.11.0.zip
+        sha256: f22df85f53d6dc2b4397de215343662a70c3110033d4f12e12f7453c441bff02
+        dest: gopath/pkg/mod/cache/download/go.mau.fi/util/@v
+      - type: file
+        url: https://proxy.golang.org/go.mau.fi/whatsmeow/@v/v0.0.0-20261116124653-06b1c299bba3.mod
+        sha256: 47491ea45688fe44d902fac53816f324703e1af726dd2f55639cf6757c8ee4a2
+        dest: gopath/pkg/mod/cache/download/go.mau.fi/whatsmeow/@v
+      - type: file
+        url: https://proxy.golang.org/go.mau.fi/whatsmeow/@v/v0.0.0-20261116124653-06b1c299bba3.info
+        sha256: df54ca37a550e736b61e26cc296e0fe903ac65db18b19f1eb2d369abb78e2b8a
+        dest: gopath/pkg/mod/cache/download/go.mau.fi/whatsmeow/@v
+      - type: file
+        url: https://proxy.golang.org/go.mau.fi/whatsmeow/@v/v0.0.0-20261116124653-06b1c299bba3.zip
+        sha256: 7d3c679b97e12bff9e278f22224c6f7ffdf4b23480f6df551c3450273acc1409
+        dest: gopath/pkg/mod/cache/download/go.mau.fi/whatsmeow/@v
+      - type: file
+        url: https://proxy.golang.org/golang.org/x/crypto/@v/v0.58.0.mod
+        sha256: 938883ec4a74e7fc05c46269e924dda334c2b7ca7ca219e4d27ca56d1891ccd3
+        dest: gopath/pkg/mod/cache/download/golang.org/x/crypto/@v
+      - type: file
+        url: https://proxy.golang.org/golang.org/x/crypto/@v/v0.58.0.info
+        sha256: b11aa615962a25256853dcf67838352d2f5523f6719a8d75181ebcbb7ce615ec
+        dest: gopath/pkg/mod/cache/download/golang.org/x/crypto/@v
+      - type: file
+        url: https://proxy.golang.org/golang.org/x/crypto/@v/v0.58.0.zip
+        sha256: b0a45594cda20ddb4264d84aeff9b588b8570bf6a2833c51a0b821734a298d95
+        dest: gopath/pkg/mod/cache/download/golang.org/x/crypto/@v
+      - type: file
+        url: https://proxy.golang.org/golang.org/x/exp/@v/v0.0.0-20261014143641-f0251eb4aa3e.mod
+        sha256: 8f61285796e27bf67ad94362a2e8c5391a714e08fdbc6c4c961edcb07b5c764b
+        dest: gopath/pkg/mod/cache/download/golang.org/x/exp/@v
+      - type: file
+        url: https://proxy.golang.org/golang.org/x/exp/@v/v0.0.0-20261014143641-f0251eb4aa3e.info
+        sha256: 63c693202380708917b144c53f157a61204ffb61c7eb86b1d9b4e9c5ab60d774
+        dest: gopath/pkg/mod/cache/download/golang.org/x/exp/@v
+      - type: file
+        url: https://proxy.golang.org/golang.org/x/exp/@v/v0.0.0-20261014143641-f0251eb4aa3e.zip
+        sha256: 59f56c3ee46a87131794a9ccd90d9f6430702377e76bdeed0b5a726ab0dce59e
+        dest: gopath/pkg/mod/cache/download/golang.org/x/exp/@v
+      - type: file
+        url: https://proxy.golang.org/golang.org/x/image/@v/v0.47.0.mod
+        sha256: 4283357bab40f12031f2b0c9605b1bdf5afb077319b090a572ee50a843f477dd
+        dest: gopath/pkg/mod/cache/download/golang.org/x/image/@v
+      - type: file
+        url: https://proxy.golang.org/golang.org/x/image/@v/v0.47.0.info
+        sha256: a16c0bc767f9806d70d2fd348f5a5e11fe0736c008258bccd84894c04faeb892
+        dest: gopath/pkg/mod/cache/download/golang.org/x/image/@v
+      - type: file
+        url: https://proxy.golang.org/golang.org/x/image/@v/v0.47.0.zip
+        sha256: 3666e9fe5b8d6110471d649641e680bb117c86495d0aa2c4d8673e87d9ac6c3c
+        dest: gopath/pkg/mod/cache/download/golang.org/x/image/@v
+      - type: file
+        url: https://proxy.golang.org/golang.org/x/mod/@v/v0.42.0.mod
+        sha256: 92defdc3237bf4f850e9e5c7d7ad6d06b9ef6a10caa12c2c8e54150a4c370270
+        dest: gopath/pkg/mod/cache/download/golang.org/x/mod/@v
+      - type: file
+        url: https://proxy.golang.org/golang.org/x/mod/@v/v0.42.0.info
+        sha256: df5239db2018ccccd1716cd51244a1d37e2b1b6567a4d9d235eadcb9c4a4a40d
+        dest: gopath/pkg/mod/cache/download/golang.org/x/mod/@v
+      - type: file
+        url: https://proxy.golang.org/golang.org/x/mod/@v/v0.42.0.zip
+        sha256: 2770e372e42c30dd498d63bb094fe257edfad6882c611f8e0d82925feac159f3
+        dest: gopath/pkg/mod/cache/download/golang.org/x/mod/@v
+      - type: file
+        url: https://proxy.golang.org/golang.org/x/net/@v/v0.61.0.mod
+        sha256: 7bbcec6b6af859939ec01bbe5234e556c867bf80e171abc23ad16c2c8e3951fe
+        dest: gopath/pkg/mod/cache/download/golang.org/x/net/@v
+      - type: file
+        url: https://proxy.golang.org/golang.org/x/net/@v/v0.61.0.info
+        sha256: a8b6ecea7b7d79152f6f1fc1bbdc8a6877bc0f33c9e4f4e08c79269added7448
+        dest: gopath/pkg/mod/cache/download/golang.org/x/net/@v
+      - type: file
+        url: https://proxy.golang.org/golang.org/x/net/@v/v0.61.0.zip
+        sha256: f6843a98d608298e48a6ca287292c9a6fae066284050ce174d5ffb781c9b3dcf
+        dest: gopath/pkg/mod/cache/download/golang.org/x/net/@v
+      - type: file
+        url: https://proxy.golang.org/golang.org/x/sync/@v/v0.24.0.mod
+        sha256: febf4fed5dc12c0de24528f7065bf071cc74a2424070194aaf24617b91066cda
+        dest: gopath/pkg/mod/cache/download/golang.org/x/sync/@v
+      - type: file
+        url: https://proxy.golang.org/golang.org/x/sync/@v/v0.24.0.info
+        sha256: d12e1a2d422a79235baceab349c3c55ab3de707214338884cade9af3bb1a5b70
+        dest: gopath/pkg/mod/cache/download/golang.org/x/sync/@v
+      - type: file
+        url: https://proxy.golang.org/golang.org/x/sync/@v/v0.24.0.zip
+        sha256: ca3fcf3ea8259e75891f7947e1a816a5b89402c542d45d8bbbd9e061b0c58019
+        dest: gopath/pkg/mod/cache/download/golang.org/x/sync/@v
+      - type: file
+        url: https://proxy.golang.org/golang.org/x/sys/@v/v0.49.0.mod
+        sha256: 9522f4c9806d1c26586ea80fa56292929bd295865e71981927f52996c6b1c831
+        dest: gopath/pkg/mod/cache/download/golang.org/x/sys/@v
+      - type: file
+        url: https://proxy.golang.org/golang.org/x/sys/@v/v0.49.0.info
+        sha256: b1eeba05824e4c555cee0454171f3dbc0b9bce51e322237b5bd98ceb14a62346
+        dest: gopath/pkg/mod/cache/download/golang.org/x/sys/@v
+      - type: file
+        url: https://proxy.golang.org/golang.org/x/sys/@v/v0.49.0.zip
+        sha256: e73a06591ca0d7016ce3ccb45c36a8ed7128468aecc1a357f94d815c760c6b31
+        dest: gopath/pkg/mod/cache/download/golang.org/x/sys/@v
+      - type: file
+        url: https://proxy.golang.org/golang.org/x/term/@v/v0.47.0.mod
+        sha256: cfc437810b8822bf57ca3ea4e39ebd418dd5671d72f2b110ce5a3164fa541b0b
+        dest: gopath/pkg/mod/cache/download/golang.org/x/term/@v
+      - type: file
+        url: https://proxy.golang.org/golang.org/x/term/@v/v0.47.0.info
+        sha256: cb0fa8a9dcf9f9ab5849f254e285d0465691f97825b19d0eda8e82bdad64bb23
+        dest: gopath/pkg/mod/cache/download/golang.org/x/term/@v
+      - type: file
+        url: https://proxy.golang.org/golang.org/x/term/@v/v0.47.0.zip
+        sha256: d990d5ab94dfa41ba980645b721bba7490064337a01bb03e6cacace70e8df0bf
+        dest: gopath/pkg/mod/cache/download/golang.org/x/term/@v
+      - type: file
+        url: https://proxy.golang.org/golang.org/x/text/@v/v0.43.0.mod
+        sha256: 63270b8ca6290a720212e1d6e58b8d12a8aa315a1cb960411d7ec2998c0aab59
+        dest: gopath/pkg/mod/cache/download/golang.org/x/text/@v
+      - type: file
+        url: https://proxy.golang.org/golang.org/x/text/@v/v0.43.0.info
+        sha256: 9bcbfda1bbd803b06a02932a06d8a1ba56e2bc944ce30674e415e010b48580fb
+        dest: gopath/pkg/mod/cache/download/golang.org/x/text/@v
+      - type: file
+        url: https://proxy.golang.org/golang.org/x/text/@v/v0.43.0.zip
+        sha256: b75131f628f6e2e4892fd638d33127e952a5027775e0162b94ba069cb4e13863
+        dest: gopath/pkg/mod/cache/download/golang.org/x/text/@v
+      - type: file
+        url: https://proxy.golang.org/golang.org/x/tools/@v/v0.52.0.mod
+        sha256: b4272bcb2c99901b1878e04a56c8a584ac1dce9d5844a3c1cc68a627546fe6fe
+        dest: gopath/pkg/mod/cache/download/golang.org/x/tools/@v
+      - type: file
+        url: https://proxy.golang.org/golang.org/x/tools/@v/v0.52.0.info
+        sha256: 0bbc32e1b866c61f8f63659aa1f08bdac5cd4675b41f6ce4e60725498b51e8a9
+        dest: gopath/pkg/mod/cache/download/golang.org/x/tools/@v
+      - type: file
+        url: https://proxy.golang.org/golang.org/x/tools/@v/v0.52.0.zip
+        sha256: 90b2a941aa5f2fe87564b8e38c3f03796de2e3597b7f4c52a9a6a53201b32c48
+        dest: gopath/pkg/mod/cache/download/golang.org/x/tools/@v
+      - type: file
+        url: https://proxy.golang.org/golang.org/x/tools/go/expect/@v/v0.1.1-deprecated.mod
+        sha256: 0995d960f35334cd5c1caa9748e280ce531f2e06fe092466c77817ceb7a32f08
+        dest: gopath/pkg/mod/cache/download/golang.org/x/tools/go/expect/@v
+      - type: file
+        url: https://proxy.golang.org/golang.org/x/tools/go/expect/@v/v0.1.1-deprecated.info
+        sha256: f17b12bec957629a6da655b8c242d605831ac21f5d503265d2a34040a62e3599
+        dest: gopath/pkg/mod/cache/download/golang.org/x/tools/go/expect/@v
+      - type: file
+        url: https://proxy.golang.org/golang.org/x/tools/go/expect/@v/v0.1.1-deprecated.zip
+        sha256: b2389159ddd768c6bd83a0cc92bbf9be01c32ca973c366fc224b79762d90dd79
+        dest: gopath/pkg/mod/cache/download/golang.org/x/tools/go/expect/@v
+      - type: file
+        url: https://proxy.golang.org/golang.org/x/tools/go/packages/packagestest/@v/v0.1.1-deprecated.mod
+        sha256: f61084d3a3625bc96725aaf19c6a0341ea42715254bc1e617943d2ff836383fd
+        dest: gopath/pkg/mod/cache/download/golang.org/x/tools/go/packages/packagestest/@v
+      - type: file
+        url: https://proxy.golang.org/golang.org/x/tools/go/packages/packagestest/@v/v0.1.1-deprecated.info
+        sha256: 9490716febde2ff69de31b8028d33c4bf33f1d7c687bbf788c98c25ce3d4d79e
+        dest: gopath/pkg/mod/cache/download/golang.org/x/tools/go/packages/packagestest/@v
+      - type: file
+        url: https://proxy.golang.org/golang.org/x/tools/go/packages/packagestest/@v/v0.1.1-deprecated.zip
+        sha256: 15792a78ef9338b2c08d5010b24211f85c4d39e8c31db316f1ca4a891605ed01
+        dest: gopath/pkg/mod/cache/download/golang.org/x/tools/go/packages/packagestest/@v
+      - type: file
+        url: https://proxy.golang.org/google.golang.org/protobuf/@v/v1.36.12.mod
+        sha256: a75c105a852fbd8da8d8cfac09c2eab9a206cfd27ed37c973737e23f632ca96e
+        dest: gopath/pkg/mod/cache/download/google.golang.org/protobuf/@v
+      - type: file
+        url: https://proxy.golang.org/google.golang.org/protobuf/@v/v1.36.12.info
+        sha256: adcdfa99465b9d87edd7d05d540d6e0ce94a04824fe283552410f2c50188f51d
+        dest: gopath/pkg/mod/cache/download/google.golang.org/protobuf/@v
+      - type: file
+        url: https://proxy.golang.org/google.golang.org/protobuf/@v/v1.36.12.zip
+        sha256: 68f8a3174aff42950fd9bd02c11b45c6986eb8060508d124d1c3dd6bf86b9be6
+        dest: gopath/pkg/mod/cache/download/google.golang.org/protobuf/@v
+      - type: file
+        url: https://proxy.golang.org/gopkg.in/yaml.v3/@v/v3.0.1.mod
+        sha256: 21579860a20306fcf43b1bd234d1fba319499c77611b71c05f9bf3ba90dab939
+        dest: gopath/pkg/mod/cache/download/gopkg.in/yaml.v3/@v
+      - type: file
+        url: https://proxy.golang.org/gopkg.in/yaml.v3/@v/v3.0.1.info
+        sha256: 0cdb0c9ac8c3b25dbd420a86ab27debfa469a8b48ee10560224704c2852ac6c0
+        dest: gopath/pkg/mod/cache/download/gopkg.in/yaml.v3/@v
+      - type: file
+        url: https://proxy.golang.org/gopkg.in/yaml.v3/@v/v3.0.1.zip
+        sha256: aab8fbc4e6300ea08e6afe1caea18a21c90c79f489f52c53e2f20431f1a9a015
+        dest: gopath/pkg/mod/cache/download/gopkg.in/yaml.v3/@v
