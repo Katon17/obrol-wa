@@ -114,8 +114,12 @@ install -d "$package_root/DEBIAN" "$package_root/usr/bin" \
 # Build directly: build.sh currently suppresses build failures with || true.
 # A fresh temporary output prevents accidentally packaging a stale executable.
 printf 'Building Obrol from source…\n'
+# Flags are pinned on purpose: release binaries must target x86-64-baseline so
+# old CPUs (e.g. Sandy Bridge, pre-AVX2) can run them. Never inherit CGO_CFLAGS
+# or GOAMD64 from the environment here — a host-optimised -march would make
+# glibc abort on old machines with "CPU ISA level is lower than required".
 GOTOOLCHAIN=auto CGO_ENABLED=1 GOOS=linux GOARCH="$(go env GOHOSTARCH)" \
-  CGO_CFLAGS="${CGO_CFLAGS:--O2 -Wno-deprecated-declarations}" \
+  GOAMD64=v1 CGO_CFLAGS="-O2 -Wno-deprecated-declarations" \
   go build -trimpath -ldflags='-s -w' -o "$package_root/usr/bin/obrol" .
 
 # Verify that the compiled ELF architecture matches the package.
@@ -125,6 +129,16 @@ case "$expected_machine:$elf_machine" in
   x86_64:*X86-64*|aarch64:AArch64|arm:ARM|i686:*80386*|riscv64:*RISC-V*|powerpc64le:PowerPC64|s390x:*S/390*) ;;
   *) fail "Binary architecture ($elf_machine) does not match native host ($expected_machine)" ;;
 esac
+
+# Guard: on x86_64 the executable must not demand a newer ISA level than
+# baseline, or glibc on old CPUs refuses to start it.
+if [ "$expected_machine" = "x86_64" ]; then
+  isa_needed="$(LC_ALL=C readelf -nW "$package_root/usr/bin/obrol" | sed -n 's/.*x86 ISA needed: *//p')"
+  case "$isa_needed" in
+    *baseline*) ;;
+    *) fail "Release binary requires '$isa_needed'; must be x86-64-baseline (check GOAMD64/CGO_CFLAGS/-march)" ;;
+  esac
+fi
 
 # Strip the staged binary.
 strip --strip-unneeded "$package_root/usr/bin/obrol"

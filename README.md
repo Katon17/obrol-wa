@@ -168,12 +168,20 @@ Made by **Katon Bagaskoro**.
 
 ## Installation (Linux Mint 21/22, x86_64)
 
+> **CPU:** any x86-64 processor. Release binaries target x86-64-baseline (v1):
+> builds pin `GOAMD64=v1` with fixed CGO flags, and `build-deb.sh` fails the
+> release if the binary ever demands a newer ISA level — so even pre-AVX2 CPUs
+> (e.g. Intel Sandy Bridge / 2nd-gen Core) run Obrol. If you ever see glibc's
+> `CPU ISA level is lower than required`, that binary did not come from our
+> release pipeline; verify with `readelf -nW obrol | grep 'ISA needed'`
+> (expect `x86-64-baseline`).
+
 ### Option A — `.deb` package (recommended)
 
-Download `obrol_1.12.2-1_amd64.deb` from [Releases](https://github.com/Katon17/obrol-wa/releases/latest), then:
+Download `obrol_1.13.0-1_amd64.deb` from [Releases](https://github.com/Katon17/obrol-wa/releases/latest), then:
 
 ```bash
-sudo apt install ./obrol_1.12.2-1_amd64.deb
+sudo apt install ./obrol_1.13.0-1_amd64.deb
 ```
 
 apt resolves all dependencies automatically and installs system-wide
@@ -186,7 +194,7 @@ A prebuilt binary is shipped, so **you don't need Go**. Download the latest tarb
 [Releases](https://github.com/Katon17/obrol-wa/releases/latest), then:
 
 ```bash
-tar xzf obrol-1.3.0-linux-x86_64.tar.gz
+tar xzf obrol-1.13.0-linux-x86_64.tar.gz
 cd obrol
 bash install.sh
 ```
