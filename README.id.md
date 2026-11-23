@@ -298,45 +298,45 @@ Opsi baris perintah:
 
 Catatan lengkap per rilis ada di [CHANGELOG.md](CHANGELOG.md).
 
-- **1.15.0**: rekam pesan suara dua langkah dengan bar pratinjau (dengarkan/buang/kirim); pemilih emoji mendapat tab bendera serta gestur/pelukan lengkap; menu klik-kanan tray kini menampilkan Keluar di host SNI (dengan fallback XEmbed otomatis pada panel yang tak mampu merender menu SNI); empty-state panel stiker ikut terjemahan)
-- **1.14.2**: indikator mengetik menempel diperbaiki (bersih saat offline/pesan masuk/timeout); last-seen tersimpan antar-restart; sisa string tak diterjemahkan (dialog logout, "(Anda)", preview pesan dihapus) diperbaiki
-- **1.14.1**: cakupan terjemahan Inggris penuh (menu, tanggal, tooltip, dialog, error)
-- **1.14.0**: *Balas secara pribadi* dari menu pesan grup dan daftar anggota; placeholder
-  kolom ketik dipersingkat
-- **1.13.0**: pilih beberapa pesan dengan aksi massal; *hapus untuk saya* satuan; menu
-  pesan dibuka saat lepas klik (tanpa aksi tak sengaja)
-- **1.12.3**: bahasa otomatis mengikuti sistem (PR #7 oleh baduhai); perbaikan
-  format-string `go vet`
-- **1.12.2**: stabilisasi pustaka whatsmeow; percobaan fitur Status/Story ditarik
-  (perangkat tertaut tidak menerima riwayat status dari protokol)
-- **1.12.0–1.12.1**: halaman info & manajemen grup (peserta, subjek, foto, deskripsi,
-  tambah/hapus anggota)
-- **1.11.0–1.11.1**: cari pesan + halaman Berbintang; auto-load riwayat saat scroll ke atas
-  tanpa baris sidebar yang mengganggu
-- **1.10.0–1.10.1**: diet RAM — RSS tetap di bawah 100 MB bahkan setelah sesi berat
-- **1.9.2**: perbaikan final drag & drop — data drop dibaca mentah berbasis panjang
-  (ternyata `GetText()` mengembalikan NULL untuk tipe `text/uri-list`); keterangan kilat
-  bila drop tidak berisi berkas yang bisa dikirim.
-- **1.9.1**: perbaikan crash (SIGSEGV) saat drag & drop akibat regresi pustaka gotk3
-  (`GetURIs()`); "kotak hitam" `crash.log` di `~/.local/share/obrol/` + pengaman per-drop
-  supaya aplikasi tidak mati.
-- **1.9.0**: drag & drop berkas ke percakapan; presence ala WhatsApp (online, terakhir
-  dilihat, "*Budi sedang mengetik…*" lengkap dengan nama pengetik di grup; status mengetik
-  Anda juga dikirim); paket `.deb` di halaman Releases.
-- **1.8.0**: cakupan Bahasa Inggris penuh (±90 string) + tautan donasi Ko-fi di dialog Tentang.
-- **1.7.0**: profil kontak/grup (foto, about, info grup) + link donasi Saweria
-- **1.6.0**: arsip chat (folder Diarsipkan, simpan permanen)
-- **1.5.0**: pesan suara (rekam/kirim/putar) + notifikasi panggilan
-- **1.4.0**: balas pesan (kutipan), reaksi emoji, teruskan pesan, dan pilihan bahasa Inggris
-- **1.3.0**: stiker penuh (tampil + animasi, panel Terbaru/Favorit, buat stiker dari gambar/screenshot),
-  logo & ikon SVG asli buatan sendiri
-- **1.2.0**: tempel screenshot/gambar dari clipboard dengan Ctrl+V, pesan multi-baris dengan Shift+Enter, edit pesan
-  (klik kanan atau tombol ↑), hapus untuk semua orang, sematkan pesan (banner + lompat ke pesan), sematkan obrolan,
-  pratinjau foto kiriman sendiri lebih tajam, dan kredit pembuat (Katon Bagaskoro) di menu Tentang.
+- **1.0.0**: rilis pertama.
 - **1.1.0**: dark mode (otomatis/terang/gelap), mute per chat yang tersinkron dengan ponsel, bisukan semua grup
   kecuali @mention/balasan, badge mute, status sementara di header kembali otomatis ke status koneksi.
   Update dari 1.0.0 cukup dengan `bash install.sh`; sesi login dan riwayat chat tetap aman.
-- **1.0.0**: rilis pertama.
+- **1.2.0**: tempel screenshot/gambar dari clipboard dengan Ctrl+V, pesan multi-baris dengan Shift+Enter, edit pesan
+  (klik kanan atau tombol ↑), hapus untuk semua orang, sematkan pesan (banner + lompat ke pesan), sematkan obrolan,
+  pratinjau foto kiriman sendiri lebih tajam, dan kredit pembuat (Katon Bagaskoro) di menu Tentang.
+- **1.3.0**: stiker penuh (tampil + animasi, panel Terbaru/Favorit, buat stiker dari gambar/screenshot),
+  logo & ikon SVG asli buatan sendiri
+- **1.4.0**: balas pesan (kutipan), reaksi emoji, teruskan pesan, dan pilihan bahasa Inggris
+- **1.5.0**: pesan suara (rekam/kirim/putar) + notifikasi panggilan
+- **1.6.0**: arsip chat (folder Diarsipkan, simpan permanen)
+- **1.7.0**: profil kontak/grup (foto, about, info grup) + link donasi Saweria
+- **1.8.0**: cakupan Bahasa Inggris penuh (±90 string) + tautan donasi Ko-fi di dialog Tentang.
+- **1.9.0**: drag & drop berkas ke percakapan; presence ala WhatsApp (online, terakhir
+  dilihat, "*Budi sedang mengetik…*" lengkap dengan nama pengetik di grup; status mengetik
+  Anda juga dikirim); paket `.deb` di halaman Releases.
+- **1.9.1**: perbaikan crash (SIGSEGV) saat drag & drop akibat regresi pustaka gotk3
+  (`GetURIs()`); "kotak hitam" `crash.log` di `~/.local/share/obrol/` + pengaman per-drop
+  supaya aplikasi tidak mati.
+- **1.9.2**: perbaikan final drag & drop — data drop dibaca mentah berbasis panjang
+  (ternyata `GetText()` mengembalikan NULL untuk tipe `text/uri-list`); keterangan kilat
+  bila drop tidak berisi berkas yang bisa dikirim.
+- **1.10.0–1.10.1**: diet RAM — RSS tetap di bawah 100 MB bahkan setelah sesi berat
+- **1.11.0–1.11.1**: cari pesan + halaman Berbintang; auto-load riwayat saat scroll ke atas
+  tanpa baris sidebar yang mengganggu
+- **1.12.0–1.12.1**: halaman info & manajemen grup (peserta, subjek, foto, deskripsi,
+  tambah/hapus anggota)
+- **1.12.2**: stabilisasi pustaka whatsmeow; percobaan fitur Status/Story ditarik
+  (perangkat tertaut tidak menerima riwayat status dari protokol)
+- **1.12.3**: bahasa otomatis mengikuti sistem (PR #7 oleh baduhai); perbaikan
+  format-string `go vet`
+- **1.13.0**: pilih beberapa pesan dengan aksi massal; *hapus untuk saya* satuan; menu
+  pesan dibuka saat lepas klik (tanpa aksi tak sengaja)
+- **1.14.0**: *Balas secara pribadi* dari menu pesan grup dan daftar anggota; placeholder
+  kolom ketik dipersingkat
+- **1.14.1**: cakupan terjemahan Inggris penuh (menu, tanggal, tooltip, dialog, error)
+- **1.14.2**: indikator mengetik menempel diperbaiki (bersih saat offline/pesan masuk/timeout); last-seen tersimpan antar-restart; sisa string tak diterjemahkan (dialog logout, "(Anda)", preview pesan dihapus) diperbaiki
+- **1.15.0**: rekam pesan suara dua langkah dengan bar pratinjau (dengarkan/buang/kirim); pemilih emoji mendapat tab bendera serta gestur/pelukan lengkap; menu klik-kanan tray kini menampilkan Keluar di host SNI (dengan fallback XEmbed otomatis pada panel yang tak mampu merender menu SNI); empty-state panel stiker ikut terjemahan
 
 ## Pemecahan masalah
 

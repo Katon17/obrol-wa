@@ -276,43 +276,43 @@ Command-line options:
 
 Full notes per release live in [CHANGELOG.md](CHANGELOG.md).
 
-- **1.15.0**: two-step voice recording with preview bar (play/discard/send); emoji picker gains a flags tab and fuller gestures/hugs; tray right-click menu now shows Quit on SNI hosts (with automatic XEmbed fallback on panels that cannot render SNI menus); sticker panel empty states translated)
-- **1.14.2**: stuck typing indicator fixed (cleared on offline/message/timeout); last-seen persists across restarts; stray untranslated strings (logout dialog, "(Anda)", deleted-message preview) fixed
-- **1.14.1**: full English translation coverage (menus, dates, tooltips, dialogs, errors)
-- **1.14.0**: *Message privately* from the group message menu and member list;
-  composer placeholder shortened
-- **1.13.0**: multi-select messages with bulk actions; single-message *delete for me*;
-  message menu now opens on button-release (no accidental activation)
-- **1.12.3**: automatic system language (PR #7 by baduhai); `go vet` format-string fixes
-- **1.12.2**: whatsmeow library stabilisation; the Status/Story experiment was withdrawn
-  (linked devices receive no status history from the protocol)
-- **1.12.0–1.12.1**: group info & management page (participants, subject, photo, description,
-  add/remove members)
-- **1.11.0–1.11.1**: message search + Starred page; silent scroll-to-top auto-load for older
-  history (no sidebar row)
-- **1.10.0–1.10.1**: the memory diet — RSS stays below 100 MB even after heavy sessions
-- **1.9.2**: final drag & drop fix — the raw drop payload is now read by length
-  (`GetText()` turned out to return NULL for `text/uri-list`); flash feedback when a drop
-  carries no sendable file.
-- **1.9.1**: fix for the drag & drop SIGSEGV caused by an upstream gotk3 regression
-  (`GetURIs()`); panic "black box" at `~/.local/share/obrol/crash.log` + a per-drop guard
-  that keeps the app alive.
-- **1.9.0**: drag & drop files into conversations; WhatsApp-style presence (online, last
-  seen, "*Budi is typing…*" including the sender name in groups; your own typing state is
-  broadcast too); `.deb` package on the Releases page.
-- **1.8.0**: full English coverage (~90 strings) + Ko-fi donation link in the About dialog.
-- **1.7.0**: contact & group profiles (photo, about, group info) + Saweria donation link
-- **1.6.0**: chat archive (Archived folder, kept permanently)
-- **1.5.0**: voice messages (record/send/play) + call notifications
-- **1.4.0**: message replies (quotes), emoji reactions, forwarding, and the English language option
-- **1.3.0**: full stickers (render + animated, Recent/Favorites panel, create stickers from
-  images/screenshots), original self-made SVG logo & icons
+- **1.0.0**: first release.
+- **1.1.0**: dark mode (auto/light/dark), per-chat mute synced with the phone, mute all groups
+  except @mention/reply, mute badge, temporary header status falls back to connection status.
 - **1.2.0**: paste screenshots/images from the clipboard with Ctrl+V, multi-line messages with
   Shift+Enter, edit message (right-click or ↑), delete for everyone, pin message (banner + jump),
   pin chat, sharper preview for own photos, creator credits (Katon Bagaskoro) in About.
-- **1.1.0**: dark mode (auto/light/dark), per-chat mute synced with the phone, mute all groups
-  except @mention/reply, mute badge, temporary header status falls back to connection status.
-- **1.0.0**: first release.
+- **1.3.0**: full stickers (render + animated, Recent/Favorites panel, create stickers from
+  images/screenshots), original self-made SVG logo & icons
+- **1.4.0**: message replies (quotes), emoji reactions, forwarding, and the English language option
+- **1.5.0**: voice messages (record/send/play) + call notifications
+- **1.6.0**: chat archive (Archived folder, kept permanently)
+- **1.7.0**: contact & group profiles (photo, about, group info) + Saweria donation link
+- **1.8.0**: full English coverage (~90 strings) + Ko-fi donation link in the About dialog.
+- **1.9.0**: drag & drop files into conversations; WhatsApp-style presence (online, last
+  seen, "*Budi is typing…*" including the sender name in groups; your own typing state is
+  broadcast too); `.deb` package on the Releases page.
+- **1.9.1**: fix for the drag & drop SIGSEGV caused by an upstream gotk3 regression
+  (`GetURIs()`); panic "black box" at `~/.local/share/obrol/crash.log` + a per-drop guard
+  that keeps the app alive.
+- **1.9.2**: final drag & drop fix — the raw drop payload is now read by length
+  (`GetText()` turned out to return NULL for `text/uri-list`); flash feedback when a drop
+  carries no sendable file.
+- **1.10.0–1.10.1**: the memory diet — RSS stays below 100 MB even after heavy sessions
+- **1.11.0–1.11.1**: message search + Starred page; silent scroll-to-top auto-load for older
+  history (no sidebar row)
+- **1.12.0–1.12.1**: group info & management page (participants, subject, photo, description,
+  add/remove members)
+- **1.12.2**: whatsmeow library stabilisation; the Status/Story experiment was withdrawn
+  (linked devices receive no status history from the protocol)
+- **1.12.3**: automatic system language (PR #7 by baduhai); `go vet` format-string fixes
+- **1.13.0**: multi-select messages with bulk actions; single-message *delete for me*;
+  message menu now opens on button-release (no accidental activation)
+- **1.14.0**: *Message privately* from the group message menu and member list;
+  composer placeholder shortened
+- **1.14.1**: full English translation coverage (menus, dates, tooltips, dialogs, errors)
+- **1.14.2**: stuck typing indicator fixed (cleared on offline/message/timeout); last-seen persists across restarts; stray untranslated strings (logout dialog, "(Anda)", deleted-message preview) fixed
+- **1.15.0**: two-step voice recording with preview bar (play/discard/send); emoji picker gains a flags tab and fuller gestures/hugs; tray right-click menu now shows Quit on SNI hosts (with automatic XEmbed fallback on panels that cannot render SNI menus); sticker panel empty states translated
 
 ## Troubleshooting
 
