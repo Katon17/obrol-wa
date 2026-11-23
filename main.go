@@ -16,7 +16,7 @@ import (
 	"github.com/gotk3/gotk3/gtk"
 )
 
-const version = "1.14.0"
+const version = "1.14.1"
 
 // v1.9: "kotak hitam" — bila aplikasi panic, jejak lengkap disimpan ke
 // crash.log di folder data supaya mudah dilaporkan, lalu panic diteruskan.

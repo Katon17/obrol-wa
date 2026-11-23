@@ -963,7 +963,7 @@ func (w *WA) EditText(chat, id, text string) error {
 		return errors.New("pesan tidak ditemukan")
 	}
 	if time.Since(time.Unix(m.TS, 0)) > EditWindow {
-		return errors.New("pesan hanya bisa diedit maksimal 15 menit setelah dikirim")
+		return errors.New(T("Pesan hanya bisa diedit maksimal 15 menit setelah dikirim"))
 	}
 	cj, err := types.ParseJID(chat)
 	if err != nil {

@@ -64,9 +64,9 @@ func encodeWebP(rgba []byte, w, h int, quality float32) ([]byte, error) {
 	n := C.obrol_webp_encode((*C.uint8_t)(unsafe.Pointer(&rgba[0])), C.int(w), C.int(h), C.float(quality), &out)
 	if n == 0 || out == nil {
 		if !webpEncoderAvailable() {
-			return nil, errors.New("libwebp tidak ditemukan (sudo apt install libwebp7)")
+			return nil, errors.New(T("libwebp tidak ditemukan (sudo apt install libwebp7)"))
 		}
-		return nil, errors.New("encode WebP gagal")
+		return nil, errors.New(T("encode WebP gagal"))
 	}
 	defer C.obrol_webp_free(unsafe.Pointer(out))
 	return C.GoBytes(unsafe.Pointer(out), C.int(n)), nil

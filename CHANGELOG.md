@@ -4,6 +4,24 @@ All notable changes to Obrol are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.14.1] — 2026-11-23
+
+### Fixed
+- **Cakupan terjemahan Inggris penuh**: menu ☰ (notifikasi/suara/tray/login), durasi
+  sematan (24 jam/7 hari/30 hari), bar multi-select, tooltip tombol composer, nama
+  hari & bulan, label "diedit" dan "Pesan ini dihapus", dialog stiker, subjudul
+  "Mode demo", serta pesan error libwebp/edit kini mengikuti bahasa aplikasi. /
+  **Full English coverage**: the ☰ menu (notifications/sound/tray/login), pin
+  durations (24 h/7 d/30 d), multi-select bar, composer button tooltips, day &
+  month names, the "edited" and "message deleted" labels, sticker dialogs, the
+  demo-mode subtitle and libwebp/edit errors now follow the app language.
+- **Key kamus yang melayang** diperbaiki: disclaimer klien tidak resmi, pesan
+  libwebp stiker, tooltip stiker animasi, dan "Dukung via Saweria" sebelumnya
+  tampil dalam bahasa Indonesia meski mode Inggris aktif (escape/kata tidak
+  cocok antara kode dan kamus). / Fixed drifted dictionary keys: the unofficial
+  client disclaimer, sticker libwebp notice, animated-sticker tooltip and
+  "Support via Saweria" previously stayed Indonesian in English mode.
+
 ## [1.14.0] — 2026-11-23
 
 ### Added

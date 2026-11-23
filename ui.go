@@ -262,8 +262,8 @@ func (a *App) Activate() {
 	glib.TimeoutAdd(60000, func() bool { a.reloadChats(); return true })
 	if a.opts.Demo {
 		a.pages.SetVisibleChildName("main")
-		a.connStatus = "Mode demo"
-		a.header.SetSubtitle("Mode demo")
+		a.connStatus = T("Mode demo")
+		a.header.SetSubtitle(T("Mode demo"))
 		a.reloadChats()
 	} else if a.opts.DemoLogin {
 		a.pages.SetVisibleChildName("login")
@@ -581,21 +581,21 @@ func (a *App) buildHeaderButtons() {
 		exec.Command("xdg-open", d).Start()
 	})
 	sep()
-	check("Notifikasi desktop", a.cfg.Notify, func(v bool) { a.cfg.Notify = v; a.cfg.Save() })
-	check("Bisukan semua grup (kecuali @mention/balasan)", a.cfg.MuteGroups, func(v bool) {
+	check(T("Notifikasi desktop"), a.cfg.Notify, func(v bool) { a.cfg.Notify = v; a.cfg.Save() })
+	check(T("Bisukan semua grup (kecuali @mention/balasan)"), a.cfg.MuteGroups, func(v bool) {
 		a.cfg.MuteGroups = v
 		a.cfg.Save()
 		a.reloadChats()
 	})
-	check("Suara notifikasi", a.cfg.Sound, func(v bool) { a.cfg.Sound = v; a.cfg.Save() })
-	check("Tutup = sembunyikan ke tray", a.cfg.CloseToTray, func(v bool) { a.cfg.CloseToTray = v; a.cfg.Save() })
-	check("Jalankan saat login", autostartEnabled(), func(v bool) { setAutostart(v) })
+	check(T("Suara notifikasi"), a.cfg.Sound, func(v bool) { a.cfg.Sound = v; a.cfg.Save() })
+	check(T("Tutup = sembunyikan ke tray"), a.cfg.CloseToTray, func(v bool) { a.cfg.CloseToTray = v; a.cfg.Save() })
+	check(T("Jalankan saat login"), autostartEnabled(), func(v bool) { setAutostart(v) })
 	sep()
 	// submenu tema
 	themeItem, _ := gtk.MenuItemNewWithLabel(T("Tema"))
 	themeMenu, _ := gtk.MenuNew()
 	var first *gtk.RadioMenuItem
-	for _, t := range []struct{ id, label string }{{"auto", "Otomatis (ikuti sistem)"}, {"light", "Terang"}, {"dark", "Gelap"}} {
+	for _, t := range []struct{ id, label string }{{"auto", T("Otomatis (ikuti sistem)")}, {"light", T("Terang")}, {"dark", T("Gelap")}} {
 		var it *gtk.RadioMenuItem
 		if first == nil {
 			it, _ = gtk.RadioMenuItemNewWithLabel(nil, t.label)
@@ -627,7 +627,7 @@ func (a *App) buildHeaderButtons() {
 		curLang = "auto"
 	}
 	for _, t := range []struct{ id, label string }{
-		{"auto", "Otomatis (ikuti sistem)"},
+		{"auto", T("Otomatis (ikuti sistem)")},
 		{"id", "Bahasa Indonesia"},
 		{"en", "English"},
 	} {
@@ -745,7 +745,8 @@ func (a *App) buildLogin() gtk.IWidget {
 	pbtn.Connect("clicked", doPair)
 	a.phoneEnt.Connect("activate", doPair)
 
-	warn, _ := gtk.LabelNew(T("⚠ Obrol adalah klien tidak resmi (protokol whatsmeow). Ada risiko akun\ndibatasi/diblokir oleh WhatsApp. Gunakan dengan bijak & risiko sendiri."))
+	warn, _ := gtk.LabelNew(T(`⚠ Obrol adalah klien tidak resmi (protokol whatsmeow). Ada risiko akun
+dibatasi/diblokir oleh WhatsApp. Gunakan dengan bijak & risiko sendiri.`))
 	addClass(warn, "warn")
 	warn.SetXAlign(0)
 
@@ -1635,7 +1636,7 @@ func (a *App) bubbleRow(m *Msg) *gtk.ListBoxRow {
 
 	text := m.Text
 	if m.Kind == "deleted" {
-		box, l := iconLabel("ban", "Pesan ini dihapus", 15)
+		box, l := iconLabel("ban", T("Pesan ini dihapus"), 15)
 		addClass(l, "deleted")
 		b.PackStart(box, false, false, 0)
 		text = ""
@@ -1799,7 +1800,7 @@ func (a *App) setMeta(l *gtk.Label, ts int64, fromMe bool, st int, edited bool, 
 		star = `<span foreground="#e8b93c">★ </span>`
 	}
 	if edited {
-		t = "diedit · " + t
+		t = T("diedit") + " · " + t
 	}
 	if !fromMe {
 		if starred {
@@ -1889,9 +1890,9 @@ func (a *App) attachFile() {
 	if a.current == "" {
 		return
 	}
-	dlg, _ := gtk.FileChooserDialogNewWith2Buttons("Kirim foto / file", a.win, gtk.FILE_CHOOSER_ACTION_OPEN, T("Batal"), gtk.RESPONSE_CANCEL, T("Kirim"), gtk.RESPONSE_ACCEPT)
+	dlg, _ := gtk.FileChooserDialogNewWith2Buttons(T("Kirim foto / file"), a.win, gtk.FILE_CHOOSER_ACTION_OPEN, T("Batal"), gtk.RESPONSE_CANCEL, T("Kirim"), gtk.RESPONSE_ACCEPT)
 	ff, _ := gtk.FileFilterNew()
-	ff.SetName("Semua file")
+	ff.SetName(T("Semua file"))
 	ff.AddPattern("*")
 	fi, _ := gtk.FileFilterNew()
 	fi.SetName("Gambar (JPG, PNG)")
@@ -2460,8 +2461,8 @@ func senderColor(jid string, dark bool) string {
 	return senderColors[hashN(jid, uint32(len(senderColors)))]
 }
 
-var hari = []string{"Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"}
-var bulan = []string{"", "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"}
+var hari = []string{T("Minggu"), T("Senin"), T("Selasa"), T("Rabu"), T("Kamis"), T("Jumat"), T("Sabtu")}
+var bulan = []string{"", T("Januari"), T("Februari"), T("Maret"), T("April"), T("Mei"), T("Juni"), T("Juli"), T("Agustus"), T("September"), T("Oktober"), T("November"), T("Desember")}
 
 func dayKey(ts int64) string { return time.Unix(ts, 0).Format("2006-01-02") }
 

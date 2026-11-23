@@ -180,7 +180,7 @@ func (a *App) stickerView(m *Msg) gtk.IWidget {
 			box.PackStart(img, true, true, 0)
 			box.SetTooltipText(T("Stiker animasi Lottie (ditampilkan diam)"))
 		} else {
-			placeholder("Stiker animasi Lottie belum didukung")
+			placeholder(T("Stiker animasi Lottie belum didukung"))
 		}
 		return box
 	}
@@ -426,7 +426,10 @@ func (a *App) stickerCreatePage(p *stickerPanel) gtk.IWidget {
 	addClass(ic, "accent")
 	v.PackStart(ic, false, false, 0)
 	t, _ := gtk.LabelNew("")
-	t.SetMarkup(T("<b>Buat stiker sendiri</b>\n<small>Ubah foto atau screenshot jadi stiker WhatsApp.\nBisa dipotong persegi, sudut membulat, dan diberi\ngaris tepi putih ala stiker.</small>"))
+	t.SetMarkup(T(`<b>Buat stiker sendiri</b>
+<small>Ubah foto atau screenshot jadi stiker WhatsApp.
+Bisa dipotong persegi, sudut membulat, dan diberi
+garis tepi putih ala stiker.</small>`))
 	t.SetJustify(gtk.JUSTIFY_CENTER)
 	v.PackStart(t, false, false, 4)
 	mk := func(icon, label string, fn func()) *gtk.Button {
@@ -440,11 +443,11 @@ func (a *App) stickerCreatePage(p *stickerPanel) gtk.IWidget {
 		b.Connect("clicked", fn)
 		return b
 	}
-	file := mk("image", "Pilih gambar…", func() {
+	file := mk("image", T("Pilih gambar…"), func() {
 		p.pop.Popdown()
 		a.stickerFromFile()
 	})
-	paste := mk("paste", "Tempel dari clipboard", func() {
+	paste := mk("paste", T("Tempel dari clipboard"), func() {
 		p.pop.Popdown()
 		a.stickerFromClipboard()
 	})
@@ -454,7 +457,8 @@ func (a *App) stickerCreatePage(p *stickerPanel) gtk.IWidget {
 	if !webpEncoderAvailable() {
 		file.SetSensitive(false)
 		paste.SetSensitive(false)
-		w, _ := gtk.LabelNew(T("libwebp tidak ditemukan.\nPasang dulu: sudo apt install libwebp7"))
+		w, _ := gtk.LabelNew(T(`libwebp tidak ditemukan.
+Pasang dulu: sudo apt install libwebp7`))
 		addClass(w, "warn")
 		w.SetJustify(gtk.JUSTIFY_CENTER)
 		v.PackStart(w, false, false, 0)
@@ -498,7 +502,7 @@ func (a *App) stickerFromClipboard() {
 			}
 		}
 	}
-	a.errorDialog(T("Clipboard tidak berisi gambar"), "Salin gambar atau ambil screenshot (PrtSc) dulu, lalu coba lagi.")
+	a.errorDialog(T("Clipboard tidak berisi gambar"), T("Salin gambar atau ambil screenshot (PrtSc) dulu, lalu coba lagi."))
 }
 
 // ------------------------------------------------------------ pembuat stiker
@@ -702,7 +706,7 @@ func (a *App) createStickerDialog(src *gdk.Pixbuf) {
 	opts, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 6)
 	opts.SetVAlign(gtk.ALIGN_CENTER)
 	title, _ := gtk.LabelNew("")
-	title.SetMarkup(T("<b>Bentuk</b>"))
+	title.SetMarkup("<b>" + T("Bentuk") + "</b>")
 	title.SetXAlign(0)
 	fit, _ := gtk.RadioButtonNewWithLabel(nil, T("Gambar utuh"))
 	crop, _ := gtk.RadioButtonNewWithLabelFromWidget(fit, T("Potong persegi (tengah)"))
@@ -710,7 +714,7 @@ func (a *App) createStickerDialog(src *gdk.Pixbuf) {
 		crop.SetActive(true)
 	}
 	t2, _ := gtk.LabelNew("")
-	t2.SetMarkup(T("<b>Gaya</b>"))
+	t2.SetMarkup("<b>" + T("Gaya") + "</b>")
 	t2.SetXAlign(0)
 	round, _ := gtk.CheckButtonNewWithLabel(T("Sudut membulat"))
 	round.SetActive(true)

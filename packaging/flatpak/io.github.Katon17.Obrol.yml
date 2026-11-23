@@ -54,7 +54,7 @@ modules:
     sources:
       - type: git
         url: https://github.com/Katon17/obrol-wa.git
-        tag: v1.14.0
+        tag: v1.14.1
         commit: ISI-DENGAN-SHA-TAG-SEBELUM-SUBMIT
 
 cleanup:

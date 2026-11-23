@@ -197,10 +197,10 @@ Dibuat oleh **Katon Bagaskoro**.
 
 ### Opsi A — paket `.deb` (disarankan)
 
-Unduh `obrol_1.14.0-1_amd64.deb` dari [Releases](https://github.com/Katon17/obrol-wa/releases/latest), lalu:
+Unduh `obrol_1.14.1-1_amd64.deb` dari [Releases](https://github.com/Katon17/obrol-wa/releases/latest), lalu:
 
 ```bash
-sudo apt install ./obrol_1.14.0-1_amd64.deb
+sudo apt install ./obrol_1.14.1-1_amd64.deb
 ```
 
 apt otomatis membereskan semua dependensi dan memasang sistem-wide
@@ -213,7 +213,7 @@ Binary sudah jadi, jadi **tidak perlu install Go**. Unduh tarball terbaru dari
 halaman [Releases](https://github.com/Katon17/obrol-wa/releases/latest), lalu:
 
 ```bash
-tar xzf obrol-1.14.0-linux-x86_64.tar.gz
+tar xzf obrol-1.14.1-linux-x86_64.tar.gz
 cd obrol
 bash install.sh
 ```
@@ -290,6 +290,7 @@ Opsi baris perintah:
 
 Catatan lengkap per rilis ada di [CHANGELOG.md](CHANGELOG.md).
 
+- **1.14.1**: cakupan terjemahan Inggris penuh (menu, tanggal, tooltip, dialog, error)
 - **1.14.0**: *Balas secara pribadi* dari menu pesan grup dan daftar anggota; placeholder
   kolom ketik dipersingkat
 - **1.13.0**: pilih beberapa pesan dengan aksi massal; *hapus untuk saya* satuan; menu
