@@ -364,6 +364,7 @@ func (w *WA) handle(raw any) {
 	case *events.Presence:
 		w.ui.OnPresence(evt.From.String(), !evt.Unavailable, evt.LastSeen)
 	case *events.ChatPresence:
+		// (issue #10) lihat juga subscribePresence & timer di presence.go
 		w.ui.OnTyping(w.chatOf(evt.MessageSource).String(), evt.Sender.String(), evt.State == types.ChatPresenceComposing)
 	case *events.MarkChatAsRead:
 		if evt.Action.GetRead() {
@@ -414,6 +415,8 @@ func (w *WA) chatOf(src types.MessageSource) types.JID {
 }
 
 func (w *WA) onMessage(evt *events.Message, live bool) {
+	// v1.14.2 (issue #10): pesan masuk = lawan selesai mengetik.
+	w.ui.OnTyping(w.chatOf(evt.Info.MessageSource).String(), evt.Info.Sender.String(), false)
 	if skipChat(evt.Info.Chat) {
 		return
 	}
@@ -815,7 +818,7 @@ func (w *WA) DisplayName(jid string, stored string) string {
 		name = jid
 	}
 	if j.User == w.myUser() {
-		name += " (Anda)"
+		name += " " + T("(Anda)")
 	}
 	w.names.Store(jid, name)
 	return name

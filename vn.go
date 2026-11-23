@@ -105,7 +105,14 @@ func writeDemoVN() {
 
 func (a *App) toggleRec() {
 	if recCmd != nil {
-		a.stopRec(true)
+		// v1.15.0 (issue #11): klik kedua = selesai merekam → pratinjau,
+		// bukan langsung kirim.
+		a.finishRecToPreview()
+		return
+	}
+	if a.vnPending != "" {
+		// klik ketiga = kirim rekaman yang sedang dipratinjau.
+		a.sendPendingVN()
 		return
 	}
 	a.startRec()
@@ -140,17 +147,15 @@ func (a *App) startRec() {
 	if a.micBtn != nil {
 		addClass(a.micBtn, "rec")
 	}
-	a.flashStatus(T("Merekam… klik lagi untuk mengirim"))
+	a.flashStatus(T("Merekam… klik lagi untuk menyelesaikan"))
 }
 
-func (a *App) stopRec(send bool) {
+// stopRecCmd (v1.15.0): menghentikan perekam; mengembalikan path rekaman.
+func stopRecCmd() string {
 	cmd, path := recCmd, recPath
 	recCmd, recPath = nil, ""
-	if a.micBtn != nil {
-		removeClass(a.micBtn, "rec")
-	}
 	if cmd == nil {
-		return
+		return ""
 	}
 	cmd.Process.Signal(os.Interrupt)
 	done := make(chan struct{})
@@ -161,8 +166,17 @@ func (a *App) stopRec(send bool) {
 		cmd.Process.Kill()
 		<-done
 	}
-	if !send {
-		os.Remove(path)
+	return path
+}
+
+// finishRecToPreview (v1.15.0, issue #11): rekaman selesai → bar pratinjau
+// (dengarkan / buang / kirim), bukan langsung terkirim.
+func (a *App) finishRecToPreview() {
+	path := stopRecCmd()
+	if a.micBtn != nil {
+		removeClass(a.micBtn, "rec")
+	}
+	if path == "" {
 		return
 	}
 	fi, err := os.Stat(path)
@@ -171,9 +185,24 @@ func (a *App) stopRec(send bool) {
 		a.flashStatus("⚠ " + T("Rekaman kosong atau gagal"))
 		return
 	}
+	a.vnPending = path
+	a.showVNBar(path)
+}
+
+// sendPendingVN (v1.15.0): kirim rekaman yang sedang dipratinjau.
+func (a *App) sendPendingVN() {
+	path := a.vnPending
+	if path == "" {
+		return
+	}
+	a.vnPending = ""
+	if a.vnBar != nil {
+		a.vnBar.Hide()
+	}
 	ptt := strings.HasSuffix(path, ".ogg")
 	chat, reply := a.current, a.replyTo
 	a.cancelReply()
+	var err error
 	var m *Msg
 	if a.wa != nil {
 		m, err = a.wa.SendAudioEx(chat, path, ptt, reply)
@@ -196,6 +225,67 @@ func (a *App) stopRec(send bool) {
 	} else if err != nil {
 		a.flashStatus("⚠ " + err.Error())
 	}
+}
+
+// discardPendingVN (v1.15.0): buang rekaman pratinjau (tombol sampah / Esc /
+// pindah chat).
+func (a *App) discardPendingVN() {
+	if a.vnPending == "" {
+		return
+	}
+	os.Remove(a.vnPending)
+	a.vnPending = ""
+	if a.vnBar != nil {
+		a.vnBar.Hide()
+	}
+	a.flashStatus(T("Rekaman dibuang"))
+}
+
+// buildVNBar membuat (sekali) bar pratinjau pesan suara di atas composer.
+func (a *App) buildVNBar() {
+	bar, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 8)
+	addClass(bar, "composer")
+	bar.SetMarginTop(4)
+	ic := newIcon("mic", 16)
+	addClass(ic, "accent")
+	a.vnLbl, _ = gtk.LabelNew("")
+	a.vnLbl.SetXAlign(0)
+	play := iconButton("play", T("Dengarkan"), 16)
+	play.Connect("clicked", func() {
+		if a.vnPending != "" {
+			a.playAudio(a.vnPending)
+		}
+	})
+	trash := iconButton("trash", T("Buang rekaman"), 16)
+	trash.Connect("clicked", a.discardPendingVN)
+	send := iconButton("send", T("Kirim pesan suara"), 16)
+	addClass(send, "suggested-action")
+	send.Connect("clicked", a.sendPendingVN)
+	bar.PackStart(ic, false, false, 0)
+	bar.PackStart(a.vnLbl, true, true, 0)
+	bar.PackStart(play, false, false, 0)
+	bar.PackStart(trash, false, false, 0)
+	bar.PackStart(send, false, false, 0)
+	bar.SetNoShowAll(true)
+	a.vnBar = bar
+}
+
+// showVNBar: isi bar pratinjau dengan durasi rekaman lalu tampilkan.
+func (a *App) showVNBar(path string) {
+	if a.vnBar == nil {
+		return
+	}
+	dur := ""
+	if b, err := os.ReadFile(path); err == nil {
+		s := audioSeconds(b)
+		dur = fmt.Sprintf("%d:%02d · ", s/60, s%60)
+	}
+	a.vnLbl.SetText(dur + T("Pesan suara siap dikirim"))
+	// NoShowAll menjaga bar tersembunyi saat show-all awal window; matikan
+	// dulu karena ShowAll() pada widget NoShowAll langsung return.
+	a.vnBar.SetNoShowAll(false)
+	a.vnBar.ShowAll()
+	a.flashStatus(T("Enter atau klik kirim untuk mengirim; Esc membuang rekaman"))
 }
 
 // ---------------------------------------------------------------- putar

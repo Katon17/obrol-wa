@@ -102,6 +102,11 @@ type App struct {
 	online         map[string]bool
 	lastSeen       map[string]int64
 	typing         map[string]string
+	typingFrom     map[string]string      // v1.14.2: chat → JID pengirim yang sedang mengetik
+	typingTmr      map[string]*time.Timer // v1.14.2: timer pengaman indikator typing
+	vnPending      string                 // v1.15.0: path rekaman menunggu dikirim
+	vnBar          *gtk.Box               // v1.15.0: bar pratinjau pesan suara
+	vnLbl          *gtk.Label             // v1.15.0: label durasi pratinjau
 	lastTypingPing time.Time
 	typingPause    *time.Timer
 
@@ -1288,7 +1293,7 @@ func (a *App) updateChatRow(r *chatRow, c Chat) {
 		addClass(r.avatar, avatarClass(c.JID))
 	}
 	if c.LastText != r.chat.LastText || r.chat.JID == "" {
-		r.preview.SetText(c.LastText)
+		r.preview.SetText(normalizePreview(c.LastText))
 	}
 	r.when.SetText(shortTime(c.LastTS))
 	sc, _ := r.when.GetStyleContext()
@@ -1343,6 +1348,19 @@ func (a *App) updateUnread() {
 
 // ------------------------------------------------------------ percakapan
 
+// normalizePreview (v1.14.2, issue #9): preview baris chat dibake ke DB dalam
+// bahasa aktif saat disimpan; terjemahkan ulang token yang diketahui supaya
+// baris lama ikut bahasa sekarang.
+func normalizePreview(s string) string {
+	if s == "🚫 Pesan ini dihapus" {
+		return "🚫 " + T("Pesan ini dihapus")
+	}
+	if strings.HasPrefix(s, "Anda: ") {
+		return T("Anda: ") + normalizePreview(strings.TrimPrefix(s, "Anda: "))
+	}
+	return s
+}
+
 // openPrivateChat (v1.14.0): buka chat 1-on-1 dengan pengirim pesan grup atau
 // anggota grup — termasuk nomor yang belum disimpan di kontak. Dipakai oleh
 // menu konteks pesan grup dan menu klik-kanan daftar anggota.
@@ -1364,6 +1382,7 @@ func (a *App) openChat(jid string) {
 	if jid == "" {
 		return
 	}
+	a.discardPendingVN() // v1.15.0: pratinjau rekaman tidak ikut pindah chat
 	a.searchMode = false
 	if a.findBar != nil {
 		a.findBar.Hide()
@@ -1844,6 +1863,10 @@ func (a *App) openMedia(chat, id string) {
 }
 
 func (a *App) sendCurrent() {
+	if a.vnPending != "" {
+		a.sendPendingVN() // v1.15.0: tombol kirim mengirim pratinjau VN
+		return
+	}
 	text := strings.TrimSpace(a.inputText())
 	if a.editID != "" {
 		a.finishEdit(text)
@@ -1967,12 +1990,12 @@ func (a *App) newChatDialog() {
 
 func (a *App) confirmLogout() {
 	d := gtk.MessageDialogNew(a.win, gtk.DIALOG_MODAL, gtk.MESSAGE_QUESTION, gtk.BUTTONS_YES_NO,
-		"Keluar dari akun WhatsApp di Obrol?")
+		"%s", T("Keluar dari akun WhatsApp di Obrol?"))
 	d.FormatSecondaryText("%s", T("Perangkat ini akan dilepas dari WhatsApp dan semua riwayat chat lokal dihapus."))
 	resp := d.Run()
 	d.Destroy()
 	if resp == gtk.RESPONSE_YES && a.wa != nil {
-		a.header.SetSubtitle("Keluar…")
+		a.header.SetSubtitle(T("Keluar…"))
 		go a.wa.Logout()
 	}
 }
@@ -1988,7 +2011,7 @@ func (a *App) about() {
 	d, _ := gtk.AboutDialogNew()
 	d.SetTransientFor(a.win)
 	d.SetProgramName("Obrol")
-	d.SetVersion(version)
+	d.SetVersion(version + " (" + buildStamp + ")")
 	d.SetLogo(svgPixbuf(logoSVG, 128))
 	d.SetAuthors([]string{author})
 	d.SetComments(T("Klien WhatsApp native & super ringan untuk Linux (GTK3 + whatsmeow).") + "\n\n" + T("dibuat oleh") + " " + author + ".")
@@ -2165,8 +2188,6 @@ func (a *App) setupTray() {
 		return
 	}
 	a.tray = t
-	t.SetTooltipText(T("Obrol"))
-	t.SetTitle(T("Obrol"))
 	menu, _ := gtk.MenuNew()
 	show, _ := gtk.MenuItemNewWithLabel(T("Tampilkan Obrol"))
 	show.Connect("activate", a.showWindow)
@@ -2177,22 +2198,105 @@ func (a *App) setupTray() {
 	menu.Append(s)
 	menu.Append(q)
 	menu.ShowAll()
-	t.Connect("activate", func() {
-		if a.win.IsVisible() && a.win.IsActive() {
-			a.win.Hide()
-		} else {
-			a.showWindow()
+	wireTray := func(tr trayIface) {
+		tr.SetTooltipText(T("Obrol"))
+		tr.SetTitle(T("Obrol"))
+		tr.Connect("activate", func() {
+			if a.win.IsVisible() && a.win.IsActive() {
+				a.win.Hide()
+			} else {
+				a.showWindow()
+			}
+		})
+		tr.Connect("popup-menu", func() {
+			// v1.15.0: host SNI mengirim koordinat klik bersama ContextMenu();
+			// popup di koordinat itu (PopupAtPointer(nil) dari idle tanpa event
+			// GDK bisa gagal diam-diam di sebagian host).
+			if mp, ok := tr.(interface {
+				MenuPoint() (int, int)
+			}); ok {
+				if x, y := mp.MenuPoint(); (x > 0 || y > 0) && menu != nil {
+					if scr, err := gdk.ScreenGetDefault(); err == nil && scr != nil {
+						if root, err2 := scr.GetRootWindow(); err2 == nil && root != nil {
+							rect := &gdk.Rectangle{}
+							rect.SetRectangleInt(x, y, 1, 1)
+							menu.PopupAtRect(root, rect,
+								gdk.GDK_GRAVITY_NORTH_WEST, gdk.GDK_GRAVITY_SOUTH_WEST, nil)
+							return
+						}
+					}
+				}
+			}
+			menu.PopupAtPointer(nil)
+		})
+		// render ulang logo SVG pas di ukuran panel (tajam di 16–48 px)
+		tr.Connect("size-changed", func(_ interface{}, size int) bool {
+			if size > 0 && size != a.traySize {
+				a.traySize = size
+				a.updateUnread()
+			}
+			return true
+		})
+		// host SNI (Cinnamon/GNOME/KDE) merender menu klik-kanan dari
+		// com.canonical.dbusmenu — item menu didaftarkan ke sana juga.
+		if sm, ok := tr.(interface {
+			SetMenuItems(func(), func())
+		}); ok {
+			sm.SetMenuItems(a.showWindow, a.quit)
 		}
-	})
-	t.Connect("popup-menu", func() { menu.PopupAtPointer(nil) })
-	// render ulang logo SVG pas di ukuran panel (tajam di 16–48 px)
-	t.Connect("size-changed", func(_ interface{}, size int) bool {
-		if size > 0 && size != a.traySize {
-			a.traySize = size
-			a.updateUnread()
-		}
-		return true
-	})
+	}
+	wireTray(t)
+	// v1.15.0: deteksi host SNI yang TIDAK mampu merender menu (panel tanpa
+	// libdbusmenu, mis. Xfce tertentu): bila dalam 8 s tidak ada satu pun
+	// panggilan com.canonical.dbusmenu, item SNI di-Passive-kan dan Obrol
+	// pindah ke XEmbed (GtkStatusIcon) yang membawa menu klik-kanannya
+	// sendiri. Balik ke SNI bila tak ada host XEmbed atau host mampu muncul.
+	if mc, ok := t.(interface {
+		MenuCalls() int
+	}); ok {
+		var xemb trayIface
+		switchedAt := 0
+		ticks := 0
+		glib.TimeoutAdd(2000, func() bool {
+			ticks++
+			calls := mc.MenuCalls()
+			switch {
+			case a.tray == t && switchedAt == 0 && ticks >= 4 && calls == 0:
+				if x := NewStatusIcon(a.pixNormal); x != nil {
+					xemb = x
+					switchedAt = ticks
+					t.SetVisible(false) // Passive: host sembunyikan item SNI
+					a.tray = x
+					wireTray(x)
+					a.updateUnread()
+					trayLog("host SNI tanpa dbusmenu -> pindah XEmbed")
+				}
+			case a.tray == xemb && xemb != nil:
+				if calls > 0 || (ticks-switchedAt >= 2 && !xemb.IsEmbedded()) {
+					xemb.SetVisible(false)
+					a.tray = t
+					t.SetVisible(true)
+					a.updateUnread()
+					trayLog("kembali ke SNI (calls=%d)", calls)
+				}
+			}
+			return true
+		})
+	}
+}
+
+// trayLog: log diagnostik lapangan berbasis env OBROL_SNI_LOG (sama dgn sisi C).
+func trayLog(format string, args ...interface{}) {
+	p := os.Getenv("OBROL_SNI_LOG")
+	if p == "" {
+		return
+	}
+	f, err := os.OpenFile(p, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
+	if err != nil {
+		return
+	}
+	defer f.Close()
+	fmt.Fprintf(f, "[tray] "+format+"\n", args...)
 }
 
 func (a *App) trayPixbuf(unread bool) *gdk.Pixbuf {

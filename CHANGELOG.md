@@ -4,6 +4,68 @@ All notable changes to Obrol are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.15.0] — 2026-11-24
+
+### Added
+- **Rekam pesan suara dua langkah (issue #11)**: klik kedua kini menyelesaikan
+  rekaman dan menampilkan bar pratinjau di atas composer — durasi, tombol
+  dengarkan, buang (sampah/Esc/pindah chat), dan kirim (tombol kirim, klik mic
+  lagi, atau Enter seperti pesan teks). Rekaman tak lagi terkirim tak sengaja. /
+  **Two-step voice recording (issue #11)**: the second click now finishes the
+  recording and shows a preview bar above the composer — duration, play,
+  discard (trash/Esc/switching chat) and send (send button, mic click again, or
+  Enter just like text). Recordings can no longer be sent by accident.
+- **Kategori bendera & gestur lengkap di pemilih emoji (issue #12)**: tab baru 🌍
+  berisi ±60 bendera negara + bendera khusus; kategori gestur mendapat pelukan
+  (🤗 ) dan gestur Unicode baru (🫰  🫱–🫸). /
+  **Flags & fuller gestures in the emoji picker (issue #12)**: new 🌍 tab with
+  ~60 country flags + special flags; the gesture category gains hugs (🤗 🫂)
+  and the newer Unicode hand gestures (🫰 🫵 🫱–🫸).
+
+### Fixed
+- **Menu klik-kanan tray kini punya "Keluar"**: host SNI (Cinnamon/GNOME/KDE)
+  merender menu tray dari antarmuka com.canonical.dbusmenu yang sebelumnya tidak
+  disediakan, sehingga menu kanan hanya berisi buatan host sendiri. Obrol kini
+  menyajikan menu native: Tampilkan Obrol, pemisah, Keluar (label ikut bahasa
+  antarmuka). / **Tray right-click menu now has "Quit"**: SNI hosts
+  (Cinnamon/GNOME/KDE) render the tray menu from the com.canonical.dbusmenu
+  interface, which Obrol never exposed, so the right-click menu lacked our
+  items. Obrol now serves a native menu: Show Obrol, separator, Quit (labels
+  follow the UI language).
+  Bila host SNI tidak mampu merender menu sama sekali (panel tanpa
+  libdbusmenu), Obrol mendeteksinya dalam 8 s dan otomatis pindah ke XEmbed
+  (GtkStatusIcon) supaya menu klik-kanan tetap ada; kembali ke SNI bila host
+  mampu muncul. / If the SNI host cannot render menus at all (panel built
+  without libdbusmenu), Obrol detects this within 8 s and falls back to XEmbed
+  (GtkStatusIcon) so the right-click menu keeps working; it returns to SNI when
+  a capable host appears.
+- **Empty-state panel stiker ikut terjemahan**: teks "Belum ada favorit…"
+  dan "Belum ada stiker…" sebelumnya hard-coded bahasa Indonesia; kini memakai
+  T() sehingga tampil dalam bahasa antarmuka (mis. "No favorites yet…"). /
+  **Sticker panel empty states now follow the UI language**: the "Belum ada
+  favorit…" / "Belum ada stiker…" hints were hard-coded Indonesian; they now go
+  through T() (e.g. "No favorites yet…").
+
+## [1.14.2] — 2026-11-24
+
+### Fixed
+- **Indikator "sedang mengetik…" yang menempel** (issue #10): bila lawan menutup
+  WhatsApp tanpa mengirim event `paused`, indikator typing kini dibersihkan oleh
+  empat lapis — event `paused`, presence *unavailable* (lawan offline), pesan
+  masuk dari pengirim itu, dan timer pengaman 30 detik. /
+  **Stuck "typing…" indicator** (issue #10): when the other side closes WhatsApp
+  without sending a `paused` event, the typing indicator is now cleared by four
+  layers — the `paused` event, presence *unavailable* (peer went offline), an
+  incoming message from that sender, and a 30-second safety timer.
+
+- **Terjemahan & last-seen (issue #9)**: last-seen kini dipersistenkan di DB sehingga
+  tidak hilang setiap restart (sebelumnya hanya di memori); judul dialog logout,
+  sufiks "(Anda)" pada nama sendiri, dan preview "Pesan ini dihapus" di daftar chat
+  kini mengikuti bahasa aplikasi (baris lama dinormalisasi saat dirender). /
+  **Translations & last seen (issue #9)**: last-seen is now persisted in the DB so
+  it survives restarts (previously memory-only); the logout dialog title, the
+  "(Anda)" suffix on your own name and the deleted-message preview in the chat
+  list now follow the app language (old rows are normalised at render time).
 ## [1.14.1] — 2026-11-23
 
 ### Fixed

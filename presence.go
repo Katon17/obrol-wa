@@ -17,6 +17,15 @@ func (a *App) OnPresence(jid string, available bool, lastSeen time.Time) {
 		a.online[jid] = available
 		if !available && !lastSeen.IsZero() {
 			a.lastSeen[jid] = lastSeen.Unix()
+			a.st.SetLastSeen(jid, lastSeen.Unix()) // v1.14.2 (issue #9)
+		}
+		// v1.14.2 (issue #10): lawan offline → indikator typing-nya basi.
+		if !available {
+			for ch, sj := range a.typingFrom {
+				if sj == jid || ch == jid {
+					a.clearTyping(ch, "")
+				}
+			}
 		}
 		if a.current == jid {
 			if c, ok := a.st.GetChat(jid); ok {
@@ -35,15 +44,43 @@ func (a *App) OnTyping(chat, senderJID string, composing bool) {
 				name = a.personName(chat, senderJID)
 			}
 			a.typing[chat] = name
-		} else {
-			delete(a.typing, chat)
-		}
-		if a.current == chat {
-			if c, ok := a.st.GetChat(chat); ok {
-				a.refreshSub(c, chat)
+			a.typingFrom[chat] = senderJID
+			// v1.14.2 (issue #10): jaring pengaman — bila `paused` tak pernah
+			// tiba (aplikasi lawan ditutup paksa), indikator lepas sendiri.
+			if t := a.typingTmr[chat]; t != nil {
+				t.Stop()
 			}
+			a.typingTmr[chat] = time.AfterFunc(30*time.Second, func() {
+				glib.IdleAdd(func() { a.clearTyping(chat, "") })
+			})
+			if a.current == chat {
+				if c, ok := a.st.GetChat(chat); ok {
+					a.refreshSub(c, chat)
+				}
+			}
+		} else {
+			a.clearTyping(chat, "")
 		}
 	})
+}
+
+// clearTyping (v1.14.2, issue #10): buang indikator typing chat; dari sisi C
+// dipanggil lewat paused, timer pengaman, presence-unavailable, dan pesan masuk.
+func (a *App) clearTyping(chat, fromJID string) {
+	if fromJID != "" && a.typingFrom[chat] != fromJID {
+		return
+	}
+	delete(a.typing, chat)
+	delete(a.typingFrom, chat)
+	if t := a.typingTmr[chat]; t != nil {
+		t.Stop()
+		delete(a.typingTmr, chat)
+	}
+	if a.current == chat {
+		if c, ok := a.st.GetChat(chat); ok {
+			a.refreshSub(c, chat)
+		}
+	}
 }
 
 func (a *App) personName(chat, jid string) string {

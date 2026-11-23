@@ -131,6 +131,10 @@ CREATE TABLE IF NOT EXISTS chats (
   last_text TEXT NOT NULL DEFAULT '',
   unread INTEGER NOT NULL DEFAULT 0
 );
+CREATE TABLE IF NOT EXISTS presence (
+	jid TEXT PRIMARY KEY,
+	last_seen INTEGER NOT NULL DEFAULT 0
+);
 CREATE TABLE IF NOT EXISTS messages (
   chat TEXT NOT NULL,
   id TEXT NOT NULL,
@@ -604,7 +608,7 @@ func previewText(m *Msg) string {
 	lbl := kindLabel(m.Kind)
 	switch {
 	case m.Kind == "deleted":
-		t = "🚫 Pesan ini dihapus"
+		t = "🚫 " + T("Pesan ini dihapus")
 	case lbl != "" && t != "":
 		t = lbl + " · " + t
 	case lbl != "":
@@ -647,4 +651,28 @@ func kindLabel(kind string) string {
 		return "🎞️ GIF"
 	}
 	return ""
+}
+
+// SetLastSeen (v1.14.2, issue #9): persistenkan last-seen agar tidak hilang
+// setiap aplikasi dimulai ulang (sebelumnya hanya map di memori).
+func (s *Store) SetLastSeen(jid string, ts int64) {
+	s.db.Exec(`INSERT INTO presence(jid, last_seen) VALUES(?,?) ON CONFLICT(jid) DO UPDATE SET last_seen=excluded.last_seen`, jid, ts)
+}
+
+// LoadLastSeen (v1.14.2, issue #9): baca seluruh last-seen dari DB saat start.
+func (s *Store) LoadLastSeen() map[string]int64 {
+	m := map[string]int64{}
+	rows, err := s.db.Query(`SELECT jid, last_seen FROM presence WHERE last_seen > 0`)
+	if err != nil {
+		return m
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var j string
+		var ts int64
+		if rows.Scan(&j, &ts) == nil {
+			m[j] = ts
+		}
+	}
+	return m
 }

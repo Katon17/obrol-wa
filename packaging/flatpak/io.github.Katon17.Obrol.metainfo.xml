@@ -36,6 +36,8 @@
     <content_attribute id="social-chat">intense</content_attribute>
   </content_rating>
   <releases>
+    <release version="1.15.0" date="2026-11-24"/>
+    <release version="1.14.2" date="2026-11-24"/>
     <release version="1.14.1" date="2026-11-23"/>
     <release version="1.14.0" date="2026-11-23"/>
     <release version="1.13.2" date="2026-11-23"/>

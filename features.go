@@ -62,6 +62,8 @@ func (a *App) buildComposer() gtk.IWidget {
 	a.replyLbl.Show()
 	rx.Show()
 	outer.PackStart(a.replyBar, false, false, 0)
+	a.buildVNBar() // v1.15.0 (issue #11)
+	outer.PackStart(a.vnBar, false, false, 0)
 
 	comp, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 4)
 	addClass(comp, "composer")
@@ -192,12 +194,19 @@ func (a *App) onInputKey(_ *gtk.TextView, ev *gdk.Event) bool {
 	ctrl := k.State()&uint(gdk.CONTROL_MASK) != 0
 	switch {
 	case (kv == gdk.KEY_Return || kv == gdk.KEY_KP_Enter) && !shift && !ctrl:
+		if a.vnPending != "" {
+			a.sendPendingVN() // v1.15.0: Enter mengirim pratinjau VN
+			return true
+		}
 		a.sendCurrent()
 		return true
 	case ctrl && (kv == gdk.KEY_v || kv == gdk.KEY_V):
 		return a.tryPaste()
 	case kv == gdk.KEY_Up && a.editID == "" && strings.TrimSpace(a.inputText()) == "":
 		return a.editLast()
+	case kv == gdk.KEY_Escape && a.vnPending != "":
+		a.discardPendingVN() // v1.15.0
+		return true
 	case kv == gdk.KEY_Escape && a.replyTo != nil:
 		a.cancelReply()
 		return true

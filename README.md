@@ -75,6 +75,14 @@ Made by **Katon Bagaskoro**.
 - 🗑 **Delete for me** on a single message, straight from the message menu — no
   selection mode needed
 
+**New in 1.15 — voice notes, two steps:**
+
+- 🎤 **Two-step voice recording**: the second mic click finishes the take and shows a
+  preview bar (duration, play, discard, send); send with the send button, another mic
+  click, or Enter — discard with the trash or Esc
+
+![Voice note preview](screenshots/v115-vn-preview-en.png)
+
 **New in 1.14 — reach people you never saved:**
 
 - 💬 **Message privately**: right-click a group message → *Message privately* opens a
@@ -187,10 +195,10 @@ Made by **Katon Bagaskoro**.
 
 ### Option A — `.deb` package (recommended)
 
-Download `obrol_1.14.1-1_amd64.deb` from [Releases](https://github.com/Katon17/obrol-wa/releases/latest), then:
+Download `obrol_1.15.0-1_amd64.deb` from [Releases](https://github.com/Katon17/obrol-wa/releases/latest), then:
 
 ```bash
-sudo apt install ./obrol_1.14.1-1_amd64.deb
+sudo apt install ./obrol_1.15.0-1_amd64.deb
 ```
 
 apt resolves all dependencies automatically and installs system-wide
@@ -203,7 +211,7 @@ A prebuilt binary is shipped, so **you don't need Go**. Download the latest tarb
 [Releases](https://github.com/Katon17/obrol-wa/releases/latest), then:
 
 ```bash
-tar xzf obrol-1.14.1-linux-x86_64.tar.gz
+tar xzf obrol-1.15.0-linux-x86_64.tar.gz
 cd obrol
 bash install.sh
 ```
@@ -268,6 +276,8 @@ Command-line options:
 
 Full notes per release live in [CHANGELOG.md](CHANGELOG.md).
 
+- **1.15.0**: two-step voice recording with preview bar (play/discard/send); emoji picker gains a flags tab and fuller gestures/hugs; tray right-click menu now shows Quit on SNI hosts (with automatic XEmbed fallback on panels that cannot render SNI menus); sticker panel empty states translated)
+- **1.14.2**: stuck typing indicator fixed (cleared on offline/message/timeout); last-seen persists across restarts; stray untranslated strings (logout dialog, "(Anda)", deleted-message preview) fixed
 - **1.14.1**: full English translation coverage (menus, dates, tooltips, dialogs, errors)
 - **1.14.0**: *Message privately* from the group message menu and member list;
   composer placeholder shortened

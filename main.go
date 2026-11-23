@@ -16,7 +16,11 @@ import (
 	"github.com/gotk3/gotk3/gtk"
 )
 
-const version = "1.14.1"
+const version = "1.15.0"
+
+// buildStamp: penanda build installer/patch supaya laporan lapangan bisa
+// dipastikan melawan source yang mana (mengakhiri tebakan "build lama").
+const buildStamp = "20261124r11"
 
 // v1.9: "kotak hitam" — bila aplikasi panic, jejak lengkap disimpan ke
 // crash.log di folder data supaya mudah dilaporkan, lalu panic diteruskan.
@@ -92,7 +96,7 @@ func main() {
 	exportIcon := flag.String("export-icon", "", "tulis ikon PNG bawaan ke path ini lalu keluar")
 	flag.Parse()
 	if *showVer {
-		fmt.Println("Obrol", version, "— dibuat oleh", author)
+		fmt.Println("Obrol", version, "("+buildStamp+")", "— dibuat oleh", author)
 		return
 	}
 	if *exportIcon != "" {
@@ -136,8 +140,10 @@ func main() {
 	}
 	a.pendingCalls = map[string]pendingCall{}
 	a.online = map[string]bool{}
-	a.lastSeen = map[string]int64{}
+	a.lastSeen = st.LoadLastSeen() // v1.14.2 (issue #9): last-seen persisten
 	a.typing = map[string]string{}
+	a.typingFrom = map[string]string{}
+	a.typingTmr = map[string]*time.Timer{}
 	lang = resolveLang(a.cfg.Lang)
 	if v := os.Getenv("OBROL_LANG"); v != "" {
 		if _, ok := normalizeLang(v); ok {

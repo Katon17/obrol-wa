@@ -299,9 +299,9 @@ func (a *App) buildStickerButton() gtk.IWidget {
 	v.PackStart(p.stack, true, true, 0)
 
 	p.recent, p.recentE = a.stickerGrid(p, "recent", T("Terbaru"),
-		"Belum ada stiker.\nStiker yang kamu terima atau kirim\nakan muncul di sini.")
+		T("Belum ada stiker.\nStiker yang kamu terima atau kirim\nakan muncul di sini."))
 	p.fav, p.favE = a.stickerGrid(p, "fav", T("Favorit"),
-		"Belum ada favorit.\nKlik kanan sebuah stiker →\n«Tambah ke favorit».")
+		T("Belum ada favorit.\nKlik kanan sebuah stiker →\n«Tambah ke favorit»."))
 	p.stack.AddTitled(a.stickerCreatePage(p), "create", T("Buat"))
 
 	v.ShowAll()

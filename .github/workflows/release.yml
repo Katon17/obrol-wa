@@ -40,7 +40,7 @@ jobs:
           case "$isa" in ""|x86-64-baseline) ;; *) echo "::error::Release binary needs '$isa', must be x86-64-baseline"; exit 1;; esac
 
       - name: Build Debian package
-        run: DEB_MAINTAINER="Katon Bagaskoro <cimong2356@gmail.com>" bash ./build-deb.sh
+        run: DEB_MAINTAINER="Katon Bagaskoro <cimong2356@gmail.com>" ./build-deb.sh
 
       - name: Package tarball
         run: |

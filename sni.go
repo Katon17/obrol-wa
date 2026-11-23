@@ -35,6 +35,10 @@ type sniTray struct {
 	tooltip  string
 	status   string
 	handlers map[string]func()
+	menuShow func()
+	menuQuit func()
+	lastX    int
+	lastY    int
 }
 
 func newSNI(pb *gdk.Pixbuf) *sniTray {
@@ -102,6 +106,16 @@ func goSniMethod(name *C.char, x, y C.gint) {
 	if C.GoString(name) == "ContextMenu" {
 		signal = "popup-menu"
 	}
+	if signal == "popup-menu" {
+		sniMu.Lock()
+		t := sniLive
+		sniMu.Unlock()
+		if t != nil {
+			t.mu.Lock()
+			t.lastX, t.lastY = int(x), int(y)
+			t.mu.Unlock()
+		}
+	}
 	sniDispatch(signal)
 }
 
@@ -124,6 +138,28 @@ func sniDispatch(signal string) {
 		return
 	}
 	glib.IdleAdd(func() { h() })
+}
+
+//export goSniMenuEvent
+func goSniMenuEvent(id C.int) {
+	sniMu.Lock()
+	t := sniLive
+	sniMu.Unlock()
+	if t == nil {
+		return
+	}
+	t.mu.Lock()
+	var h func()
+	switch int(id) {
+	case 1:
+		h = t.menuShow
+	case 3:
+		h = t.menuQuit
+	}
+	t.mu.Unlock()
+	if h != nil {
+		glib.IdleAdd(func() { h() })
+	}
 }
 
 // ---------- antarmuka trayIface (sama dengan wrapper GtkStatusIcon) ----------
@@ -177,4 +213,30 @@ func (t *sniTray) Connect(signal string, f interface{}) {
 		t.handlers[signal] = h
 		t.mu.Unlock()
 	}
+}
+
+// SetMenuItems mendaftarkan aksi menu klik-kanan yang dirender native oleh
+// host SNI lewat com.canonical.dbusmenu (id 1 = tampilkan, 3 = keluar);
+// label ikut T() supaya sesuai bahasa antarmuka.
+func (t *sniTray) SetMenuItems(show, quit func()) {
+	t.mu.Lock()
+	t.menuShow, t.menuQuit = show, quit
+	t.mu.Unlock()
+	cs := C.CString(T("Tampilkan Obrol"))
+	cq := C.CString(T("Keluar"))
+	C.obrol_sni_set_menu_labels(cs, cq)
+	C.free(unsafe.Pointer(cs))
+	C.free(unsafe.Pointer(cq))
+}
+
+// MenuCalls = jumlah panggilan com.canonical.dbusmenu dari host; 0 berkelanjutan
+// berarti host tidak mampu merender menu kita (mis. panel tanpa libdbusmenu).
+func (t *sniTray) MenuCalls() int { return int(C.obrol_sni_menu_calls()) }
+
+// MenuPoint mengembalikan koordinat layar terakhir dari ContextMenu() host,
+// supaya GtkMenu fallback bisa muncul tepat di kursor meski tanpa event GDK.
+func (t *sniTray) MenuPoint() (int, int) {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	return t.lastX, t.lastY
 }
