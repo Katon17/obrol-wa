@@ -3,7 +3,7 @@
 **[English](README.md)** · **Bahasa Indonesia**
 
 [![build](https://github.com/Katon17/obrol-wa/actions/workflows/build.yml/badge.svg)](https://github.com/Katon17/obrol-wa/actions/workflows/build.yml)
-[![rilis](https://img.shields.io/github/v/release/Katon17/obrol-wa?display_name=tag)](https://github.com/Katon17/obrol-wa/releases/latest)
+[![rilis](https://img.shields.io/badge/rilis-v1.15.1-blue.svg)](https://github.com/Katon17/obrol-wa/releases/latest)
 [![lisensi](https://img.shields.io/badge/lisensi-MIT-green.svg)](LICENSE)
 [![go](https://img.shields.io/badge/Go-1.26-00ADD8.svg?logo=go&logoColor=white)](go.mod)
 
@@ -79,14 +79,6 @@ Dibuat oleh **Katon Bagaskoro**.
   **Hapus** massal (untuk saya / untuk semua orang bila memenuhi syarat); Esc keluar
 - 🗑 **Hapus untuk saya** per pesan langsung dari menu pesan — tanpa mode seleksi
 
-**Baru di 1.15 — pesan suara dua langkah:**
-
-- 🎤 **Rekam pesan suara dua langkah**: klik mic kedua menyelesaikan rekaman dan
-  menampilkan bar pratinjau (durasi, dengarkan, buang, kirim); kirim lewat tombol
-  kirim, klik mic lagi, atau Enter — buang lewat sampah atau Esc
-
-![Pratinjau pesan suara](screenshots/v115-vn-preview.png)
-
 **Baru di 1.14 — jangkau orang yang belum kamu simpan:**
 
 - 💬 **Balas secara pribadi**: klik kanan pesan di grup → *Balas secara pribadi* membuka
@@ -94,6 +86,14 @@ Dibuat oleh **Katon Bagaskoro**.
   grup — nomornya tidak perlu tersimpan di kontak
 
 ![Balas secara pribadi](screenshots/balas-privasi.png)
+
+**Baru di 1.15 — pesan suara dua langkah:**
+
+- 🎤 **Rekam pesan suara dua langkah**: klik mic kedua menyelesaikan rekaman dan
+  menampilkan bar pratinjau (durasi, dengarkan, buang, kirim); kirim lewat tombol
+  kirim, klik mic lagi, atau Enter — buang lewat sampah atau Esc
+
+![Pratinjau pesan suara](screenshots/v115-vn-preview.png)
 
 ## Kenapa ringan?
 

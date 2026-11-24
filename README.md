@@ -3,7 +3,7 @@
 **English** · **[Bahasa Indonesia](README.id.md)**
 
 [![build](https://github.com/Katon17/obrol-wa/actions/workflows/build.yml/badge.svg)](https://github.com/Katon17/obrol-wa/actions/workflows/build.yml)
-[![release](https://img.shields.io/github/v/release/Katon17/obrol-wa?display_name=tag)](https://github.com/Katon17/obrol-wa/releases/latest)
+[![release](https://img.shields.io/badge/release-v1.15.1-blue.svg)](https://github.com/Katon17/obrol-wa/releases/latest)
 [![license](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![go](https://img.shields.io/badge/Go-1.26-00ADD8.svg?logo=go&logoColor=white)](go.mod)
 
@@ -75,14 +75,6 @@ Made by **Katon Bagaskoro**.
 - 🗑 **Delete for me** on a single message, straight from the message menu — no
   selection mode needed
 
-**New in 1.15 — voice notes, two steps:**
-
-- 🎤 **Two-step voice recording**: the second mic click finishes the take and shows a
-  preview bar (duration, play, discard, send); send with the send button, another mic
-  click, or Enter — discard with the trash or Esc
-
-![Voice note preview](screenshots/v115-vn-preview-en.png)
-
 **New in 1.14 — reach people you never saved:**
 
 - 💬 **Message privately**: right-click a group message → *Message privately* opens a
@@ -90,6 +82,14 @@ Made by **Katon Bagaskoro**.
   group member list — their number never has to be in your contacts
 
 ![Message privately](screenshots/message-privately.png)
+
+**New in 1.15 — voice notes, two steps:**
+
+- 🎤 **Two-step voice recording**: the second mic click finishes the take and shows a
+  preview bar (duration, play, discard, send); send with the send button, another mic
+  click, or Enter — discard with the trash or Esc
+
+![Voice note preview](screenshots/v115-vn-preview-en.png)
 
 ## Why is it so light?
 
