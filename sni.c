@@ -61,7 +61,10 @@ static GVariant *sni_prop_get(GDBusConnection *c, const gchar *sender, const gch
 	if (g_strcmp0(prop, "Title") == 0) return g_variant_new_string(sni_title ? sni_title : "Obrol");
 	if (g_strcmp0(prop, "Status") == 0) return g_variant_new_string(sni_status ? sni_status : "Active");
 	if (g_strcmp0(prop, "ItemIsMenu") == 0) return g_variant_new_boolean(FALSE);
-	if (g_strcmp0(prop, "MenuObjectPath") == 0) return g_variant_new_object_path("/MenuBar");
+	/* v1.15.1 (issue #13): nama properti spesifikasi adalah "Menu" (tipe o).
+	 * Nama lama "MenuObjectPath" tidak dikenal host mana pun: ekstensi
+	 * AppIndicator GNOME menyimpulkan item tanpa menu -> klik kanan mati. */
+	if (g_strcmp0(prop, "Menu") == 0) return g_variant_new_object_path("/MenuBar");
 	if (g_strcmp0(prop, "IconName") == 0) return g_variant_new_string("");
 	if (g_strcmp0(prop, "IconPixmap") == 0) {
 		GVariantBuilder b;
@@ -101,7 +104,7 @@ static const char sni_xml[] =
 	"<property name='IconPixmap' type='a(iiay)' access='read'/>"
 	"<property name='ToolTip' type='(sa(iiay)ss)' access='read'/>"
 	"<property name='ItemIsMenu' type='b' access='read'/>"
-	"<property name='MenuObjectPath' type='o' access='read'/>"
+	"<property name='Menu' type='o' access='read'/>"
 	"<method name='Activate'><arg type='i' direction='in'/><arg type='i' direction='in'/></method>"
 	"<method name='SecondaryActivate'><arg type='i' direction='in'/><arg type='i' direction='in'/></method>"
 	"<method name='ContextMenu'><arg type='i' direction='in'/><arg type='i' direction='in'/></method>"

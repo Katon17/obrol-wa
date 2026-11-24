@@ -4,6 +4,27 @@ All notable changes to Obrol are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.15.1] — 2026-11-24
+
+### Fixed
+- **Menu klik-kanan tray tidak muncul di GNOME (issue #13)**: jalur menu SNI
+  sebelumnya diiklankan lewat nama properti yang salah (`MenuObjectPath`),
+  padahal spesifikasi StatusNotifierItem menyebutnya `Menu` (tipe `o`). Host
+  sesuai spesifikasi — mis. ekstensi AppIndicator bawaan GNOME — membaca `Menu`,
+  mendapat galat, menyimpulkan item tidak punya menu, lalu tidak merender apa
+  pun saat klik kanan (dan tidak pernah memanggil `ContextMenu()`). Properti
+  kini sesuai spesifikasi sehingga host merender menu native (Tampilkan Obrol /
+  Keluar) lewat com.canonical.dbusmenu; label tray bahasa Inggris kini "Quit"
+  mengikuti kebiasaan GNOME. / **Tray right-click menu missing on GNOME
+  (issue #13)**: the SNI menu path was advertised under a wrong property name
+  (`MenuObjectPath`) while the StatusNotifierItem spec calls it `Menu`
+  (type `o`). Spec-compliant hosts — e.g. GNOME's bundled AppIndicator
+  extension — read `Menu`, hit an error, concluded the item had no menu and
+  rendered nothing on right-click (they never call `ContextMenu()`). The
+  property now follows the spec so hosts render the native menu (Show / Quit)
+  via com.canonical.dbusmenu; the English tray label now reads "Quit" to match
+  GNOME conventions.
+
 ## [1.15.0] — 2026-11-24
 
 ### Added
@@ -540,6 +561,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   read receipts, photo/video thumbnails, documents, voice notes, locations, group chats,
   desktop notifications with sound, system tray with unread dot, autostart, single instance.
 
+[1.15.1]: https://github.com/Katon17/obrol-wa/releases/tag/v1.15.1
+[1.15.0]: https://github.com/Katon17/obrol-wa/releases/tag/v1.15.0
+[1.14.1]: https://github.com/Katon17/obrol-wa/releases/tag/v1.14.1
+[1.14.0]: https://github.com/Katon17/obrol-wa/releases/tag/v1.14.0
 [1.13.0]: https://github.com/Katon17/obrol-wa/releases/tag/v1.13.0
 [1.12.2]: https://github.com/Katon17/obrol-wa/releases/tag/v1.12.2
 [1.12.1]: https://github.com/Katon17/obrol-wa/releases/tag/v1.12.1
