@@ -8,6 +8,16 @@ package main
 #cgo CFLAGS: -Wno-deprecated-declarations
 #include <gtk/gtk.h>
 #include <stdlib.h>
+
+// v1.15.2: popup menu tray lewat gtk_menu_popup dengan posisi ikon serta
+// button/activate-time dari sinyal "popup-menu" — grab jadi valid sehingga
+// klik item benar-benar memicu "activate". PopupAtPointer(nil) membuat menu
+// terlihat tapi item-itemnya mati (issue tombol trayQuit/Show).
+static void obrol_menu_popup_at_status_icon(GtkMenu *m, GtkStatusIcon *ic,
+		guint button, guint32 activate_time) {
+	gtk_menu_popup(m, NULL, NULL, gtk_status_icon_position_menu, ic,
+		button, activate_time);
+}
 */
 import "C"
 
@@ -16,6 +26,7 @@ import (
 
 	"github.com/gotk3/gotk3/gdk"
 	"github.com/gotk3/gotk3/glib"
+	"github.com/gotk3/gotk3/gtk"
 )
 
 // trayIface: kontrak bersama wrapper XEmbed (StatusIcon) dan SNI (sni.go).
@@ -77,3 +88,10 @@ func (s *StatusIcon) SetVisible(v bool) {
 func (s *StatusIcon) IsEmbedded() bool { return C.gtk_status_icon_is_embedded(s.p) != 0 }
 
 func (s *StatusIcon) Connect(signal string, f interface{}) { s.obj.Connect(signal, f) }
+
+// PopupMenuAt menampilkan menu Gtk ter-anchor ke ikon tray dengan grab dan
+// activate-time yang valid (lihat catatan cgo di atas).
+func (s *StatusIcon) PopupMenuAt(m *gtk.Menu, button uint, activateTime uint32) {
+	C.obrol_menu_popup_at_status_icon((*C.GtkMenu)(unsafe.Pointer(m.Native())),
+		s.p, C.guint(button), C.guint32(activateTime))
+}

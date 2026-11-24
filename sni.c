@@ -260,12 +260,30 @@ static void menu_method_call(GDBusConnection *c, const gchar *sender, const gcha
 			g_variant_get_child(params, 0, "i", &id);
 			g_variant_get_child(params, 1, "&s", &ev);
 		}
+		snilog("menu Event id=%d ev=%s", id, ev ? ev : "-");
 		if (ev && g_strcmp0(ev, "clicked") == 0)
 			goSniMenuEvent(id);
 		g_dbus_method_invocation_return_value(inv, NULL);
 		return;
 	}
 	if (g_strcmp0(method, "EventGroup") == 0) {
+		/* v1.15.3: klien libdbusmenu-gtk (panel Xfce/MATE dkk.) mengirim klik
+		 * sebagai batch EventGroup a(isvu) — sebelumnya isi batch dibuang
+		 * diam-diam sehingga item menu tray tidak bereaksi apa-apa di host
+		 * tersebut (log lapangan: hanya AboutToShowGroup + EventGroup). */
+		GVariant *arr = g_variant_get_child_value(params, 0);
+		gsize n = arr ? g_variant_n_children(arr) : 0;
+		for (gsize k = 0; k < n; k++) {
+			gint32 id = 0;
+			const gchar *ev = NULL;
+			GVariant *item = g_variant_get_child_value(arr, k);
+			g_variant_get(item, "(i&svu)", &id, &ev, NULL, NULL);
+			snilog("menu EventGroup id=%d ev=%s", id, ev ? ev : "-");
+			if (ev && g_strcmp0(ev, "clicked") == 0)
+				goSniMenuEvent(id);
+			g_variant_unref(item);
+		}
+		if (arr) g_variant_unref(arr);
 		g_dbus_method_invocation_return_value(inv, g_variant_new("(au)", NULL));
 		return;
 	}

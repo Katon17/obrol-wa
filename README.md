@@ -314,6 +314,7 @@ Full notes per release live in [CHANGELOG.md](CHANGELOG.md).
 - **1.14.2**: stuck typing indicator fixed (cleared on offline/message/timeout); last-seen persists across restarts; stray untranslated strings (logout dialog, "(Anda)", deleted-message preview) fixed
 - **1.15.0**: two-step voice recording with preview bar (play/discard/send); emoji picker gains a flags tab and fuller gestures/hugs; tray right-click menu now shows Quit on SNI hosts (with automatic XEmbed fallback on panels that cannot render SNI menus); sticker panel empty states translated
 - **1.15.1**: tray right-click menu (Show / Quit) now actually appears on GNOME and other spec-compliant SNI hosts — the menu path was advertised under a wrong property name, so hosts like GNOME's AppIndicator extension saw no menu at all (issue #13); English tray label now reads "Quit"
+- **1.15.2**: tray menu buttons (Show Obrol / Quit) work everywhere again — on XEmbed hosts (Xfce, MATE, …) the menu grab was invalid so item clicks did nothing, and on libdbusmenu hosts the panel's native menu sent clicks as `EventGroup` batches that were ignored; both paths now dispatch clicks properly
 
 ## Troubleshooting
 

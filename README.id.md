@@ -338,6 +338,7 @@ Catatan lengkap per rilis ada di [CHANGELOG.md](CHANGELOG.md).
 - **1.14.2**: indikator mengetik menempel diperbaiki (bersih saat offline/pesan masuk/timeout); last-seen tersimpan antar-restart; sisa string tak diterjemahkan (dialog logout, "(Anda)", preview pesan dihapus) diperbaiki
 - **1.15.0**: rekam pesan suara dua langkah dengan bar pratinjau (dengarkan/buang/kirim); pemilih emoji mendapat tab bendera serta gestur/pelukan lengkap; menu klik-kanan tray kini menampilkan Keluar di host SNI (dengan fallback XEmbed otomatis pada panel yang tak mampu merender menu SNI); empty-state panel stiker ikut terjemahan
 - **1.15.1**: menu klik-kanan tray (Tampilkan / Keluar) kini benar-benar muncul di GNOME dan host SNI sesuai spesifikasi lain — jalur menu sebelumnya diiklankan lewat nama properti yang salah sehingga host seperti ekstensi AppIndicator GNOME tidak melihat menu sama sekali (issue #13); label tray bahasa Inggris kini "Quit"
+- **1.15.2**: tombol menu tray (Tampilkan Obrol / Keluar) berfungsi lagi di semua jalur — di host XEmbed (Xfce, MATE, …) grab menu tidak valid sehingga klik item tidak melakukan apa-apa, dan di host libdbusmenu menu native panel mengirim klik sebagai batch `EventGroup` yang sebelumnya diabaikan; kedua jalur kini meneruskan klik dengan benar
 
 ## Pemecahan masalah
 

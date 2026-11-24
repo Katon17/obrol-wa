@@ -2208,13 +2208,25 @@ func (a *App) setupTray() {
 				a.showWindow()
 			}
 		})
-		tr.Connect("popup-menu", func() {
-			// v1.15.0: host SNI mengirim koordinat klik bersama ContextMenu();
-			// popup di koordinat itu (PopupAtPointer(nil) dari idle tanpa event
-			// GDK bisa gagal diam-diam di sebagian host).
-			if mp, ok := tr.(interface {
-				MenuPoint() (int, int)
-			}); ok {
+		if si, ok := tr.(*StatusIcon); ok {
+			// v1.15.2: jalur XEmbed — popup lewat gtk_menu_popup dengan
+			// button/activate-time bawaan sinyal "popup-menu", supaya grab
+			// menu valid dan klik item benar-benar memicu "activate".
+			// (PopupAtPointer(nil) membuat menu terlihat tapi item-itemnya
+			// mati: Quit/Show Obrol tidak melakukan apa-apa.)
+			si.Connect("popup-menu", func(_ *glib.Object, button uint, activateTime uint32) {
+				if menu != nil {
+					si.PopupMenuAt(menu, button, activateTime)
+				}
+			})
+		} else {
+			tr.Connect("popup-menu", func() {
+				// v1.15.0: host SNI mengirim koordinat klik bersama ContextMenu();
+				// popup di koordinat itu (PopupAtPointer(nil) dari idle tanpa event
+				// GDK bisa gagal diam-diam di sebagian host).
+				if mp, ok := tr.(interface {
+					MenuPoint() (int, int)
+				}); ok {
 				if x, y := mp.MenuPoint(); (x > 0 || y > 0) && menu != nil {
 					if scr, err := gdk.ScreenGetDefault(); err == nil && scr != nil {
 						if root, err2 := scr.GetRootWindow(); err2 == nil && root != nil {
@@ -2227,8 +2239,9 @@ func (a *App) setupTray() {
 					}
 				}
 			}
-			menu.PopupAtPointer(nil)
-		})
+				menu.PopupAtPointer(nil)
+			})
+		}
 		// render ulang logo SVG pas di ukuran panel (tajam di 16–48 px)
 		tr.Connect("size-changed", func(_ interface{}, size int) bool {
 			if size > 0 && size != a.traySize {

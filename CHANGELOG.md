@@ -4,6 +4,31 @@ All notable changes to Obrol are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.15.2] — 2026-11-24
+
+### Fixed
+- **Tombol menu tray mati di jalur XEmbed**: menu klik-kanan GtkStatusIcon
+  ditampilkan lewat `PopupAtPointer(nil)` sehingga grab menu tidak valid —
+  menu terlihat, tetapi klik "Tampilkan Obrol" / "Keluar" tidak memicu
+  apa-apa (host tray XEmbed: Xfce, MATE, Cinnamon lama, stalonetray, dst.).
+  Menu kini di-popup lewat `gtk_menu_popup` dengan button & activate-time
+  bawaan sinyal "popup-menu" dan ter-anchor ke ikon; kedua tombol berfungsi
+  lagi. / **Tray menu buttons dead on the XEmbed path**: the GtkStatusIcon
+  right-click menu was popped with `PopupAtPointer(nil)`, leaving an invalid
+  menu grab — the menu appeared but clicking "Show Obrol" / "Quit" did nothing
+  (XEmbed tray hosts: Xfce, MATE, old Cinnamon, stalonetray, …). The menu is
+  now popped via `gtk_menu_popup` with the button & activate-time carried by
+  the "popup-menu" signal, anchored to the icon; both buttons work again.
+- **Klik menu tray native tidak bereaksi di host libdbusmenu (Xfce/MATE)**:
+  klien libdbusmenu-gtk mengirim klik item sebagai batch `EventGroup`
+  (`a(isvu)`), yang sebelumnya dibuang tanpa diproses — menu native panel
+  tampil tapi Show/Quit mati. Kini setiap entri "clicked" dalam batch
+  di-dispatch seperti `Event`. / **Native tray menu clicks dead on libdbusmenu
+  hosts (Xfce/MATE)**: libdbusmenu-gtk clients send item clicks as an
+  `EventGroup` batch (`a(isvu)`), which we previously dropped on the floor —
+  the panel's native menu appeared but Show/Quit stayed dead. Every "clicked"
+  entry in the batch is now dispatched like `Event`.
+
 ## [1.15.1] — 2026-11-24
 
 ### Fixed
@@ -561,6 +586,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   read receipts, photo/video thumbnails, documents, voice notes, locations, group chats,
   desktop notifications with sound, system tray with unread dot, autostart, single instance.
 
+[1.15.2]: https://github.com/Katon17/obrol-wa/releases/tag/v1.15.2
 [1.15.1]: https://github.com/Katon17/obrol-wa/releases/tag/v1.15.1
 [1.15.0]: https://github.com/Katon17/obrol-wa/releases/tag/v1.15.0
 [1.14.1]: https://github.com/Katon17/obrol-wa/releases/tag/v1.14.1
