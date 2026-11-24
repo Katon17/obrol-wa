@@ -3,7 +3,7 @@
 **English** · **[Bahasa Indonesia](README.id.md)**
 
 [![build](https://github.com/Katon17/obrol-wa/actions/workflows/build.yml/badge.svg)](https://github.com/Katon17/obrol-wa/actions/workflows/build.yml)
-[![release](https://img.shields.io/badge/release-v1.15.1-blue.svg)](https://github.com/Katon17/obrol-wa/releases/latest)
+[![release](assets/badge-release.svg)](https://github.com/Katon17/obrol-wa/releases/latest)
 [![license](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![go](https://img.shields.io/badge/Go-1.26-00ADD8.svg?logo=go&logoColor=white)](go.mod)
 
