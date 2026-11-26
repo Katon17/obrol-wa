@@ -41,7 +41,7 @@ modules:
         GOSUMDB: "off"
         CGO_ENABLED: "1"
         GOAMD64: v1
-        CGO_CFLAGS: -O2 -Wno-deprecated-declarations
+        CGO_CFLAGS: -O2 -Wno-deprecated-declarations -march=x86-64 -mtune=generic
     build-commands:
       - go build -trimpath -ldflags="-s -w" -o /app/bin/obrol .
       # baseline by construction (lihat komentar di .github/workflows/release.yml)

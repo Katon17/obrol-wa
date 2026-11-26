@@ -4,6 +4,29 @@ All notable changes to Obrol are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.15.3] — 2026-11-24
+
+### Fixed
+- **SIGILL di CPU tua dari artefak rilis CI (issue #14)**: kode C yang
+  dikompilasi cgo (sqlite3) mewarisi `-march` default runner CI
+  (x86-64-v3 = AVX) karena `GOAMD64=v1` hanya menjaga sisi Go — tarball/.deb
+  CI (termasuk aset v1.15.2 ke bawah) mati dengan
+  `SIGILL: illegal instruction` tepat di `sqlite3_open_v2` pada CPU pra-AVX.
+  Semua jalur build (release.yml, build.yml, build.sh, build-deb.sh, manifes
+  Flatpak) kini mem-pin `CGO_CFLAGS -march=x86-64 -mtune=generic`; verifikasi:
+  1.445 instruksi VEX/ymm hilang menjadi 0 pada objek sqlite3 yang
+  dikompilasi ulang, dan nol VEX di seluruh blok fungsi sqlite3 pada biner
+  final. / **SIGILL on old CPUs from CI release artifacts (issue #14)**:
+  cgo-compiled C code (sqlite3) inherited the CI runner's default `-march`
+  (x86-64-v3 = AVX) because `GOAMD64=v1` only guards the Go side — CI
+  tarballs/.debs (including v1.15.2 and earlier assets) died with
+  `SIGILL: illegal instruction` right inside `sqlite3_open_v2` on pre-AVX
+  CPUs. All build paths (release.yml, build.yml, build.sh, build-deb.sh,
+  Flatpak manifest) now pin `CGO_CFLAGS -march=x86-64 -mtune=generic`;
+  verified: 1,445 VEX/ymm instructions in the sqlite3 object drop to 0 when
+  recompiled pinned, and zero VEX across all sqlite3 function blocks in the
+  final binary.
+
 ## [1.15.2] — 2026-11-24
 
 ### Fixed
@@ -586,6 +609,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   read receipts, photo/video thumbnails, documents, voice notes, locations, group chats,
   desktop notifications with sound, system tray with unread dot, autostart, single instance.
 
+[1.15.3]: https://github.com/Katon17/obrol-wa/releases/tag/v1.15.3
 [1.15.2]: https://github.com/Katon17/obrol-wa/releases/tag/v1.15.2
 [1.15.1]: https://github.com/Katon17/obrol-wa/releases/tag/v1.15.1
 [1.15.0]: https://github.com/Katon17/obrol-wa/releases/tag/v1.15.0

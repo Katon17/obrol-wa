@@ -315,6 +315,7 @@ Full notes per release live in [CHANGELOG.md](CHANGELOG.md).
 - **1.15.0**: two-step voice recording with preview bar (play/discard/send); emoji picker gains a flags tab and fuller gestures/hugs; tray right-click menu now shows Quit on SNI hosts (with automatic XEmbed fallback on panels that cannot render SNI menus); sticker panel empty states translated
 - **1.15.1**: tray right-click menu (Show / Quit) now actually appears on GNOME and other spec-compliant SNI hosts — the menu path was advertised under a wrong property name, so hosts like GNOME's AppIndicator extension saw no menu at all (issue #13); English tray label now reads "Quit"
 - **1.15.2**: tray menu buttons (Show Obrol / Quit) work everywhere again — on XEmbed hosts (Xfce, MATE, …) the menu grab was invalid so item clicks did nothing, and on libdbusmenu hosts the panel's native menu sent clicks as `EventGroup` batches that were ignored; both paths now dispatch clicks properly
+- **1.15.3**: release binaries are rebuilt with baseline-only C code (`-march=x86-64` in `CGO_CFLAGS`), fixing `SIGILL: illegal instruction` on pre-AVX CPUs — CI assets of v1.15.2 and earlier carried AVX instructions compiled into sqlite3 (issue #14)
 
 ## Troubleshooting
 

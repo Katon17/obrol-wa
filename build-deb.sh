@@ -118,8 +118,11 @@ printf 'Building Obrol from source…\n'
 # old CPUs (e.g. Sandy Bridge, pre-AVX2) can run them. Never inherit CGO_CFLAGS
 # or GOAMD64 from the environment here — a host-optimised -march would make
 # glibc abort on old machines with "CPU ISA level is lower than required".
+# -march=x86-64 di CGO_CFLAGS wajib: kode C cgo (sqlite3) yang terkompilasi
+# dengan -march default runner/host (x86-64-v3 = AVX) membuat .deb mati
+# SIGILL di CPU pra-AVX (issue #14); GOAMD64=v1 saja hanya menjaga sisi Go.
 GOTOOLCHAIN=auto CGO_ENABLED=1 GOOS=linux GOARCH="$(go env GOHOSTARCH)" \
-  GOAMD64=v1 CGO_CFLAGS="-O2 -Wno-deprecated-declarations" \
+  GOAMD64=v1 CGO_CFLAGS="-O2 -Wno-deprecated-declarations -march=x86-64 -mtune=generic" \
   go build -trimpath -ldflags='-s -w' -o "$package_root/usr/bin/obrol" .
 
 # Verify that the compiled ELF architecture matches the package.

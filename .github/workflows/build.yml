@@ -22,7 +22,9 @@ jobs:
           sudo apt-get install -y --no-install-recommends pkg-config libgtk-3-dev
 
       - name: Build
-        run: go build -trimpath -ldflags="-s -w" -o obrol-bin .
+        # Pin yang sama dengan release.yml: kode C cgo harus baseline x86-64
+        # supaya build PR tidak menutupi regresi ISA (issue #14).
+        run: GOAMD64=v1 CGO_CFLAGS="-O2 -Wno-deprecated-declarations -march=x86-64 -mtune=generic" go build -trimpath -ldflags="-s -w" -o obrol-bin .
 
       - name: Version
         run: ./obrol-bin --version

@@ -24,7 +24,11 @@ jobs:
           sudo apt-get install -y --no-install-recommends pkg-config libgtk-3-dev dpkg-dev
 
       - name: Build
-        run: GOAMD64=v1 go build -trimpath -ldflags="-s -w" -o obrol .
+        # CGO_CFLAGS dipin: kode C cgo (sqlite3) tidak boleh mewarisi -march
+        # default runner (x86-64-v3 = AVX) — biner rilis malah mati SIGILL di
+        # CPU pra-AVX tepat di sqlite3_open_v2 (issue #14). GOAMD64=v1 saja
+        # hanya menjaga sisi Go.
+        run: GOAMD64=v1 CGO_CFLAGS="-O2 -Wno-deprecated-declarations -march=x86-64 -mtune=generic" go build -trimpath -ldflags="-s -w" -o obrol .
 
       - name: Drop x86-64 ISA note (old-CPU safety)
         # Runner images and shared build caches can bake an x86-64-v2/v3 ISA

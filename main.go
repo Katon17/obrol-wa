@@ -16,11 +16,11 @@ import (
 	"github.com/gotk3/gotk3/gtk"
 )
 
-const version = "1.15.2"
+const version = "1.15.3"
 
 // buildStamp: penanda build installer/patch supaya laporan lapangan bisa
 // dipastikan melawan source yang mana (mengakhiri tebakan "build lama").
-const buildStamp = "20261124r14"
+const buildStamp = "20261124r16"
 
 // v1.9: "kotak hitam" — bila aplikasi panic, jejak lengkap disimpan ke
 // crash.log di folder data supaya mudah dilaporkan, lalu panic diteruskan.
