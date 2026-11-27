@@ -316,6 +316,7 @@ Full notes per release live in [CHANGELOG.md](CHANGELOG.md).
 - **1.15.1**: tray right-click menu (Show / Quit) now actually appears on GNOME and other spec-compliant SNI hosts — the menu path was advertised under a wrong property name, so hosts like GNOME's AppIndicator extension saw no menu at all (issue #13); English tray label now reads "Quit"
 - **1.15.2**: tray menu buttons (Show Obrol / Quit) work everywhere again — on XEmbed hosts (Xfce, MATE, …) the menu grab was invalid so item clicks did nothing, and on libdbusmenu hosts the panel's native menu sent clicks as `EventGroup` batches that were ignored; both paths now dispatch clicks properly
 - **1.15.3**: release binaries are rebuilt with baseline-only C code (`-march=x86-64` in `CGO_CFLAGS`), fixing `SIGILL: illegal instruction` on pre-AVX CPUs — CI assets of v1.15.2 and earlier carried AVX instructions compiled into sqlite3 (issue #14)
+- **1.15.4**: clicking a message/call notification no longer crashes the app (the notification action closure mismatched gotk3's parameter type), notifications now carry an explicit "Open Obrol" button so daemons like xfce4-notifyd — which ignore body clicks — still open the right chat, and opening a chat stays crash-safe while the app is not paired yet
 
 ## Troubleshooting
 

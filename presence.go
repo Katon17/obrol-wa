@@ -171,7 +171,7 @@ func (a *App) demoTyping() {
 // SubscribePresence & kirim status typing kita (dipanggil dari wa.go/UI).
 func (w *WA) subscribePresence(jid string) {
 	j, err := types.ParseJID(jid)
-	if err != nil {
+	if err != nil || w.cli == nil || w.cli.Store == nil { // v1.15.4: belum dipasangkan -> noop
 		return
 	}
 	go w.cli.SubscribePresence(bg, j)
@@ -185,6 +185,9 @@ func (w *WA) sendTyping(jid string, composing bool) {
 	st := types.ChatPresencePaused
 	if composing {
 		st = types.ChatPresenceComposing
+	}
+	if w.cli == nil || w.cli.Store == nil { // v1.15.4: belum dipasangkan -> noop
+		return
 	}
 	go w.cli.SendChatPresence(bg, j, st, "")
 }

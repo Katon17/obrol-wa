@@ -354,11 +354,15 @@ func (a *App) onKey(_ *gtk.ApplicationWindow, ev *gdk.Event) bool {
 
 func (a *App) setupActions() {
 	act := glib.SimpleActionNew("open-chat", glib.VARIANT_TYPE_STRING)
-	act.Connect("activate", func(_ *glib.SimpleAction, p *glib.Variant) {
+	// v1.15.4: parameter aksi tiba di closure gotk3 sudah terbuka sebagai
+	// string (bukan *glib.Variant) — signature lama membuat klik tombol
+	// notifikasi panic (reflect.Convert string -> *glib.Variant) dan aplikasi
+	// mati. GSimpleAction menolak aktivasi tanpa parameter cocok, jadi isi
+	// parameter dijamin ada saat closure ini jalan.
+	act.Connect("activate", func(_ *glib.SimpleAction, p string) {
+		trayLog("aksi open-chat: %s", p)
 		a.showWindow()
-		if p != nil {
-			a.openChat(p.GetString())
-		}
+		a.openChat(p)
 	})
 	a.gapp.AddAction(act)
 }
@@ -2469,6 +2473,10 @@ func (a *App) notify(m *Msg) {
 		n.SetIcon(a.iconPath)
 	}
 	n.SetDefaultAction("app.open-chat::" + m.Chat)
+	// v1.15.4: daemon seperti xfce4-notifyd tidak meneruskan klik badan
+	// notifikasi sebagai aksi default — tombol eksplisit menjamin ada jalan
+	// masuk ke Obrol dari notifikasi di semua host.
+	n.AddButton(T("Buka Obrol"), "app.open-chat::"+m.Chat)
 	a.gapp.SendNotification(m.Chat, n)
 	if a.cfg.Sound {
 		go exec.Command("canberra-gtk-play", "-i", "message-new-instant", "-d", "Obrol").Run()

@@ -340,6 +340,7 @@ Catatan lengkap per rilis ada di [CHANGELOG.md](CHANGELOG.md).
 - **1.15.1**: menu klik-kanan tray (Tampilkan / Keluar) kini benar-benar muncul di GNOME dan host SNI sesuai spesifikasi lain — jalur menu sebelumnya diiklankan lewat nama properti yang salah sehingga host seperti ekstensi AppIndicator GNOME tidak melihat menu sama sekali (issue #13); label tray bahasa Inggris kini "Quit"
 - **1.15.2**: tombol menu tray (Tampilkan Obrol / Keluar) berfungsi lagi di semua jalur — di host XEmbed (Xfce, MATE, …) grab menu tidak valid sehingga klik item tidak melakukan apa-apa, dan di host libdbusmenu menu native panel mengirim klik sebagai batch `EventGroup` yang sebelumnya diabaikan; kedua jalur kini meneruskan klik dengan benar
 - **1.15.3**: biner rilis dibangun ulang dengan kode C baseline saja (`-march=x86-64` di `CGO_CFLAGS`), memperbaiki `SIGILL: illegal instruction` di CPU pra-AVX — aset CI v1.15.2 ke bawah membawa instruksi AVX yang terkompilasi ke dalam sqlite3 (issue #14)
+- **1.15.4**: klik notifikasi pesan/panggilan tidak lagi mematikan aplikasi (closure aksi notifikasi tidak cocok dengan tipe parameter gotk3), notifikasi kini punya tombol eksplisit "Buka Obrol" supaya daemon seperti xfce4-notifyd — yang mengabaikan klik badan — tetap membuka chat yang benar, dan membuka chat tetap aman walau aplikasi belum dipasangkan
 
 ## Pemecahan masalah
 

@@ -769,21 +769,31 @@ func (w *WA) onReceipt(evt *events.Receipt) {
 // ------------------------------------------------------------- nama
 
 func (w *WA) contactName(j types.JID) string {
+	// v1.15.4: aksi notifikasi/openChat bisa tiba saat perangkat belum
+	// dipasangkan (w.cli nil) — tanpa guard ini nil deref merobohkan aplikasi.
+	if w == nil || w.cli == nil || w.cli.Store == nil {
+		return ""
+	}
 	j = j.ToNonAD()
-	ci, err := w.cli.Store.Contacts.GetContact(bg, j)
-	if err == nil && ci.Found {
-		for _, n := range []string{ci.FullName, ci.FirstName, ci.BusinessName, ci.PushName} {
-			if n != "" {
-				return n
+	// v1.15.4: substore (Contacts/LIDs) bisa nil bila perangkat belum
+	// dipasangkan — aksi notifikasi yang membuka chat tidak boleh crash.
+	var redacted string
+	if ct := w.cli.Store.Contacts; ct != nil {
+		if ci, err := ct.GetContact(bg, j); err == nil && ci.Found {
+			redacted = ci.RedactedPhone
+			for _, n := range []string{ci.FullName, ci.FirstName, ci.BusinessName, ci.PushName} {
+				if n != "" {
+					return n
+				}
 			}
 		}
 	}
-	if j.Server == types.HiddenUserServer {
+	if j.Server == types.HiddenUserServer && w.cli.Store.LIDs != nil {
 		if pn, err := w.cli.Store.LIDs.GetPNForLID(bg, j); err == nil && !pn.IsEmpty() {
 			return w.contactName(pn)
 		}
-		if err == nil && ci.RedactedPhone != "" {
-			return ci.RedactedPhone
+		if redacted != "" {
+			return redacted
 		}
 	}
 	return ""
@@ -831,7 +841,8 @@ func (w *WA) pnUser(jid string) string {
 	if err != nil {
 		return strings.SplitN(jid, "@", 2)[0]
 	}
-	if j.Server == types.HiddenUserServer || j.Server == types.HostedLIDServer {
+	if w.cli != nil && w.cli.Store != nil && w.cli.Store.LIDs != nil &&
+		(j.Server == types.HiddenUserServer || j.Server == types.HostedLIDServer) {
 		if pn, err := w.cli.Store.LIDs.GetPNForLID(bg, j); err == nil && !pn.IsEmpty() {
 			return pn.User
 		}

@@ -4,6 +4,37 @@ All notable changes to Obrol are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.15.4] — 2026-11-27
+
+### Fixed
+- **Klik notifikasi mematikan aplikasi / tidak masuk ke Obrol**: tombol aksi
+  notifikasi (yang oleh xfce4-notifyd dirender sebagai tombol berikon centang)
+  mengaktivasi aksi `open-chat`, tetapi closure aksi memakai signature
+  `*glib.Variant` padahal gotk3 menyerahkan parameter sebagai `string` —
+  konversi reflect panic dan aplikasi mati seketika. Signature diperbaiki.
+  Selain itu, daemon seperti xfce4-notifyd tidak meneruskan klik *badan*
+  notifikasi sebagai aksi default, sehingga klik badan tidak pernah masuk ke
+  Obrol; notifikasi pesan & panggilan kini membawa tombol eksplisit
+  "Buka Obrol" / "Open Obrol" yang dirender semua daemon. / **Notification
+  clicks killed the app / never opened Obrol**: the notification action button
+  (rendered by xfce4-notifyd as a check-mark button) activates the `open-chat`
+  action, but the action closure declared a `*glib.Variant` parameter while
+  gotk3 delivers it as a plain `string` — the reflect conversion panicked and
+  the app died instantly. Signature fixed. Additionally, daemons like
+  xfce4-notifyd do not forward *body* clicks as the default action, so body
+  clicks never reached Obrol; message & call notifications now carry an
+  explicit "Buka Obrol" / "Open Obrol" button that every daemon renders.
+- **Crash membuka chat saat belum dipasangkan**: jalur `openChat` (termasuk
+  dari aksi notifikasi) menyentuh substore kontak/presence whatsmeow yang
+  masih nil sebelum perangkat dipasangkan — nil dereference panic. Semua
+  akses tersebut kini dijaga, sehingga membuka chat dari notifikasi aman
+  bahkan saat aplikasi masih di halaman QR / sedang memulai. / **Crash
+  opening a chat while not paired yet**: the `openChat` path (including from
+  the notification action) touched whatsmeow contact/presence substores that
+  are still nil before a device is paired — nil dereference panic. All those
+  accesses are now guarded, so opening a chat from a notification is safe
+  even while the app is on the QR page / starting up.
+
 ## [1.15.3] — 2026-11-24
 
 ### Fixed
@@ -609,6 +640,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   read receipts, photo/video thumbnails, documents, voice notes, locations, group chats,
   desktop notifications with sound, system tray with unread dot, autostart, single instance.
 
+[1.15.4]: https://github.com/Katon17/obrol-wa/releases/tag/v1.15.4
 [1.15.3]: https://github.com/Katon17/obrol-wa/releases/tag/v1.15.3
 [1.15.2]: https://github.com/Katon17/obrol-wa/releases/tag/v1.15.2
 [1.15.1]: https://github.com/Katon17/obrol-wa/releases/tag/v1.15.1

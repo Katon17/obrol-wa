@@ -401,6 +401,7 @@ func (a *App) callNotify(body, chat string) {
 		n.SetIcon(a.iconPath)
 	}
 	n.SetDefaultAction("app.open-chat::" + chat)
+	n.AddButton(T("Buka Obrol"), "app.open-chat::"+chat) // v1.15.4: lihat notify()
 	a.gapp.SendNotification(chat, n)
 	if a.cfg.Sound {
 		go exec.Command("canberra-gtk-play", "-i", "phone-incoming-call", "-d", "Obrol").Run()
